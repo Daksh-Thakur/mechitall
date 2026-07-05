@@ -254,7 +254,7 @@ export default function Home() {
             </div>
 
             {/* Hero card - Advertisement Carousel Panel */}
-            <div className="w-full md:w-[380px] z-10 shrink-0 select-none">
+            <div className="w-full md:w-[460px] z-10 shrink-0 select-none">
               <div className={`glassmorphism p-6 rounded-2xl border shadow-lg flex flex-col justify-between h-[360px] transition-all duration-500 bg-gradient-to-br ${adSlides[currentAdSlide].gradient}`}>
                 
                 {/* Header */}
