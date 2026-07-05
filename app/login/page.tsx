@@ -4,9 +4,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useCart } from '@/components/CartProvider';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { Cpu, ArrowRight, Eye, EyeOff, ShieldAlert, Sparkles, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
+import { Cpu, ArrowRight, Eye, EyeOff, Sparkles, CheckCircle2, Zap, Package, ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -30,41 +29,22 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       if (isSignUp) {
-        // Sign Up Flow
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: {
-            data: {
-              full_name: fullName,
-            },
-          },
+          options: { data: { full_name: fullName } },
         });
-
         if (error) throw error;
-
-        showToast('Account created successfully! Logging you in...', 'success');
+        showToast('Account created! Logging you in...', 'success');
       } else {
-        // Sign In Flow
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-
-        showToast('Welcome back! Successfully logged in.', 'success');
+        showToast('Welcome back!', 'success');
       }
 
-      // Sync active Supabase profile with cart context
       await fetchProfile();
-      
-      // Delay navigation slightly so user sees success toast
-      setTimeout(() => {
-        router.push('/profile');
-      }, 1000);
+      setTimeout(() => router.push('/profile'), 900);
     } catch (err: any) {
-      console.error('Auth action failed:', err);
       showToast(err.message || 'Authentication failed. Please check credentials.', 'error');
     } finally {
       setIsLoading(false);
@@ -72,33 +52,88 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-bg font-sans">
-      <Navbar />
+    <div className="h-screen w-screen overflow-hidden flex font-sans bg-[#F8FAFC]">
 
-      <main className="flex-1 flex items-center justify-center py-16 px-4 relative overflow-hidden">
-        {/* Subtle grid visual effect */}
-        <div className="absolute inset-0 bg-[radial-gradient(#0f172a_1.2px,transparent_1.2px)] [background-size:24px_24px] opacity-[0.03] pointer-events-none"></div>
+      {/* ── Left panel — branding (hidden on small screens) ── */}
+      <div className="hidden lg:flex lg:w-5/12 xl:w-1/2 bg-gradient-to-br from-[#0F172A] via-[#1e293b] to-[#0F172A] flex-col justify-between p-10 relative overflow-hidden">
+        {/* Background blobs */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-cobalt/15 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald/10 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
 
-        <div className="w-full max-w-md bg-white border border-slate-border rounded-2xl shadow-xl overflow-hidden relative z-10 p-8 space-y-6 animate-slide-in">
-          {/* Logo Title */}
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-cobalt text-white shadow-md mb-2">
-              <Cpu className="w-6 h-6 animate-pulse" />
-            </div>
-            <h2 className="text-2xl font-black text-slate-text-primary tracking-tight">
-              {isSignUp ? 'Create Mech-Core Account' : 'Sign in to MechItAll'}
-            </h2>
-            <p className="text-xs font-semibold text-slate-text-muted">
-              {isSignUp 
-                ? 'Join precision engineers and start earning loyalty rewards' 
-                : 'Access your custom machining configurations and Nuts & Bolts wallet'}
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2.5 z-10 w-fit">
+          <div className="w-9 h-9 rounded-xl bg-cobalt flex items-center justify-center shadow-lg">
+            <Cpu className="w-5 h-5 text-white animate-pulse" />
+          </div>
+          <span className="text-white font-black text-lg tracking-tight">MechItAll</span>
+        </Link>
+
+        {/* Centre copy */}
+        <div className="z-10 space-y-6">
+          <div className="space-y-3">
+            <span className="text-[10px] font-black uppercase tracking-widest text-cobalt">Precision Mechatronics Platform</span>
+            <h1 className="text-3xl xl:text-4xl font-extrabold text-white leading-tight tracking-tight">
+              The marketplace<br />
+              <span className="text-cobalt">engineers trust</span>
+            </h1>
+            <p className="text-sm text-white/60 leading-relaxed max-w-xs">
+              Parts catalog, on-demand CNC machining, community reviews — all in one place.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-3">
+            {[
+              { icon: Zap, color: 'text-amber-400', label: '25 Bolts welcome bonus on sign-up' },
+              { icon: Package, color: 'text-emerald-400', label: 'Same-day dispatch, no minimum order' },
+              { icon: ShieldCheck, color: 'text-cobalt', label: 'ISO 9001:2015 quality verified parts' },
+            ].map(({ icon: Icon, color, label }) => (
+              <div key={label} className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-lg bg-white/8 flex items-center justify-center shrink-0">
+                  <Icon className={`w-3.5 h-3.5 ${color}`} />
+                </div>
+                <span className="text-xs text-white/70 font-semibold">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom note */}
+        <p className="text-[10px] text-white/30 font-semibold z-10">
+          © 2026 MechItAll · All rights reserved
+        </p>
+      </div>
+
+      {/* ── Right panel — form ── */}
+      <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-10 relative overflow-hidden">
+        {/* Subtle dot grid */}
+        <div className="absolute inset-0 bg-[radial-gradient(#0f172a_1px,transparent_1px)] [background-size:22px_22px] opacity-[0.04] pointer-events-none" />
+
+        {/* Mobile logo */}
+        <Link href="/" className="flex lg:hidden items-center gap-2 mb-6 z-10">
+          <div className="w-8 h-8 rounded-xl bg-cobalt flex items-center justify-center shadow-md">
+            <Cpu className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-black text-slate-text-primary text-base tracking-tight">MechItAll</span>
+        </Link>
+
+        <div className="w-full max-w-sm z-10 space-y-5">
+          {/* Header */}
+          <div className="space-y-1">
+            <h2 className="text-xl font-black text-slate-text-primary tracking-tight">
+              {isSignUp ? 'Create your account' : 'Welcome back'}
+            </h2>
+            <p className="text-xs text-slate-text-muted font-semibold">
+              {isSignUp
+                ? 'Join thousands of makers and engineers'
+                : 'Sign in to your MechItAll account'}
+            </p>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-3">
             {isSignUp && (
-              <div className="space-y-1.5">
-                <label className="block text-[11px] font-bold text-slate-text-secondary uppercase tracking-wider">
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase tracking-wider">
                   Full Name
                 </label>
                 <input
@@ -107,13 +142,13 @@ export default function LoginPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   disabled={isLoading}
-                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:border-cobalt transition-colors"
+                  className="w-full text-xs font-bold p-2.5 border border-slate-border rounded-lg bg-white text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt/20 transition-all"
                 />
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <label className="block text-[11px] font-bold text-slate-text-secondary uppercase tracking-wider">
+            <div className="space-y-1">
+              <label className="block text-[10px] font-bold text-slate-text-secondary uppercase tracking-wider">
                 Email Address
               </label>
               <input
@@ -122,16 +157,14 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
-                className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:border-cobalt transition-colors"
+                className="w-full text-xs font-bold p-2.5 border border-slate-border rounded-lg bg-white text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt/20 transition-all"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center">
-                <label className="block text-[11px] font-bold text-slate-text-secondary uppercase tracking-wider">
-                  Password
-                </label>
-              </div>
+            <div className="space-y-1">
+              <label className="block text-[10px] font-bold text-slate-text-secondary uppercase tracking-wider">
+                Password
+              </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -139,14 +172,14 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
-                  className="w-full text-xs font-bold p-3 pr-10 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:border-cobalt transition-colors"
+                  className="w-full text-xs font-bold p-2.5 pr-10 border border-slate-border rounded-lg bg-white text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt/20 transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3.5 text-slate-text-muted hover:text-slate-text-primary cursor-pointer"
+                  className="absolute right-3 top-2.5 text-slate-text-muted hover:text-slate-text-primary cursor-pointer transition-colors"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
@@ -154,41 +187,47 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-cobalt py-3.5 rounded-lg text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:shadow-cobalt/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full btn-cobalt py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-cobalt/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-1"
             >
               {isLoading ? (
-                <>Authenticating...</>
+                'Authenticating...'
               ) : (
                 <>
                   {isSignUp ? 'Create Account' : 'Sign In'}
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
             </button>
           </form>
 
-          {/* Social Proof info */}
-          <div className="bg-amber-500/5 border border-amber-500/15 p-3 rounded-lg flex items-start gap-2 text-[10px] leading-relaxed text-amber-700 font-semibold">
-            <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-            <span>Registration automatically registers you to our Nuts &amp; Bolts Reward program. Returning profiles keep earned balances!</span>
+          {/* Bolts reward hint */}
+          <div className="bg-amber-500/6 border border-amber-500/15 p-3 rounded-lg flex items-start gap-2 text-[10px] leading-relaxed text-amber-700 font-semibold">
+            <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+            <span>
+              {isSignUp
+                ? 'You\'ll receive 25 Bolts instantly on sign-up — redeemable as store credit at checkout!'
+                : 'Your Nuts & Bolts reward balance is restored on every login.'}
+            </span>
           </div>
 
-          {/* Sign Up / Sign In Toggle */}
-          <div className="text-center pt-2">
+          {/* Toggle */}
+          <p className="text-center text-xs text-slate-text-muted font-semibold">
+            {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
             <button
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => { setIsSignUp(!isSignUp); setEmail(''); setPassword(''); setFullName(''); }}
               disabled={isLoading}
-              className="text-xs font-bold text-cobalt hover:opacity-80 transition-opacity cursor-pointer"
+              className="text-cobalt font-bold hover:underline cursor-pointer transition-opacity disabled:opacity-50"
             >
-              {isSignUp 
-                ? 'Already have an account? Sign In' 
-                : "Don't have an account? Sign Up"}
+              {isSignUp ? 'Sign In' : 'Sign Up'}
             </button>
-          </div>
-        </div>
-      </main>
+          </p>
 
-      <Footer />
+          {/* Back to home */}
+          <p className="text-center text-[10px] text-slate-text-muted/60">
+            <Link href="/" className="hover:text-cobalt transition-colors font-semibold">← Back to homepage</Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
