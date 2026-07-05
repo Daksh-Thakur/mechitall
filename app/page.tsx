@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
 import ProductModal from '../components/ProductModal';
+import ServiceModal from '../components/ServiceModal';
 import { Part } from '../components/mockData';
 import { createClient } from '@/utils/supabase/client';
 import {
@@ -37,6 +38,7 @@ export default function Home() {
   const [allServices, setAllServices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
+  const [selectedService, setSelectedService] = useState<any | null>(null);
 
   // Shuffled subsets for discovery
   const [displayedParts, setDisplayedParts] = useState<Part[]>([]);
@@ -281,7 +283,8 @@ export default function Home() {
               {displayedServices.map((service) => (
                 <div
                   key={service.id}
-                  className={`relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300 ${service.gradient_class || 'border-slate-border/80'}`}
+                  onClick={() => setSelectedService(service)}
+                  className={`relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer ${service.gradient_class || 'border-slate-border/80'}`}
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
@@ -298,6 +301,7 @@ export default function Home() {
                     </div>
                     <Link
                       href="/machining#rfq"
+                      onClick={(e) => e.stopPropagation()}
                       className="btn-emerald text-xs font-bold px-3.5 py-2 rounded-lg cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                     >
                       Configure RFQ <ChevronRight className="w-3.5 h-3.5" />
@@ -365,6 +369,11 @@ export default function Home() {
       {/* Product Modal */}
       {selectedPart && (
         <ProductModal part={selectedPart} onClose={() => setSelectedPart(null)} />
+      )}
+
+      {/* Service Modal */}
+      {selectedService && (
+        <ServiceModal service={selectedService} onClose={() => setSelectedService(null)} />
       )}
     </div>
   );

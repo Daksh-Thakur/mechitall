@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import ServiceModal from '../../components/ServiceModal';
 import { createClient } from '@/utils/supabase/client';
 import {
   MFG_PROCESSES,
@@ -25,6 +26,7 @@ import {
 export default function MachiningPage() {
   const [services, setServices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedService, setSelectedService] = useState<any | null>(null);
 
   // RFQ State
   const [rfqFile, setRfqFile] = useState<{ name: string; size: number } | null>(null);
@@ -196,7 +198,8 @@ export default function MachiningPage() {
               {services.map((service) => (
                 <div
                   key={service.id}
-                  className={`relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300 ${service.gradient_class || 'border-slate-border/80'}`}
+                  onClick={() => setSelectedService(service)}
+                  className={`relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer ${service.gradient_class || 'border-slate-border/80'}`}
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -227,7 +230,10 @@ export default function MachiningPage() {
                       </div>
                     </div>
                     <button
-                      onClick={() => document.getElementById('rfq')?.scrollIntoView({ behavior: 'smooth' })}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        document.getElementById('rfq')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
                       className="btn-emerald text-xs font-bold px-3.5 py-2 rounded-lg cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                     >
                       Configure RFQ <ChevronRight className="w-3.5 h-3.5" />
@@ -407,6 +413,10 @@ export default function MachiningPage() {
       </main>
 
       <Footer />
+
+      {selectedService && (
+        <ServiceModal service={selectedService} onClose={() => setSelectedService(null)} />
+      )}
     </div>
   );
 }

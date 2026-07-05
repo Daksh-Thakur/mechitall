@@ -16,6 +16,9 @@ export default function CartDrawer() {
     checkoutStatus,
     setCheckoutStatus,
     lastPlacedOrder,
+    profile,
+    isBoltsDiscountApplied,
+    setIsBoltsDiscountApplied,
   } = useCart();
 
   if (!isCartOpen && checkoutStatus !== 'success') return null;
@@ -144,6 +147,40 @@ export default function CartDrawer() {
 
             {/* Summary + CTA */}
             <div className="p-5 border-t border-slate-border bg-slate-bg/50 space-y-4">
+              {/* Bolts Discount Control */}
+              {profile && profile.wallet_balance > 0 && cartSummary.subtotal > 0 && (
+                <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-center justify-between gap-3 text-xs">
+                  <div className="space-y-1">
+                    <span className="font-bold text-amber-800 flex items-center gap-1">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        className="w-3.5 h-3.5 text-amber-500 animate-pulse"
+                      >
+                        <circle cx="12" cy="6" r="4" />
+                        <rect x="10" y="10" width="4" height="10" rx="1" />
+                      </svg>
+                      Apply Bolts (₹{(profile.wallet_balance / 10).toFixed(2)})
+                    </span>
+                    <span className="block text-[10px] text-amber-700/80 leading-normal font-semibold">
+                      Spend {Math.min(profile.wallet_balance, cartSummary.boltsToDeduct || 0)} Bolts to get ₹{cartSummary.boltsDiscount.toFixed(2)} off &amp; <strong>remove 18% GST</strong>!
+                    </span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={isBoltsDiscountApplied}
+                      onChange={(e) => setIsBoltsDiscountApplied(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-8 h-4 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500"></div>
+                  </label>
+                </div>
+              )}
+
               <div className="space-y-2 text-[11px] font-bold">
                 <div className="flex justify-between text-slate-text-secondary">
                   <span>Cart Subtotal</span>
@@ -165,8 +202,22 @@ export default function CartDrawer() {
                 </div>
                 <div className="flex justify-between text-slate-text-secondary">
                   <span>GST (18%)</span>
-                  <span>₹{cartSummary.tax.toFixed(2)}</span>
+                  <span className={isBoltsDiscountApplied ? "line-through text-slate-text-muted animate-pulse font-extrabold" : ""}>
+                    ₹{isBoltsDiscountApplied ? ((cartSummary.subtotal - cartSummary.discount) * 0.18).toFixed(2) : cartSummary.tax.toFixed(2)}
+                  </span>
                 </div>
+                {isBoltsDiscountApplied && (
+                  <div className="flex justify-between text-emerald">
+                    <span>GST Waived (18%)</span>
+                    <span>-₹{((cartSummary.subtotal - cartSummary.discount) * 0.18).toFixed(2)}</span>
+                  </div>
+                )}
+                {isBoltsDiscountApplied && cartSummary.boltsDiscount > 0 && (
+                  <div className="flex justify-between text-amber-600 font-extrabold">
+                    <span>Bolts Reward Discount</span>
+                    <span>-₹{cartSummary.boltsDiscount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="border-t border-slate-border/50 my-1 pt-2 flex justify-between text-slate-text-primary text-sm font-extrabold">
                   <span>Order Total</span>
                   <span className="text-coral">₹{cartSummary.total.toFixed(2)} INR</span>

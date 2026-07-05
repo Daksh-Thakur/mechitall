@@ -14,12 +14,14 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
   const { addToCart } = useCart();
 
   return (
-    <div className="group bg-white rounded-xl border border-slate-border p-5 flex flex-col justify-between card-hover glow-cobalt">
+    <div
+      onClick={() => onViewDetails(part)}
+      className="group bg-white rounded-xl border border-slate-border p-5 flex flex-col justify-between card-hover glow-cobalt cursor-pointer"
+    >
       <div className="space-y-4">
         {/* Image placeholder */}
         <div
-          onClick={() => onViewDetails(part)}
-          className={`h-40 w-full rounded-lg bg-gradient-to-br ${part.gradientClass} relative overflow-hidden flex items-center justify-center cursor-pointer`}
+          className={`h-40 w-full rounded-lg bg-gradient-to-br ${part.gradientClass} relative overflow-hidden flex items-center justify-center`}
         >
           <Cpu className="w-10 h-10 text-slate-text-muted/30 group-hover:scale-110 transition-transform duration-300" />
           <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -37,8 +39,7 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
             {part.partNumber}
           </span>
           <h3
-            onClick={() => onViewDetails(part)}
-            className="text-sm font-bold text-slate-text-primary leading-tight group-hover:text-cobalt transition-colors duration-200 cursor-pointer line-clamp-1"
+            className="text-sm font-bold text-slate-text-primary leading-tight group-hover:text-cobalt transition-colors duration-200 line-clamp-1"
           >
             {part.title}
           </h3>
@@ -66,7 +67,10 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
           </div>
         </div>
         <button
-          onClick={() => addToCart(part, 1)}
+          onClick={(e) => {
+            e.stopPropagation();
+            addToCart(part, 1);
+          }}
           className="btn-cobalt text-xs font-bold px-3 py-2 rounded-lg cursor-pointer flex items-center gap-1.5"
         >
           <Plus className="w-3.5 h-3.5" /> Add

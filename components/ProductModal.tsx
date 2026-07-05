@@ -13,11 +13,23 @@ interface ProductModalProps {
 export default function ProductModal({ part, onClose }: ProductModalProps) {
   const [tab, setTab] = useState<'specs' | 'pricing' | 'cad'>('specs');
   const [quantity, setQuantity] = useState(1);
-  const { addToCart, getPartPriceForQuantity } = useCart();
+  const { addToCart, getPartPriceForQuantity, showToast } = useCart();
 
   const handleAdd = () => {
     addToCart(part, quantity);
     onClose();
+  };
+
+  const handleDocumentClick = (e: React.MouseEvent, url: string | undefined, type: string) => {
+    e.preventDefault();
+    // Check if the URL is valid, exists, and is not a placeholder/mock domain
+    const isMock = !url || url === '#' || url === '' || url.includes('mechitall.io') || !url.startsWith('http');
+    
+    if (isMock) {
+      showToast(`${type} is not available currently.`, 'error');
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -125,11 +137,19 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
               <div className="space-y-4 text-xs font-medium text-slate-text-secondary">
                 <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-text-muted">Technical Documents</span>
                 <div className="space-y-3">
-                  <a href={part.datasheetUrl} className="flex items-center justify-between p-3 border border-slate-border rounded-lg hover:border-cobalt hover:bg-slate-bg/30 transition-all text-slate-text-primary font-bold cursor-pointer">
+                  <a
+                    href={part.datasheetUrl}
+                    onClick={(e) => handleDocumentClick(e, part.datasheetUrl, 'Technical Datasheet')}
+                    className="flex items-center justify-between p-3 border border-slate-border rounded-lg hover:border-cobalt hover:bg-slate-bg/30 transition-all text-slate-text-primary font-bold cursor-pointer"
+                  >
                     <span className="flex items-center gap-2"><span className="p-1 rounded bg-red-100 text-coral">PDF</span> Technical Datasheet</span>
                     <Download className="w-4 h-4 text-slate-text-muted" />
                   </a>
-                  <a href={`#cad-${part.cadFile}`} className="flex items-center justify-between p-3 border border-slate-border rounded-lg hover:border-cobalt hover:bg-slate-bg/30 transition-all text-slate-text-primary font-bold cursor-pointer">
+                  <a
+                    href={`#cad-${part.cadFile}`}
+                    onClick={(e) => handleDocumentClick(e, part.cadFile?.startsWith('http') ? part.cadFile : undefined, '3D Solid Model File')}
+                    className="flex items-center justify-between p-3 border border-slate-border rounded-lg hover:border-cobalt hover:bg-slate-bg/30 transition-all text-slate-text-primary font-bold cursor-pointer"
+                  >
                     <span className="flex items-center gap-2"><span className="p-1 rounded bg-blue-100 text-cobalt">STEP</span> 3D Solid Model File</span>
                     <Download className="w-4 h-4 text-slate-text-muted" />
                   </a>
