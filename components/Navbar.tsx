@@ -8,9 +8,10 @@ interface NavbarProps {
   onCartClick: () => void;
   onNavigateToRFQ: () => void;
   onNavigateToInventory: () => void;
+  onNavigateToServices: () => void;
 }
 
-export default function Navbar({ cartCount, onCartClick, onNavigateToRFQ, onNavigateToInventory }: NavbarProps) {
+export default function Navbar({ cartCount, onCartClick, onNavigateToRFQ, onNavigateToInventory, onNavigateToServices }: NavbarProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -47,6 +48,12 @@ export default function Navbar({ cartCount, onCartClick, onNavigateToRFQ, onNavi
             Parts Catalog
           </button>
           <button 
+            onClick={onNavigateToServices}
+            className="text-sm font-semibold text-slate-text-secondary hover:text-cobalt transition-colors duration-200 cursor-pointer"
+          >
+            Services & Capabilities
+          </button>
+          <button 
             onClick={onNavigateToRFQ}
             className="text-sm font-semibold text-slate-text-secondary hover:text-cobalt transition-colors duration-200 flex items-center gap-1.5 cursor-pointer"
           >
@@ -60,12 +67,6 @@ export default function Navbar({ cartCount, onCartClick, onNavigateToRFQ, onNavi
             className="text-sm font-semibold text-slate-text-secondary hover:text-cobalt transition-colors duration-200"
           >
             Specifications
-          </a>
-          <a 
-            href="#docs" 
-            className="text-sm font-semibold text-slate-text-secondary hover:text-cobalt transition-colors duration-200"
-          >
-            B2B Integration
           </a>
         </nav>
 

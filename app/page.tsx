@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '../components/Navbar';
 import { 
-  MOCK_PARTS, 
   MFG_PROCESSES, 
   MATERIALS, 
   FINISHES, 
   LEAD_TIMES, 
   Part 
 } from '../components/mockData';
+import { createClient } from '@/utils/supabase/client';
 import { 
   Cpu, 
   Search, 
@@ -70,6 +70,57 @@ interface SubmittedB2BOrder {
 }
 
 export default function Home() {
+  const [parts, setParts] = useState<Part[]>([]);
+  const [services, setServices] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const supabase = createClient();
+        
+        // Fetch products
+        const { data: productsData, error: productsError } = await supabase.from('products').select('*');
+        if (productsError) throw productsError;
+        
+        const mappedParts: Part[] = (productsData || []).map(p => ({
+          id: p.id,
+          partNumber: p.part_number,
+          title: p.title,
+          category: p.category as any,
+          price: Number(p.price),
+          stock: p.stock,
+          description: p.description || '',
+          gradientClass: p.gradient_class || '',
+          specs: p.specs || {},
+          bulkPricing: p.bulk_pricing || [],
+          datasheetUrl: p.datasheet_url || '',
+          cadFile: p.cad_file || '',
+          extendedSpecs: p.extended_specs || {
+            dimensions: '',
+            temperatureRange: '',
+            mtbf: '',
+            ingressProtection: ''
+          }
+        }));
+        setParts(mappedParts);
+
+        // Fetch services
+        const { data: servicesData, error: servicesError } = await supabase.from('services').select('*');
+        if (servicesError) throw servicesError;
+        setServices(servicesData || []);
+
+      } catch (err: any) {
+        console.error('Error loading data from Supabase:', err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
   // Navigation active tab / anchor helper
   const [activeTab, setActiveTab] = useState<'catalog' | 'rfq' | 'orders'>('catalog');
 
@@ -348,7 +399,7 @@ export default function Home() {
 
   // Catalog filtering logic
   const filteredParts = useMemo(() => {
-    let result = [...MOCK_PARTS];
+    let result = [...parts];
 
     // Search query
     if (searchQuery.trim() !== '') {
@@ -375,7 +426,7 @@ export default function Home() {
     }
 
     return result;
-  }, [searchQuery, selectedCategory, sortBy]);
+  }, [parts, searchQuery, selectedCategory, sortBy]);
 
   // Place B2B Order checkout trigger
   const handleCheckout = () => {
@@ -409,6 +460,7 @@ export default function Home() {
         onCartClick={() => setIsCartOpen(true)}
         onNavigateToRFQ={() => scrollToSection('rfq-section')}
         onNavigateToInventory={() => scrollToSection('inventory-section')}
+        onNavigateToServices={() => scrollToSection('services-section')}
       />
 
       {/* Main Body */}
@@ -576,7 +628,17 @@ export default function Home() {
           </div>
 
           {/* Dense CSS Grid */}
-          {filteredParts.length > 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="bg-slate-bg/30 border border-slate-border/50 rounded-xl p-5 h-72 flex flex-col justify-between space-y-4">
+                  <div className="h-40 bg-slate-border rounded-lg w-full"></div>
+                  <div className="h-4 bg-slate-border rounded w-3/4"></div>
+                  <div className="h-4 bg-slate-border rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          ) : filteredParts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredParts.map((part) => (
                 <div 
@@ -632,8 +694,8 @@ export default function Home() {
                     <div>
                       <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">UnitPrice</span>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-base font-extrabold text-coral">${part.price.toFixed(2)}</span>
-                        <span className="text-[10px] text-slate-text-muted font-bold">USD</span>
+                        <span className="text-base font-extrabold text-coral">₹{part.price.toFixed(2)}</span>
+                        <span className="text-[10px] text-slate-text-muted font-bold">INR</span>
                       </div>
                     </div>
 
@@ -654,6 +716,88 @@ export default function Home() {
                 <p className="text-sm font-bold text-slate-text-primary">No parts found matching query</p>
                 <p className="text-xs text-slate-text-muted">Try looking for different parameters, categories or clear filters.</p>
               </div>
+            </div>
+          )}
+        </section>
+
+        {/* SECTION: B2B SERVICES */}
+        <section id="services-section" className="space-y-6">
+          <div className="border-b border-slate-border pb-4">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald">Capabilities</span>
+            <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">On-Demand B2B Services</h2>
+            <p className="text-xs text-slate-text-muted font-medium">Partner with our certified engineering team and state-of-the-art facilities for high-precision mechatronics assembly, CNC milling, SLA/SLS 3D printing, and design consultation.</p>
+          </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="h-64 bg-slate-bg/30 border border-slate-border/50 rounded-2xl p-6 space-y-4">
+                  <div className="flex justify-between">
+                    <div className="h-4 bg-slate-border w-20 rounded"></div>
+                    <div className="h-4 bg-slate-border w-16 rounded"></div>
+                  </div>
+                  <div className="h-6 bg-slate-border w-3/4 rounded"></div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-slate-border w-full rounded"></div>
+                    <div className="h-4 bg-slate-border w-5/6 rounded"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {services.map((service) => (
+                <div 
+                  key={service.id} 
+                  className={`relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 ${service.gradient_class || 'border-slate-border/80'}`}
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-emerald/5 text-emerald border-emerald/20">
+                        {service.category}
+                      </span>
+                      <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-text-muted">
+                        {service.lead_time}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-bold text-slate-text-primary tracking-tight">{service.title}</h3>
+                      <p className="text-xs text-slate-text-secondary leading-relaxed font-medium">
+                        {service.description}
+                      </p>
+                    </div>
+
+                    {service.features && Array.isArray(service.features) && service.features.length > 0 && (
+                      <ul className="space-y-1.5 text-[11px] text-slate-text-secondary font-medium">
+                        {service.features.map((feature: any, idx: number) => (
+                          <li key={idx} className="flex items-start gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald shrink-0 mt-0.5" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div className="pt-6 border-t border-slate-border/50 mt-6 flex items-center justify-between">
+                    <div>
+                      <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Base Price</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-base font-extrabold text-slate-text-primary">₹{Number(service.base_price).toFixed(2)}</span>
+                        <span className="text-[10px] text-slate-text-muted font-bold">INR</span>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={() => scrollToSection('rfq-section')}
+                      className="btn-emerald text-xs font-bold px-3.5 py-2 rounded-lg cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                    >
+                      Configure RFQ <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </section>
@@ -910,15 +1054,15 @@ export default function Home() {
                       </span>
                     </div>
                     <div>
-                      <span className="block text-[8px] uppercase tracking-wider text-slate-text-muted font-bold">Unit Price</span>
+                      <span className="block text-[8px] uppercase tracking-wider text-slate-text-muted font-bold">Unit Price (INR)</span>
                       <span className="text-sm font-extrabold text-slate-text-primary text-cobalt">
-                        {rfqFile ? `$${rfqCalculations.unitPrice.toFixed(2)}` : '—'}
+                        {rfqFile ? `₹${rfqCalculations.unitPrice.toFixed(2)}` : '—'}
                       </span>
                     </div>
                     <div>
                       <span className="block text-[8px] uppercase tracking-wider text-slate-text-muted font-bold">Estimated Total</span>
                       <span className="text-sm font-extrabold text-coral">
-                        {rfqFile ? `$${rfqCalculations.totalPrice.toLocaleString()}` : '—'}
+                        {rfqFile ? `₹${rfqCalculations.totalPrice.toLocaleString()}` : '—'}
                       </span>
                     </div>
                   </div>
@@ -956,7 +1100,7 @@ export default function Home() {
                     <th className="p-4">Submission Date</th>
                     <th className="p-4">Type</th>
                     <th className="p-4">Components</th>
-                    <th className="p-4">Total Price (USD)</th>
+                    <th className="p-4">Total Price (INR)</th>
                     <th className="p-4">Logistics Status</th>
                     <th className="p-4 pr-6 text-right">Actions</th>
                   </tr>
@@ -1168,10 +1312,10 @@ export default function Home() {
                       {/* Financial info */}
                       <div className="text-right">
                         <div className="text-[10px] text-slate-text-muted">
-                          ${item.pricePerUnit.toFixed(2)}/unit
+                          ₹{item.pricePerUnit.toFixed(2)}/unit
                         </div>
                         <div className="text-xs font-bold text-slate-text-primary">
-                          ${(item.pricePerUnit * item.quantity).toFixed(2)}
+                          ₹{(item.pricePerUnit * item.quantity).toFixed(2)}
                         </div>
                       </div>
                     </div>
@@ -1220,7 +1364,7 @@ export default function Home() {
 
                 <div className="border-t border-slate-border/50 my-1 pt-2 flex justify-between text-slate-text-primary text-sm font-extrabold">
                   <span>Total Purchase Order</span>
-                  <span className="text-coral">${cartSummary.total.toFixed(2)} USD</span>
+                  <span className="text-coral">₹{cartSummary.total.toFixed(2)} INR</span>
                 </div>
               </div>
 
@@ -1395,8 +1539,8 @@ export default function Home() {
                             Order {tier.minQty}{tier.maxQty ? ` to ${tier.maxQty}` : '+'} units
                           </span>
                           <div className="text-right">
-                            <span className="text-xs font-extrabold text-emerald">${tier.pricePerUnit.toFixed(2)}</span>
-                            <span className="text-[9px] text-slate-text-muted block font-bold">USD/unit</span>
+                            <span className="text-xs font-extrabold text-emerald">₹{tier.pricePerUnit.toFixed(2)}</span>
+                            <span className="text-[9px] text-slate-text-muted block font-bold">INR/unit</span>
                           </div>
                         </div>
                       ))}
@@ -1453,12 +1597,12 @@ export default function Home() {
               {/* Bottom Quantity Select & Add to Cart */}
               <div className="p-6 border-t border-slate-border bg-slate-bg/50 flex items-center justify-between gap-4">
                 <div>
-                  <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Qty Price</span>
+                  <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Qty Price (INR)</span>
                   <div className="flex items-baseline gap-1">
                     <span className="text-lg font-extrabold text-coral">
-                      ${(getPartPriceForQuantity(selectedPart, modalQuantity) * modalQuantity).toFixed(2)}
+                      ₹{(getPartPriceForQuantity(selectedPart, modalQuantity) * modalQuantity).toFixed(2)}
                     </span>
-                    <span className="text-[9px] text-slate-text-muted font-bold">USD</span>
+                    <span className="text-[9px] text-slate-text-muted font-bold">INR</span>
                   </div>
                 </div>
 
@@ -1524,8 +1668,8 @@ export default function Home() {
                 <span className="text-slate-text-primary font-mono font-bold">{lastPlacedOrder.orderId}</span>
               </div>
               <div className="flex justify-between font-medium">
-                <span className="text-slate-text-muted">PO Total (USD):</span>
-                <span className="text-slate-text-primary font-bold">${lastPlacedOrder.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="text-slate-text-muted">PO Total (INR):</span>
+                <span className="text-slate-text-primary font-bold">₹{lastPlacedOrder.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between font-medium">
                 <span className="text-slate-text-muted">Payment Term:</span>
