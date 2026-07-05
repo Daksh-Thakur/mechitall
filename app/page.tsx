@@ -96,15 +96,15 @@ export default function Home() {
           <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-cobalt/8 to-emerald/5 rounded-full blur-3xl pointer-events-none -mr-40 -mt-40" />
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-emerald/5 to-cobalt/5 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
-          <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 flex flex-col md:flex-row items-center gap-16 relative z-10">
+          <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 flex flex-col md:flex-row items-center gap-16 relative z-10" style={{ paddingTop: '20px' }}>
             <div className="flex-1 space-y-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cobalt/5 border border-cobalt/15 text-cobalt text-[11px] font-bold">
+              {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cobalt/5 border border-cobalt/15 text-cobalt text-[11px] font-bold">
                 <span className="flex h-2 w-2 relative">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cobalt opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-cobalt"></span>
                 </span>
                 ISO 9001:2015 Certified · Free Shipping above ₹5,000
-              </div>
+              </div>*/}
 
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-text-primary leading-[1.02]">
                 Shop Premium<br />
@@ -137,7 +137,7 @@ export default function Home() {
               {/* Stats */}
               <div className="border-t border-slate-border/60 pt-8 grid grid-cols-3 gap-8">
                 <div>
-                  <span className="block text-2xl md:text-3xl font-extrabold text-cobalt">24–48 hrs</span>
+                  <span className="block text-2xl md:text-3xl font-extrabold text-cobalt">2 - 4 days</span>
                   <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold mt-0.5">Avg. Delivery</span>
                 </div>
                 <div>
@@ -178,7 +178,7 @@ export default function Home() {
                 </div>
                 <div className="bg-cobalt/5 border border-cobalt/15 p-3 rounded-xl flex items-start gap-2 text-[10px] text-slate-text-secondary leading-relaxed">
                   <Info className="w-4 h-4 text-cobalt flex-shrink-0 mt-0.5" />
-                  <span>Free shipping on orders above ₹5,000. 7-day easy returns on all standard parts.</span>
+                  <span>Free shipping on orders above ₹2,000. 7-day easy returns on all standard parts.</span>
                 </div>
               </div>
             </div>

@@ -71,7 +71,7 @@ export default function ProductsPage() {
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans flex flex-col">
       <Navbar />
 
-      {/* Page Header */}
+      {/* Page Header 
       <div className="bg-white border-b border-slate-border">
         <div className="max-w-7xl mx-auto px-6 py-10">
           <span className="text-[10px] font-bold uppercase tracking-widest text-cobalt">In-Stock Products</span>
@@ -81,8 +81,8 @@ export default function ProductsPage() {
           </p>
         </div>
       </div>
-
-      <main className="max-w-7xl mx-auto px-6 py-10 flex-1 space-y-6">
+*/}
+      <main className="max-w-7xl mx-auto px-6 py-4 flex-1 space-y-6">
         {/* Filters Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-slate-border shadow-sm">
           {/* Search */}
@@ -136,7 +136,7 @@ export default function ProductsPage() {
         </div>
 
         {/* Results count */}
-        <div className="flex items-center justify-between text-xs font-bold text-slate-text-muted bg-white px-4 py-2.5 rounded-lg border border-slate-border/50">
+        <div className="flex items-center justify-between text-xs font-bold text-slate-text-muted bg-white px-4 py-1 rounded-lg border border-slate-border/50">
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Showing {filteredParts.length} of {parts.length} parts</span>
