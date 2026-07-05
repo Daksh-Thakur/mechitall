@@ -71,6 +71,15 @@ export default function MachiningMarketplacePage() {
     loadData();
   }, []);
 
+  // Automatically determine buyer/seller active view based on profile setting
+  useEffect(() => {
+    if (profile) {
+      setActiveView(profile.is_seller ? 'seller' : 'buyer');
+    } else {
+      setActiveView('buyer');
+    }
+  }, [profile]);
+
   // Load quotes based on user profile and active role view
   useEffect(() => {
     async function loadQuotes() {
@@ -237,36 +246,6 @@ export default function MachiningMarketplacePage() {
             </p>
           </div>
 
-          {/* View Toggler */}
-          <div className="flex bg-white border border-slate-border rounded-xl p-1 shadow-sm font-bold text-xs select-none">
-            <button
-              onClick={() => setActiveView('buyer')}
-              className={`px-4 py-2 rounded-lg cursor-pointer transition-all ${
-                activeView === 'buyer'
-                  ? 'bg-slate-text-primary text-white shadow-sm'
-                  : 'text-slate-text-secondary hover:text-slate-text-primary'
-              }`}
-            >
-              Buyer View (Request RFQs)
-            </button>
-            <button
-              onClick={() => {
-                if (!profile) {
-                  showToast('Please sign in to view seller dashboard.', 'error');
-                  router.push('/login');
-                  return;
-                }
-                setActiveView('seller');
-              }}
-              className={`px-4 py-2 rounded-lg cursor-pointer transition-all ${
-                activeView === 'seller'
-                  ? 'bg-slate-text-primary text-white shadow-sm'
-                  : 'text-slate-text-secondary hover:text-slate-text-primary'
-              }`}
-            >
-              Seller View (List Capacities)
-            </button>
-          </div>
         </div>
 
         {/* ==========================================

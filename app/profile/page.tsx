@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useCart } from '@/components/CartProvider';
-import { getProfileOrders, getProfileTransactions, updateProfileName, Profile, BoltsTransaction } from '@/app/actions/rewards';
+import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, Profile, BoltsTransaction } from '@/app/actions/rewards';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
@@ -32,6 +32,22 @@ export default function ProfilePage() {
   // Profile Edit fields
   const [editName, setEditName] = useState('');
   const [isUpdatingName, startTransition] = useTransition();
+  const [togglingSeller, setTogglingSeller] = useState(false);
+
+  const handleToggleSellerMode = async () => {
+    if (!profile) return;
+    setTogglingSeller(true);
+    try {
+      const nextState = !profile.is_seller;
+      await toggleProfileSellerMode(profile.id, nextState);
+      showToast(nextState ? 'Seller Mode Activated!' : 'Seller Mode Deactivated.', 'success');
+      await fetchProfile();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to toggle Seller Mode.', 'error');
+    } finally {
+      setTogglingSeller(false);
+    }
+  };
 
   // Connection timeout checker
   useEffect(() => {
@@ -278,14 +294,29 @@ export default function ProfilePage() {
             </nav>
           </div>
 
-          {/* Switch to Seller Button */}
-          <div className="pt-6 border-t border-slate-border mt-8">
+          {/* Switch/Activate Seller Mode */}
+          <div className="pt-6 border-t border-slate-border mt-8 space-y-2">
+            <div className="flex justify-between items-center text-[10px] font-bold text-slate-text-secondary">
+              <span>Seller Account</span>
+              <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                profile.is_seller 
+                  ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20' 
+                  : 'bg-slate-bg text-slate-text-muted border'
+              }`}>
+                {profile.is_seller ? 'Active' : 'Inactive'}
+              </span>
+            </div>
             <button
-              onClick={() => showToast('Seller panel integration active in release builds.', 'success')}
-              className="w-full border border-slate-border text-slate-text-secondary hover:text-slate-text-primary hover:border-slate-text-primary transition-all py-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer bg-slate-bg/30"
+              disabled={togglingSeller}
+              onClick={handleToggleSellerMode}
+              className={`w-full transition-all py-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer ${
+                profile.is_seller
+                  ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
+                  : 'border border-slate-border text-slate-text-secondary hover:text-slate-text-primary hover:border-slate-text-primary bg-slate-bg/30'
+              }`}
             >
               <ArrowLeftRight className="w-4 h-4 shrink-0" />
-              <span>Switch to Seller</span>
+              <span>{profile.is_seller ? 'Deactivate Seller Mode' : 'Activate Seller Mode'}</span>
             </button>
           </div>
         </aside>

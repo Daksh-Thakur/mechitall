@@ -10,6 +10,7 @@ export interface Profile {
   full_name: string;
   wallet_balance: number;
   loyalty_tier: 'Tinkerer' | 'Master Builder';
+  is_seller?: boolean;
   created_at: string;
 }
 
@@ -489,6 +490,27 @@ export async function updateProfileName(profileId: string, fullName: string) {
   const { data, error } = await supabase
     .from('profiles')
     .update({ full_name: fullName, updated_at: new Date().toISOString() })
+    .eq('id', profileId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as Profile;
+}
+
+/**
+ * Toggles seller mode for the user profile.
+ */
+export async function toggleProfileSellerMode(profileId: string, isSeller: boolean) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ is_seller: isSeller, updated_at: new Date().toISOString() })
     .eq('id', profileId)
     .select()
     .single();
