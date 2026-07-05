@@ -113,9 +113,6 @@ export async function requestMachiningQuote(
   serviceId: string,
   data: {
     cadFileName: string;
-    quantity: number;
-    material: string;
-    finish: string;
   }
 ) {
   const cookieStore = await cookies();
@@ -128,9 +125,9 @@ export async function requestMachiningQuote(
         buyer_profile_id: buyerProfileId,
         service_id: serviceId,
         cad_file_name: data.cadFileName,
-        quantity: data.quantity,
-        selected_material: data.material,
-        selected_finish: data.finish,
+        quantity: 1, // Default pending review
+        selected_material: 'Pending Review',
+        selected_finish: 'Pending Review',
         status: 'Pending',
       },
     ])
@@ -223,15 +220,27 @@ export async function getSubmittedQuotes(buyerProfileId: string) {
 /**
  * Allows a seller to submit a price offer for a quote request.
  */
-export async function submitQuoteOffer(quoteId: string, price: number, notes: string) {
+export async function submitQuoteOffer(
+  quoteId: string,
+  data: {
+    price: number;
+    notes: string;
+    quantity: number;
+    material: string;
+    finish: string;
+  }
+) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
   const { data: quote, error } = await supabase
     .from('machining_quotes')
     .update({
-      offer_price: price,
-      seller_notes: notes,
+      offer_price: data.price,
+      seller_notes: data.notes,
+      quantity: data.quantity,
+      selected_material: data.material,
+      selected_finish: data.finish,
       status: 'Offered',
     })
     .eq('id', quoteId)

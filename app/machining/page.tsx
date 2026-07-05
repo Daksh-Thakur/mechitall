@@ -49,6 +49,9 @@ export default function MachiningMarketplacePage() {
   // Seller: Submit Offer state
   const [quotingItem, setQuotingItem] = useState<MachiningQuote | null>(null);
   const [offerPrice, setOfferPrice] = useState(0);
+  const [offerQuantity, setOfferQuantity] = useState(1);
+  const [offerMaterial, setOfferMaterial] = useState('');
+  const [offerFinish, setOfferFinish] = useState('');
   const [sellerNotes, setSellerNotes] = useState('');
   const [submittingOffer, setSubmittingOffer] = useState(false);
 
@@ -90,16 +93,16 @@ export default function MachiningMarketplacePage() {
     loadQuotes();
   }, [profile, activeView]);
 
-  // Handle buyer submitting quote config
+  // Handle buyer sharing design file directly
   const handleQuoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) {
-      showToast('Please sign in to request quotes.', 'error');
+      showToast('Please sign in to share designs.', 'error');
       router.push('/login');
       return;
     }
-    if (!selectedService || !cadFileName || !selectedMaterial || !selectedFinish || quantity < 1) {
-      showToast('Please configure all required custom specs.', 'error');
+    if (!selectedService || !cadFileName) {
+      showToast('Please specify a CAD design file name.', 'error');
       return;
     }
 
@@ -107,12 +110,9 @@ export default function MachiningMarketplacePage() {
     try {
       await requestMachiningQuote(profile.id, selectedService.id, {
         cadFileName,
-        quantity,
-        material: selectedMaterial,
-        finish: selectedFinish,
       });
 
-      showToast('RFQ quote request submitted successfully!', 'success');
+      showToast('Design file shared with seller! Awaiting custom pricing quote.', 'success');
       setSelectedService(null);
       setCadFileName('');
       
@@ -120,7 +120,7 @@ export default function MachiningMarketplacePage() {
       const quotes = await getSubmittedQuotes(profile.id);
       setBuyerQuotes(quotes);
     } catch (err: any) {
-      showToast(err.message || 'Failed to submit quote request.', 'error');
+      showToast(err.message || 'Failed to submit request.', 'error');
     } finally {
       setSubmittingQuote(false);
     }
@@ -170,17 +170,23 @@ export default function MachiningMarketplacePage() {
     }
   };
 
-  // Handle seller making price offer on quote
+  // Handle seller making custom pricing quote offer
   const handleOfferSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quotingItem || offerPrice <= 0) {
-      showToast('Please specify a valid pricing offer.', 'error');
+    if (!quotingItem || offerPrice <= 0 || !offerMaterial || !offerFinish || offerQuantity < 1) {
+      showToast('Please fill in all offer details.', 'error');
       return;
     }
 
     setSubmittingOffer(true);
     try {
-      await submitQuoteOffer(quotingItem.id, offerPrice, sellerNotes);
+      await submitQuoteOffer(quotingItem.id, {
+        price: offerPrice,
+        notes: sellerNotes,
+        quantity: offerQuantity,
+        material: offerMaterial,
+        finish: offerFinish,
+      });
       showToast('Pricing offer sent to buyer!', 'success');
       setQuotingItem(null);
       setSellerNotes('');
@@ -529,7 +535,13 @@ export default function MachiningMarketplacePage() {
 
                       {quote.status === 'Pending' && (
                         <button
-                          onClick={() => setQuotingItem(quote)}
+                          onClick={() => {
+                            const service = services.find(s => s.id === quote.service_id);
+                            setQuotingItem(quote);
+                            setOfferQuantity(1);
+                            setOfferMaterial(service?.material_capabilities[0] || 'Aluminium 6061');
+                            setOfferFinish(service?.finish_options[0] || 'As-Machined');
+                          }}
                           className="btn-cobalt text-xs font-bold py-2.5 w-full rounded-lg text-center cursor-pointer flex items-center justify-center gap-1"
                         >
                           <Send className="w-3.5 h-3.5" /> Submit Pricing Offer
@@ -557,16 +569,13 @@ export default function MachiningMarketplacePage() {
 
       </main>
 
-      {/* ==========================================
-          MODAL 1: BUYER CONFIGURE RFQ DIALOG
-          ========================================== */}
       {selectedService && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white border border-slate-border rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-5 animate-slide-in">
             <div className="flex justify-between items-start">
               <div>
                 <span className="text-[8px] font-black uppercase tracking-wider text-cobalt">{selectedService.process_type}</span>
-                <h3 className="text-base font-black text-slate-text-primary tracking-tight">Configure Custom RFQ</h3>
+                <h3 className="text-base font-black text-slate-text-primary tracking-tight">Share Design File</h3>
               </div>
               <button 
                 onClick={() => setSelectedService(null)} 
@@ -580,7 +589,7 @@ export default function MachiningMarketplacePage() {
 
             <form onSubmit={handleQuoteSubmit} className="space-y-4 text-xs font-bold">
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Select CAD Design File (STEP, STL, IGES)</label>
+                <label className="block text-[10px] text-slate-text-secondary uppercase">CAD Design File Name (STEP, STL, IGES)</label>
                 <input
                   type="text"
                   required
@@ -591,42 +600,11 @@ export default function MachiningMarketplacePage() {
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Select Material Capability</label>
-                <select
-                  value={selectedMaterial}
-                  onChange={(e) => setSelectedMaterial(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
-                >
-                  {selectedService.material_capabilities.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Select Surface Finish</label>
-                <select
-                  value={selectedFinish}
-                  onChange={(e) => setSelectedFinish(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
-                >
-                  {selectedService.finish_options.map((f) => (
-                    <option key={f} value={f}>{f}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Quantity (Units)</label>
-                <input
-                  type="number"
-                  required
-                  min={1}
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                  className="w-full p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary"
-                />
+              <div className="bg-slate-bg/50 border border-slate-border p-3 rounded-lg text-[10px] text-slate-text-secondary font-semibold leading-relaxed">
+                <div className="text-cobalt flex items-center gap-1 mb-1">
+                  <Info className="w-3.5 h-3.5" /> Note to Buyer
+                </div>
+                Your file will be shared directly with the service provider. They will evaluate geometry, recommended materials, and generate a customized price quote offer.
               </div>
 
               <button
@@ -634,7 +612,7 @@ export default function MachiningMarketplacePage() {
                 disabled={submittingQuote}
                 className="w-full btn-cobalt py-3.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
-                {submittingQuote ? 'Submitting request...' : 'Submit Request'}
+                {submittingQuote ? 'Sharing CAD file...' : 'Share Design File'}
               </button>
             </form>
           </div>
@@ -649,7 +627,7 @@ export default function MachiningMarketplacePage() {
           <div className="bg-white border border-slate-border rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-5 animate-slide-in">
             <div className="flex justify-between items-start">
               <div>
-                <span className="text-[8px] font-black uppercase tracking-wider text-cobalt">Submit Pricing Offer</span>
+                <span className="text-[8px] font-black uppercase tracking-wider text-cobalt">Generate Customized Quote</span>
                 <h3 className="text-base font-black text-slate-text-primary tracking-tight">RFQ: {quotingItem.cad_file_name}</h3>
               </div>
               <button 
@@ -663,9 +641,42 @@ export default function MachiningMarketplacePage() {
             </div>
 
             <form onSubmit={handleOfferSubmit} className="space-y-4 text-xs font-bold">
-              <div className="bg-slate-bg/50 border p-3 rounded-lg space-y-1 text-slate-text-secondary text-[11px] leading-relaxed">
-                <div>Requested Quantity: <span className="font-bold text-slate-text-primary">{quotingItem.quantity} units</span></div>
-                <div>Material/Finish: <span className="font-semibold text-slate-text-primary">{quotingItem.selected_material} ({quotingItem.selected_finish})</span></div>
+              <div className="space-y-1">
+                <label className="block text-[10px] text-slate-text-secondary uppercase">Recommended Material</label>
+                <select
+                  value={offerMaterial}
+                  onChange={(e) => setOfferMaterial(e.target.value)}
+                  className="w-full p-3 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                >
+                  {(services.find(s => s.id === quotingItem.service_id)?.material_capabilities || ['Aluminium 6061']).map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] text-slate-text-secondary uppercase">Recommended Surface Finish</label>
+                <select
+                  value={offerFinish}
+                  onChange={(e) => setOfferFinish(e.target.value)}
+                  className="w-full p-3 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                >
+                  {(services.find(s => s.id === quotingItem.service_id)?.finish_options || ['As-Machined']).map((f) => (
+                    <option key={f} value={f}>{f}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] text-slate-text-secondary uppercase">Quantity (Units)</label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  value={offerQuantity}
+                  onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
+                  className="w-full p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary"
+                />
               </div>
 
               <div className="space-y-1">
@@ -684,7 +695,8 @@ export default function MachiningMarketplacePage() {
                 <label className="block text-[10px] text-slate-text-secondary uppercase">Seller Audit / Inspection Notes</label>
                 <textarea
                   rows={3}
-                  placeholder="Specify material specifications validation or CNC setup requirements..."
+                  required
+                  placeholder="Explain tolerances, toolpath checks, or recommended design revisions..."
                   value={sellerNotes}
                   onChange={(e) => setSellerNotes(e.target.value)}
                   className="w-full p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary resize-none"
@@ -696,7 +708,7 @@ export default function MachiningMarketplacePage() {
                 disabled={submittingOffer}
                 className="w-full btn-cobalt py-3.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
-                {submittingOffer ? 'Submitting offer...' : 'Send Offer to Buyer'}
+                {submittingOffer ? 'Submitting offer...' : 'Send Custom Quote to Buyer'}
               </button>
             </form>
           </div>
