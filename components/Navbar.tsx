@@ -36,7 +36,7 @@ export default function Navbar() {
     window.location.href = '/';
   };
 
-  const navLinks = [
+  const navLinks: { href: string; label: string; badge?: string }[] = [
     { href: '/products', label: 'Parts Catalog' },
     { href: '/community', label: 'Community' },
   ];
