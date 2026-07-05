@@ -1,0 +1,709 @@
+'use client';
+
+import React, { useState, useEffect, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
+import { useCart } from '@/components/CartProvider';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import { 
+  getMachiningServices, listMachiningService, requestMachiningQuote, 
+  getIncomingQuotes, getSubmittedQuotes, submitQuoteOffer, acceptQuoteOffer,
+  MachiningService, MachiningQuote 
+} from '@/app/actions/marketplace';
+import { 
+  Cpu, FileUp, Settings, Plus, Sparkles, CheckCircle2, Clock, 
+  HelpCircle, ShieldCheck, ShoppingBag, Send, AlertTriangle, Layers, ChevronRight
+} from 'lucide-react';
+
+export default function MachiningMarketplacePage() {
+  const router = useRouter();
+  const supabase = createClient();
+  const { profile, showToast } = useCart();
+
+  const [activeView, setActiveView] = useState<'buyer' | 'seller'>('buyer');
+  const [services, setServices] = useState<MachiningService[]>([]);
+  const [buyerQuotes, setBuyerQuotes] = useState<MachiningQuote[]>([]);
+  const [sellerQuotes, setSellerQuotes] = useState<MachiningQuote[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
+  const [loadingQuotes, setLoadingQuotes] = useState(true);
+
+  // Quote Configurator Modal state
+  const [selectedService, setSelectedService] = useState<MachiningService | null>(null);
+  const [cadFileName, setCadFileName] = useState('');
+  const [selectedMaterial, setSelectedMaterial] = useState('');
+  const [selectedFinish, setSelectedFinish] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [submittingQuote, setSubmittingQuote] = useState(false);
+
+  // Seller: Add Service Listing state
+  const [newTitle, setNewTitle] = useState('');
+  const [newProcess, setNewProcess] = useState<'CNC Machining' | '3D Printing' | 'Sheet Metal' | 'Laser Cutting'>('CNC Machining');
+  const [newDescription, setNewDescription] = useState('');
+  const [newBasePrice, setNewBasePrice] = useState(100);
+  const [newLeadTime, setNewLeadTime] = useState('5 business days');
+  const [newMaterials, setNewMaterials] = useState('');
+  const [newFinishes, setNewFinishes] = useState('');
+  const [listingService, setListingService] = useState(false);
+
+  // Seller: Submit Offer state
+  const [quotingItem, setQuotingItem] = useState<MachiningQuote | null>(null);
+  const [offerPrice, setOfferPrice] = useState(0);
+  const [sellerNotes, setSellerNotes] = useState('');
+  const [submittingOffer, setSubmittingOffer] = useState(false);
+
+  // Load services and user-specific quotes
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setLoadingServices(true);
+        const activeServices = await getMachiningServices();
+        setServices(activeServices);
+      } catch (err) {
+        console.error('Failed to load services:', err);
+      } finally {
+        setLoadingServices(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  // Load quotes based on user profile and active role view
+  useEffect(() => {
+    async function loadQuotes() {
+      if (!profile) return;
+      try {
+        setLoadingQuotes(true);
+        if (activeView === 'buyer') {
+          const quotes = await getSubmittedQuotes(profile.id);
+          setBuyerQuotes(quotes);
+        } else {
+          const quotes = await getIncomingQuotes(profile.id);
+          setSellerQuotes(quotes);
+        }
+      } catch (err) {
+        console.error('Failed to load quotes details:', err);
+      } finally {
+        setLoadingQuotes(false);
+      }
+    }
+    loadQuotes();
+  }, [profile, activeView]);
+
+  // Handle buyer submitting quote config
+  const handleQuoteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile) {
+      showToast('Please sign in to request quotes.', 'error');
+      router.push('/login');
+      return;
+    }
+    if (!selectedService || !cadFileName || !selectedMaterial || !selectedFinish || quantity < 1) {
+      showToast('Please configure all required custom specs.', 'error');
+      return;
+    }
+
+    setSubmittingQuote(true);
+    try {
+      await requestMachiningQuote(profile.id, selectedService.id, {
+        cadFileName,
+        quantity,
+        material: selectedMaterial,
+        finish: selectedFinish,
+      });
+
+      showToast('RFQ quote request submitted successfully!', 'success');
+      setSelectedService(null);
+      setCadFileName('');
+      
+      // Refresh buyer quotes
+      const quotes = await getSubmittedQuotes(profile.id);
+      setBuyerQuotes(quotes);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to submit quote request.', 'error');
+    } finally {
+      setSubmittingQuote(false);
+    }
+  };
+
+  // Handle seller creating new service listing
+  const handleListServiceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!profile) {
+      showToast('Please sign in to list services.', 'error');
+      router.push('/login');
+      return;
+    }
+    if (!newTitle || !newDescription || newBasePrice < 0 || !newLeadTime) {
+      showToast('Please fill in listing requirements.', 'error');
+      return;
+    }
+
+    setListingService(true);
+    try {
+      const materialList = newMaterials.split(',').map((m) => m.trim()).filter(Boolean);
+      const finishList = newFinishes.split(',').map((f) => f.trim()).filter(Boolean);
+
+      await listMachiningService(profile.id, {
+        title: newTitle,
+        processType: newProcess,
+        description: newDescription,
+        basePrice: newBasePrice,
+        leadTime: newLeadTime,
+        materials: materialList.length > 0 ? materialList : ['Aluminium 6061', 'Stainless Steel 304'],
+        finishes: finishList.length > 0 ? finishList : ['As-Machined', 'Anodized'],
+      });
+
+      showToast('Machining capability listed successfully!', 'success');
+      setNewTitle('');
+      setNewDescription('');
+      setNewMaterials('');
+      setNewFinishes('');
+      
+      // Refresh services listing
+      const activeServices = await getMachiningServices();
+      setServices(activeServices);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to list machining capability.', 'error');
+    } finally {
+      setListingService(false);
+    }
+  };
+
+  // Handle seller making price offer on quote
+  const handleOfferSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quotingItem || offerPrice <= 0) {
+      showToast('Please specify a valid pricing offer.', 'error');
+      return;
+    }
+
+    setSubmittingOffer(true);
+    try {
+      await submitQuoteOffer(quotingItem.id, offerPrice, sellerNotes);
+      showToast('Pricing offer sent to buyer!', 'success');
+      setQuotingItem(null);
+      setSellerNotes('');
+      setOfferPrice(0);
+
+      // Refresh incoming quotes
+      if (profile) {
+        const quotes = await getIncomingQuotes(profile.id);
+        setSellerQuotes(quotes);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to submit quote offer.', 'error');
+    } finally {
+      setSubmittingOffer(false);
+    }
+  };
+
+  // Handle buyer accepting seller quote offer
+  const handleAcceptOffer = async (quoteId: string) => {
+    try {
+      const res = await acceptQuoteOffer(quoteId);
+      showToast(`Offer accepted! Order ${res.orderId} logged.`, 'success');
+      
+      // Refresh buyer quotes
+      if (profile) {
+        const quotes = await getSubmittedQuotes(profile.id);
+        setBuyerQuotes(quotes);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to accept quote offer.', 'error');
+    }
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen bg-slate-bg font-sans">
+      <Navbar />
+
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-10 w-full space-y-8">
+        {/* Marketplace Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-slate-border">
+          <div className="space-y-1">
+            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-cobalt bg-cobalt/5 border border-cobalt/20 px-2.5 py-0.5 rounded-full">
+              <Sparkles className="w-3.5 h-3.5" /> Machining Marketplace
+            </span>
+            <h1 className="text-3xl font-black text-slate-text-primary tracking-tight">On-Demand Manufacturing Hub</h1>
+            <p className="text-xs text-slate-text-muted font-semibold max-w-2xl leading-relaxed">
+              Connect directly with verified local fabrication facilities. List your machining capacities as a seller or upload custom 3D design files as a buyer to receive instant quoting audits.
+            </p>
+          </div>
+
+          {/* View Toggler */}
+          <div className="flex bg-white border border-slate-border rounded-xl p-1 shadow-sm font-bold text-xs select-none">
+            <button
+              onClick={() => setActiveView('buyer')}
+              className={`px-4 py-2 rounded-lg cursor-pointer transition-all ${
+                activeView === 'buyer'
+                  ? 'bg-slate-text-primary text-white shadow-sm'
+                  : 'text-slate-text-secondary hover:text-slate-text-primary'
+              }`}
+            >
+              Buyer View (Request RFQs)
+            </button>
+            <button
+              onClick={() => {
+                if (!profile) {
+                  showToast('Please sign in to view seller dashboard.', 'error');
+                  router.push('/login');
+                  return;
+                }
+                setActiveView('seller');
+              }}
+              className={`px-4 py-2 rounded-lg cursor-pointer transition-all ${
+                activeView === 'seller'
+                  ? 'bg-slate-text-primary text-white shadow-sm'
+                  : 'text-slate-text-secondary hover:text-slate-text-primary'
+              }`}
+            >
+              Seller View (List Capacities)
+            </button>
+          </div>
+        </div>
+
+        {/* ==========================================
+            BUYER VIEW: SERVICES & QUOTE SUBMISSIONS
+            ========================================== */}
+        {activeView === 'buyer' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            
+            {/* Listed Machining Capabilities (Left) */}
+            <div className="lg:col-span-2 space-y-6">
+              <h2 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">Available Seller Capabilities</h2>
+
+              {loadingServices ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse">
+                  {[1, 2].map((n) => (
+                    <div key={n} className="h-44 bg-white border border-slate-border rounded-xl"></div>
+                  ))}
+                </div>
+              ) : services.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {services.map((service) => (
+                    <div 
+                      key={service.id}
+                      onClick={() => {
+                        setSelectedService(service);
+                        setSelectedMaterial(service.material_capabilities[0] || '');
+                        setSelectedFinish(service.finish_options[0] || '');
+                      }}
+                      className="bg-white border border-slate-border rounded-xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer flex flex-col justify-between h-52 group"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <span className="px-2 py-0.5 rounded border text-[8px] font-black uppercase tracking-wider bg-cobalt/5 text-cobalt border-cobalt/10">
+                            {service.process_type}
+                          </span>
+                          <span className="text-[9px] font-bold text-slate-text-muted flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5" /> {service.lead_time}
+                          </span>
+                        </div>
+
+                        <h3 className="text-sm font-black text-slate-text-primary leading-tight group-hover:text-cobalt transition-colors">
+                          {service.title}
+                        </h3>
+                        <p className="text-xs text-slate-text-muted leading-relaxed line-clamp-2">{service.description}</p>
+                      </div>
+
+                      <div className="pt-3 border-t border-slate-border/50 flex items-center justify-between mt-3">
+                        <div className="text-left">
+                          <span className="block text-[8px] uppercase tracking-wider text-slate-text-muted font-bold">Base setup fee</span>
+                          <span className="text-sm font-black text-coral">₹{Number(service.base_price).toFixed(2)}</span>
+                        </div>
+                        <span className="text-xs font-bold text-cobalt hover:opacity-80 transition-opacity flex items-center gap-0.5">
+                          Configure RFQ <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 border border-dashed border-slate-border rounded-xl bg-white">
+                  <Cpu className="w-10 h-10 text-slate-text-muted/30 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-slate-text-primary">No machining services listed yet.</p>
+                  <p className="text-[10px] text-slate-text-muted mt-1">Switch to the Seller dashboard to list the first capability!</p>
+                </div>
+              )}
+            </div>
+
+            {/* Buyer Quote Tracker (Right Sidebar) */}
+            <div className="space-y-6">
+              <h2 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">My Quotes Dashboard</h2>
+
+              {loadingQuotes ? (
+                <div className="h-44 bg-white border border-slate-border rounded-xl animate-pulse"></div>
+              ) : buyerQuotes.length > 0 ? (
+                <div className="space-y-4">
+                  {buyerQuotes.map((quote) => (
+                    <div key={quote.id} className="bg-white border border-slate-border rounded-xl p-4 shadow-sm space-y-3">
+                      <div className="flex justify-between items-start">
+                        <span className="font-mono text-[9px] font-black text-slate-text-primary">{quote.cad_file_name}</span>
+                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border ${
+                          quote.status === 'Accepted'
+                            ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
+                            : quote.status === 'Offered'
+                            ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
+                            : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                        }`}>
+                          {quote.status}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1 text-slate-text-secondary text-[11px] leading-relaxed">
+                        <div>Service: <span className="font-bold text-slate-text-primary">{quote.service_title}</span></div>
+                        <div>Material: <span className="font-semibold">{quote.selected_material} ({quote.selected_finish})</span></div>
+                        <div>Qty: <span className="font-semibold">{quote.quantity} units</span></div>
+                      </div>
+
+                      {quote.status === 'Offered' && quote.offer_price && (
+                        <div className="bg-slate-bg/50 border border-slate-border p-3 rounded-lg space-y-2 mt-2">
+                          <div className="flex justify-between items-baseline">
+                            <span className="text-[10px] text-slate-text-muted font-bold">Seller Pricing Offer</span>
+                            <span className="text-sm font-black text-coral">₹{Number(quote.offer_price).toFixed(2)}</span>
+                          </div>
+                          {quote.seller_notes && (
+                            <p className="text-[10px] text-slate-text-secondary italic font-semibold">"{quote.seller_notes}"</p>
+                          )}
+                          <button
+                            onClick={() => handleAcceptOffer(quote.id)}
+                            className="btn-emerald py-2 w-full rounded-lg text-xs font-bold text-center cursor-pointer"
+                          >
+                            Accept Offer &amp; Order
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 border border-dashed border-slate-border bg-white rounded-xl">
+                  <FileUp className="w-8 h-8 text-slate-text-muted/30 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-slate-text-primary">No requests submitted.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ==========================================
+            SELLER VIEW: ADD SERVICE & REVIEW RFQS
+            ========================================== */}
+        {activeView === 'seller' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            
+            {/* Add Service Listing Form (Left) */}
+            <div className="space-y-6">
+              <h2 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">List New Capability</h2>
+
+              <form onSubmit={handleListServiceSubmit} className="bg-white border border-slate-border rounded-xl p-5 shadow-sm space-y-4">
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Service Title</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 5-Axis Precision Aluminum Milling"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Process Type</label>
+                  <select
+                    value={newProcess}
+                    onChange={(e) => setNewProcess(e.target.value as any)}
+                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                  >
+                    <option value="CNC Machining">CNC Machining</option>
+                    <option value="3D Printing">3D Printing</option>
+                    <option value="Sheet Metal">Sheet Metal</option>
+                    <option value="Laser Cutting">Laser Cutting</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Base Setup Price (₹)</label>
+                  <input
+                    type="number"
+                    required
+                    value={newBasePrice}
+                    onChange={(e) => setNewBasePrice(Number(e.target.value))}
+                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Lead Time</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 4 business days"
+                    value={newLeadTime}
+                    onChange={(e) => setNewLeadTime(e.target.value)}
+                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Material Options (Comma Separated)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Aluminium 6061, Delrin POM"
+                    value={newMaterials}
+                    onChange={(e) => setNewMaterials(e.target.value)}
+                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Finish Options (Comma Separated)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. As-Machined, Bead Blasted, Anodized"
+                    value={newFinishes}
+                    onChange={(e) => setNewFinishes(e.target.value)}
+                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Service Description</label>
+                  <textarea
+                    rows={3}
+                    required
+                    placeholder="Explain tolerance limits and surface qualities..."
+                    value={newDescription}
+                    onChange={(e) => setNewDescription(e.target.value)}
+                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary resize-none"
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={listingService}
+                  className="w-full btn-cobalt py-3.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  <Plus className="w-4 h-4" /> List Capability
+                </button>
+              </form>
+            </div>
+
+            {/* Seller Incoming RFQs Dashboard (Right) */}
+            <div className="lg:col-span-2 space-y-6">
+              <h2 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">Incoming Buyer Requests</h2>
+
+              {loadingQuotes ? (
+                <div className="h-44 bg-white border border-slate-border rounded-xl animate-pulse"></div>
+              ) : sellerQuotes.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {sellerQuotes.map((quote) => (
+                    <div key={quote.id} className="bg-white border border-slate-border rounded-xl p-5 shadow-sm space-y-4">
+                      <div className="flex justify-between items-start pb-2.5 border-b border-slate-border/50">
+                        <div>
+                          <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase bg-cobalt/5 text-cobalt border border-cobalt/10">
+                            {quote.process_type}
+                          </span>
+                          <span className="block text-[10px] font-black text-slate-text-primary font-mono mt-1.5 truncate max-w-[160px]">{quote.cad_file_name}</span>
+                        </div>
+                        <span className={`px-2.5 py-0.5 rounded text-[8px] font-black uppercase border ${
+                          quote.status === 'Accepted'
+                            ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
+                            : quote.status === 'Offered'
+                            ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
+                            : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                        }`}>
+                          {quote.status}
+                        </span>
+                      </div>
+
+                      <div className="space-y-1.5 text-slate-text-secondary text-xs leading-relaxed">
+                        <div>Buyer: <span className="font-bold text-slate-text-primary">{quote.buyer_name}</span></div>
+                        <div>Capability: <span className="font-semibold">{quote.service_title}</span></div>
+                        <div>Material: <span className="font-semibold">{quote.selected_material}</span></div>
+                        <div>Finish: <span className="font-semibold">{quote.selected_finish}</span></div>
+                        <div>Units requested: <span className="font-semibold text-slate-text-primary">{quote.quantity} units</span></div>
+                      </div>
+
+                      {quote.status === 'Pending' && (
+                        <button
+                          onClick={() => setQuotingItem(quote)}
+                          className="btn-cobalt text-xs font-bold py-2.5 w-full rounded-lg text-center cursor-pointer flex items-center justify-center gap-1"
+                        >
+                          <Send className="w-3.5 h-3.5" /> Submit Pricing Offer
+                        </button>
+                      )}
+
+                      {quote.status === 'Offered' && quote.offer_price && (
+                        <div className="bg-slate-bg/50 border border-slate-border p-2.5 rounded-lg text-[10px] text-slate-text-secondary font-semibold">
+                          Active Pricing Offer: <span className="text-xs font-bold text-coral">₹{Number(quote.offer_price).toFixed(2)}</span>
+                          {quote.seller_notes && <div className="italic mt-1">"{quote.seller_notes}"</div>}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 border border-dashed border-slate-border rounded-xl bg-white">
+                  <ShoppingBag className="w-12 h-12 text-slate-text-muted/30 mx-auto mb-3 animate-pulse" />
+                  <p className="text-sm font-bold text-slate-text-primary">No incoming RFQs for your services.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+      </main>
+
+      {/* ==========================================
+          MODAL 1: BUYER CONFIGURE RFQ DIALOG
+          ========================================== */}
+      {selectedService && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-border rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-5 animate-slide-in">
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-[8px] font-black uppercase tracking-wider text-cobalt">{selectedService.process_type}</span>
+                <h3 className="text-base font-black text-slate-text-primary tracking-tight">Configure Custom RFQ</h3>
+              </div>
+              <button 
+                onClick={() => setSelectedService(null)} 
+                className="text-slate-text-muted hover:text-slate-text-primary cursor-pointer p-0.5 rounded"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleQuoteSubmit} className="space-y-4 text-xs font-bold">
+              <div className="space-y-1">
+                <label className="block text-[10px] text-slate-text-secondary uppercase">Select CAD Design File (STEP, STL, IGES)</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. bracket_mount_rev2.step"
+                  value={cadFileName}
+                  onChange={(e) => setCadFileName(e.target.value)}
+                  className="w-full p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] text-slate-text-secondary uppercase">Select Material Capability</label>
+                <select
+                  value={selectedMaterial}
+                  onChange={(e) => setSelectedMaterial(e.target.value)}
+                  className="w-full p-3 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                >
+                  {selectedService.material_capabilities.map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] text-slate-text-secondary uppercase">Select Surface Finish</label>
+                <select
+                  value={selectedFinish}
+                  onChange={(e) => setSelectedFinish(e.target.value)}
+                  className="w-full p-3 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                >
+                  {selectedService.finish_options.map((f) => (
+                    <option key={f} value={f}>{f}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] text-slate-text-secondary uppercase">Quantity (Units)</label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+                  className="w-full p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={submittingQuote}
+                className="w-full btn-cobalt py-3.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {submittingQuote ? 'Submitting request...' : 'Submit Request'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          MODAL 2: SELLER SUBMIT OFFER DIALOG
+          ========================================== */}
+      {quotingItem && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-border rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-5 animate-slide-in">
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-[8px] font-black uppercase tracking-wider text-cobalt">Submit Pricing Offer</span>
+                <h3 className="text-base font-black text-slate-text-primary tracking-tight">RFQ: {quotingItem.cad_file_name}</h3>
+              </div>
+              <button 
+                onClick={() => setQuotingItem(null)} 
+                className="text-slate-text-muted hover:text-slate-text-primary cursor-pointer p-0.5 rounded"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleOfferSubmit} className="space-y-4 text-xs font-bold">
+              <div className="bg-slate-bg/50 border p-3 rounded-lg space-y-1 text-slate-text-secondary text-[11px] leading-relaxed">
+                <div>Requested Quantity: <span className="font-bold text-slate-text-primary">{quotingItem.quantity} units</span></div>
+                <div>Material/Finish: <span className="font-semibold text-slate-text-primary">{quotingItem.selected_material} ({quotingItem.selected_finish})</span></div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] text-slate-text-secondary uppercase">Offer Price (Total Amount in ₹)</label>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  value={offerPrice}
+                  onChange={(e) => setOfferPrice(Number(e.target.value))}
+                  className="w-full p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] text-slate-text-secondary uppercase">Seller Audit / Inspection Notes</label>
+                <textarea
+                  rows={3}
+                  placeholder="Specify material specifications validation or CNC setup requirements..."
+                  value={sellerNotes}
+                  onChange={(e) => setSellerNotes(e.target.value)}
+                  className="w-full p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary resize-none"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submittingOffer}
+                className="w-full btn-cobalt py-3.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {submittingOffer ? 'Submitting offer...' : 'Send Offer to Buyer'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <Footer />
+    </div>
+  );
+}

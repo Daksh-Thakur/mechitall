@@ -38,6 +38,7 @@ export default function Navbar() {
 
   const navLinks: { href: string; label: string; badge?: string }[] = [
     { href: '/products', label: 'Parts Catalog' },
+    { href: '/machining', label: 'Custom Machining', badge: 'Market' },
     { href: '/community', label: 'Community' },
   ];
 
