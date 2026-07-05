@@ -172,9 +172,20 @@ export default function Navbar() {
             </button>
 
             {/* Profile */}
-            <div className="relative">
+            <div 
+              className="relative py-2"
+              onMouseEnter={() => setProfileOpen(true)}
+              onMouseLeave={() => setProfileOpen(false)}
+            >
               <button
-                onClick={() => setProfileOpen(!profileOpen)}
+                onClick={() => {
+                  setProfileOpen(false);
+                  if (user) {
+                    window.location.href = '/profile';
+                  } else {
+                    window.location.href = '/login';
+                  }
+                }}
                 className="w-9 h-9 rounded-full border border-slate-border bg-slate-border/50 text-slate-text-secondary flex items-center justify-center font-bold text-xs hover:bg-slate-bg hover:border-slate-text-secondary/40 transition-all cursor-pointer"
                 aria-label="Open profile menu"
               >
@@ -182,55 +193,52 @@ export default function Navbar() {
               </button>
 
               {profileOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setProfileOpen(false)}></div>
-                  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-slate-border bg-white shadow-lg py-1.5 z-20 animate-slide-in md:origin-top-right">
-                    <div className="px-4 py-2 border-b border-slate-border mb-1">
-                      <span className="block text-xs text-slate-text-muted">
-                        {user ? 'Shopper Account' : 'Guest Shopper'}
-                      </span>
-                      <span className="block text-xs font-bold text-slate-text-primary truncate">
-                        {profile?.full_name || 'Guest User'}
-                      </span>
-                      <span className="inline-block mt-1 text-[9px] uppercase tracking-wider font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-1.5 py-0.5 rounded">
-                        {profile?.loyalty_tier || 'Tinkerer'}
-                      </span>
-                    </div>
-                    {user && (
-                      <Link
-                        href="/profile"
-                        onClick={() => setProfileOpen(false)}
-                        className="w-full text-left px-4 py-2 text-xs text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary flex items-center gap-2 cursor-pointer"
-                      >
-                        <User className="w-3.5 h-3.5" /> My Profile
-                      </Link>
-                    )}
+                <div className="absolute right-0 mt-1 w-56 rounded-xl border border-slate-border bg-white shadow-lg py-1.5 z-20 animate-slide-in md:origin-top-right">
+                  <div className="px-4 py-2 border-b border-slate-border mb-1">
+                    <span className="block text-xs text-slate-text-muted">
+                      {user ? 'Shopper Account' : 'Guest Shopper'}
+                    </span>
+                    <span className="block text-xs font-bold text-slate-text-primary truncate">
+                      {profile?.full_name || 'Guest User'}
+                    </span>
+                    <span className="inline-block mt-1 text-[9px] uppercase tracking-wider font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                      {profile?.loyalty_tier || 'Tinkerer'}
+                    </span>
+                  </div>
+                  {user && (
                     <Link
-                      href="/dashboard"
+                      href="/profile"
                       onClick={() => setProfileOpen(false)}
                       className="w-full text-left px-4 py-2 text-xs text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary flex items-center gap-2 cursor-pointer"
                     >
-                      <Settings className="w-3.5 h-3.5" /> Rewards & Orders
+                      <User className="w-3.5 h-3.5" /> My Profile
                     </Link>
-                    <div className="border-t border-slate-border my-1"></div>
-                    {user ? (
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer font-bold"
-                      >
-                        <LogOut className="w-3.5 h-3.5" /> Sign Out
-                      </button>
-                    ) : (
-                      <Link
-                        href="/login"
-                        onClick={() => setProfileOpen(false)}
-                        className="w-full text-left px-4 py-2 text-xs text-cobalt hover:bg-blue-50 flex items-center gap-2 cursor-pointer font-bold"
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5" /> Sign in / Create Account
-                      </Link>
-                    )}
-                  </div>
-                </>
+                  )}
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setProfileOpen(false)}
+                    className="w-full text-left px-4 py-2 text-xs text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary flex items-center gap-2 cursor-pointer"
+                  >
+                    <Settings className="w-3.5 h-3.5" /> Rewards & Orders
+                  </Link>
+                  <div className="border-t border-slate-border my-1"></div>
+                  {user ? (
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer font-bold"
+                    >
+                      <LogOut className="w-3.5 h-3.5" /> Sign Out
+                    </button>
+                  ) : (
+                    <Link
+                      href="/login"
+                      onClick={() => setProfileOpen(false)}
+                      className="w-full text-left px-4 py-2 text-xs text-cobalt hover:bg-blue-50 flex items-center gap-2 cursor-pointer font-bold"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" /> Sign in / Create Account
+                    </Link>
+                  )}
+                </div>
               )}
             </div>
           </div>
