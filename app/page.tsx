@@ -1123,7 +1123,7 @@ export default function Home() {
                         <td className="p-4">{order.date}</td>
                         <td className="p-4">
                           <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${
-                            order.type === 'Custom RFQ' 
+                            order.type === 'Custom Part' 
                               ? 'bg-emerald/5 text-emerald border-emerald/20' 
                               : 'bg-cobalt/5 text-cobalt border-cobalt/20'
                           }`}>
