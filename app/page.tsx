@@ -12,6 +12,7 @@ import { createClient } from '@/utils/supabase/client';
 import {
   Cpu,
   ChevronRight,
+  ChevronLeft,
   FileUp,
   ShieldCheck,
   Info,
@@ -44,6 +45,105 @@ export default function Home() {
   const [displayedParts, setDisplayedParts] = useState<Part[]>([]);
   const [displayedServices, setDisplayedServices] = useState<any[]>([]);
   const [shuffleKey, setShuffleKey] = useState(0);
+
+  // Hero Ad Carousel state
+  const [currentAdSlide, setCurrentAdSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentAdSlide((prev) => (prev + 1) % 4);
+    }, 5000); // 5 seconds auto-scroll
+    return () => clearInterval(timer);
+  }, []);
+
+  const adSlides = [
+    {
+      badge: 'Mech Ecosystem',
+      title: 'Why MechItAll?',
+      gradient: 'from-blue-500/10 to-cobalt/5 border-cobalt/15',
+      cta: 'Shuffle Catalog Parts',
+      action: () => handleShuffle(),
+      content: (
+        <div className="space-y-2.5">
+          {[
+            { icon: Zap, color: 'text-cobalt', bg: 'bg-cobalt/10', label: 'Instant CAD Quoting', desc: 'Upload STEP/STL, get price in seconds' },
+            { icon: Package, color: 'text-emerald', bg: 'bg-emerald/10', label: 'Same-Day Dispatch', desc: 'Orders placed before 2 PM ship today' },
+            { icon: CheckCircle2, color: 'text-coral', bg: 'bg-coral/10', label: 'Quality Certified', desc: 'ISO 9001:2015 & RoHS compliant parts' },
+          ].map(({ icon: Icon, color, bg, label, desc }) => (
+            <div key={label} className="flex items-center gap-3 p-2 bg-white/40 border border-slate-border/50 rounded-xl">
+              <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
+                <Icon className={`w-4 h-4 ${color}`} />
+              </div>
+              <div className="text-left">
+                <span className="block text-xs font-bold text-slate-text-primary leading-tight">{label}</span>
+                <span className="block text-[10px] text-slate-text-muted">{desc}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    },
+    {
+      badge: 'Loyalty Club',
+      title: 'Join & Get 25 Welcome Bolts',
+      gradient: 'from-amber-500/10 to-amber-500/5 border-amber-500/20',
+      cta: 'Create Free Account',
+      link: '/login',
+      content: (
+        <div className="py-3 text-center space-y-4">
+          <div className="inline-flex w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 items-center justify-center text-amber-500 shadow-sm animate-bounce">
+            <Zap className="w-6 h-6 fill-amber-500" />
+          </div>
+          <div className="space-y-1 px-2">
+            <span className="block text-lg font-mono font-black text-amber-500">25 BOLTS SIGN-IN BONUS</span>
+            <p className="text-[11px] text-slate-text-secondary leading-relaxed font-semibold">
+              Create your Shopper Account today. Get 25 Bolts instantly to redeem as discount at checkout!
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      badge: '3D SLA resin',
+      title: 'High-Detail SLA Resin Printing',
+      gradient: 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20',
+      cta: 'Instant Custom RFQ',
+      link: '/machining#rfq',
+      content: (
+        <div className="py-3 text-center space-y-4">
+          <div className="inline-flex w-12 h-12 rounded-xl bg-emerald/10 border border-emerald/30 items-center justify-center text-emerald shadow-sm">
+            <Cpu className="w-6 h-6" />
+          </div>
+          <div className="space-y-1 px-2">
+            <span className="block text-xs font-black uppercase text-emerald leading-tight">25-Micron layer finishes</span>
+            <p className="text-[11px] text-slate-text-secondary leading-relaxed font-semibold">
+              Laser stereolithography (SLA) resin printing. Smooth finishes, perfect master mold casting, ships in 3 days!
+            </p>
+          </div>
+        </div>
+      )
+    },
+    {
+      badge: 'CNC machining',
+      title: 'CNC Mill 3-Axis & 5-Axis',
+      gradient: 'from-coral/10 to-coral/5 border-coral/20',
+      cta: 'Explore Catalog parts',
+      link: '/products',
+      content: (
+        <div className="py-3 text-center space-y-4">
+          <div className="inline-flex w-12 h-12 rounded-xl bg-coral/10 border border-coral/30 items-center justify-center text-coral shadow-sm">
+            <Package className="w-6 h-6" />
+          </div>
+          <div className="space-y-1 px-2">
+            <span className="block text-xs font-black uppercase text-coral leading-tight">Aerospace aluminum & steel</span>
+            <p className="text-[11px] text-slate-text-secondary leading-relaxed font-semibold">
+              High durability CNC milling custom parts. Upload your STEP/STL model for instant quoting checks!
+            </p>
+          </div>
+        </div>
+      )
+    }
+  ];
 
   useEffect(() => {
     async function loadData() {
@@ -153,35 +253,78 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Hero card */}
-            <div className="w-full md:w-[380px] z-10 shrink-0">
-              <div className="glassmorphism p-7 rounded-2xl border border-slate-border shadow-lg space-y-5">
+            {/* Hero card - Advertisement Carousel Panel */}
+            <div className="w-full md:w-[380px] z-10 shrink-0 select-none">
+              <div className={`glassmorphism p-6 rounded-2xl border shadow-lg flex flex-col justify-between h-[360px] transition-all duration-500 bg-gradient-to-br ${adSlides[currentAdSlide].gradient}`}>
+                
+                {/* Header */}
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-text-muted">Why MechItAll?</span>
-                  <ShieldCheck className="w-4 h-4 text-emerald" />
+                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/80 text-slate-text-secondary border border-slate-border shadow-sm">
+                    {adSlides[currentAdSlide].badge}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => setCurrentAdSlide((prev) => (prev - 1 + 4) % 4)}
+                      className="p-1 rounded-md hover:bg-slate-bg/80 text-slate-text-secondary hover:text-slate-text-primary transition-colors cursor-pointer"
+                      aria-label="Previous Slide"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <button 
+                      onClick={() => setCurrentAdSlide((prev) => (prev + 1) % 4)}
+                      className="p-1 rounded-md hover:bg-slate-bg/80 text-slate-text-secondary hover:text-slate-text-primary transition-colors cursor-pointer"
+                      aria-label="Next Slide"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  {[
-                    { icon: Zap, color: 'text-cobalt', bg: 'bg-cobalt/10', label: 'Instant CAD Quoting', desc: 'Upload STEP/STL, get price in seconds' },
-                    { icon: Package, color: 'text-emerald', bg: 'bg-emerald/10', label: 'Same-Day Dispatch', desc: 'Orders placed before 2 PM ship today' },
-                    { icon: CheckCircle2, color: 'text-coral', bg: 'bg-coral/10', label: 'Quality Certified', desc: 'ISO 9001:2015 & RoHS compliant parts' },
-                    { icon: Users, color: 'text-amber-500', bg: 'bg-amber-500/10', label: 'Active Community', desc: 'Reviews, builds & maker discussions' },
-                  ].map(({ icon: Icon, color, bg, label, desc }) => (
-                    <div key={label} className="flex items-center gap-3 p-3 rounded-xl bg-slate-bg/60 border border-slate-border/50">
-                      <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
-                        <Icon className={`w-4 h-4 ${color}`} />
-                      </div>
-                      <div>
-                        <span className="block text-xs font-bold text-slate-text-primary">{label}</span>
-                        <span className="block text-[10px] text-slate-text-muted">{desc}</span>
-                      </div>
-                    </div>
-                  ))}
+
+                {/* Content Area */}
+                <div className="flex-1 py-4 flex flex-col justify-center animate-slide-in">
+                  <h3 className="text-sm font-black text-slate-text-primary uppercase tracking-tight text-center mb-3">
+                    {adSlides[currentAdSlide].title}
+                  </h3>
+                  {adSlides[currentAdSlide].content}
                 </div>
-                <div className="bg-cobalt/5 border border-cobalt/15 p-3 rounded-xl flex items-start gap-2 text-[10px] text-slate-text-secondary leading-relaxed">
-                  <Info className="w-4 h-4 text-cobalt flex-shrink-0 mt-0.5" />
-                  <span>Free shipping on orders above ₹2,000. 7-day easy returns on all standard parts.</span>
+
+                {/* Action CTA Button & Dots */}
+                <div className="space-y-4">
+                  {adSlides[currentAdSlide].link ? (
+                    <Link
+                      href={adSlides[currentAdSlide].link!}
+                      className="w-full btn-cobalt py-2.5 rounded-xl text-xs font-bold text-center flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                    >
+                      <span>{adSlides[currentAdSlide].cta}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={adSlides[currentAdSlide].action}
+                      className="w-full btn-cobalt py-2.5 rounded-xl text-xs font-bold text-center flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                    >
+                      <span>{adSlides[currentAdSlide].cta}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  {/* Indicator Dots */}
+                  <div className="flex justify-center gap-1.5 pt-1">
+                    {adSlides.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentAdSlide(idx)}
+                        className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                          currentAdSlide === idx 
+                            ? 'bg-cobalt w-3.5' 
+                            : 'bg-slate-text-muted/40 hover:bg-slate-text-muted/60'
+                        }`}
+                        aria-label={`Go to slide ${idx + 1}`}
+                      ></button>
+                    ))}
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>
