@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { useCart } from '@/components/CartProvider';
@@ -15,7 +15,7 @@ import {
   Cpu, FileUp, Settings, Plus, Sparkles, CheckCircle2, Clock, 
   HelpCircle, ShieldCheck, ShoppingBag, Send, AlertTriangle, Layers, 
   ChevronRight, Info, X, Upload, File, Trash2, Eye, ArrowRight, 
-  Zap, Tag, RotateCcw, Package
+  Zap, Tag, RotateCcw, Package, Search
 } from 'lucide-react';
 
 const MOCK_DEMO_SERVICES: MachiningService[] = [
@@ -107,6 +107,10 @@ export default function MachiningMarketplacePage() {
   const [loadingServices, setLoadingServices] = useState(true);
   const [loadingQuotes, setLoadingQuotes] = useState(true);
 
+  // Search & filter state (buyer view)
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProcess, setSelectedProcess] = useState('All');
+
   // Buyer: Get Quote modal state
   const [selectedService, setSelectedService] = useState<MachiningService | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -132,6 +136,25 @@ export default function MachiningMarketplacePage() {
   const [offerFinish, setOfferFinish] = useState('');
   const [sellerNotes, setSellerNotes] = useState('');
   const [submittingOffer, setSubmittingOffer] = useState(false);
+
+  // Filtered services (buyer search + process filter)
+  const filteredServices = useMemo(() => {
+    let result = [...services];
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(s =>
+        s.title.toLowerCase().includes(q) ||
+        s.description.toLowerCase().includes(q) ||
+        s.process_type.toLowerCase().includes(q) ||
+        (s.seller_name || '').toLowerCase().includes(q) ||
+        s.material_capabilities.some(m => m.toLowerCase().includes(q))
+      );
+    }
+    if (selectedProcess !== 'All') {
+      result = result.filter(s => s.process_type === selectedProcess);
+    }
+    return result;
+  }, [services, searchQuery, selectedProcess]);
 
   // Load services
   useEffect(() => {
@@ -371,7 +394,47 @@ export default function MachiningMarketplacePage() {
             <div className="lg:col-span-2 space-y-5">
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">Available Services</h2>
-                <span className="text-[10px] font-bold text-slate-text-muted">{services.length} services listed</span>
+                <span className="text-[10px] font-bold text-slate-text-muted">{filteredServices.length} of {services.length} services</span>
+              </div>
+
+              {/* Search & Filter Bar */}
+              <div className="flex flex-col sm:flex-row gap-3 p-4 bg-white rounded-xl border border-slate-border shadow-sm">
+                {/* Search input */}
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    placeholder="Search by service, material, seller..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full text-xs bg-slate-bg border border-slate-border text-slate-text-primary px-3 py-2.5 pl-9 rounded-lg focus:outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt/20 transition-all placeholder-slate-text-muted font-medium"
+                  />
+                  <Search className="w-3.5 h-3.5 text-slate-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-text-muted hover:text-coral cursor-pointer transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Process type filter tabs */}
+                <div className="bg-slate-bg border border-slate-border p-1 rounded-lg flex items-center gap-1 flex-wrap">
+                  {(['All', 'CNC Machining', '3D Printing', 'Sheet Metal', 'Laser Cutting'] as const).map((proc) => (
+                    <button
+                      key={proc}
+                      onClick={() => setSelectedProcess(proc)}
+                      className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap ${
+                        selectedProcess === proc
+                          ? 'bg-white text-cobalt shadow-sm border border-slate-border/50'
+                          : 'text-slate-text-secondary hover:text-slate-text-primary'
+                      }`}
+                    >
+                      {proc}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {loadingServices ? (
@@ -380,9 +443,9 @@ export default function MachiningMarketplacePage() {
                     <div key={n} className="h-52 bg-white border border-slate-border rounded-2xl" />
                   ))}
                 </div>
-              ) : services.length > 0 ? (
+              ) : filteredServices.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {services.map((service) => (
+                  {filteredServices.map((service) => (
                     <div
                       key={service.id}
                       className="bg-white border border-slate-border rounded-2xl p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
@@ -441,8 +504,22 @@ export default function MachiningMarketplacePage() {
               ) : (
                 <div className="text-center py-16 border border-dashed border-slate-border rounded-2xl bg-white">
                   <Cpu className="w-12 h-12 text-slate-text-muted/20 mx-auto mb-3" />
-                  <p className="text-sm font-bold text-slate-text-primary">No machining services yet.</p>
-                  <p className="text-xs text-slate-text-muted mt-1">Sellers with active accounts can list their capabilities.</p>
+                  {searchQuery || selectedProcess !== 'All' ? (
+                    <>
+                      <p className="text-sm font-bold text-slate-text-primary">No services match your search.</p>
+                      <button
+                        onClick={() => { setSearchQuery(''); setSelectedProcess('All'); }}
+                        className="mt-3 text-xs font-bold text-cobalt hover:underline cursor-pointer"
+                      >
+                        Clear filters
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold text-slate-text-primary">No machining services yet.</p>
+                      <p className="text-xs text-slate-text-muted mt-1">Sellers can list their capabilities from their profile.</p>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -686,7 +763,7 @@ export default function MachiningMarketplacePage() {
                       {isDragging ? 'Drop to upload' : 'Drag & drop your design file'}
                     </p>
                     <p className="text-[10px] text-slate-text-muted mt-1">or <span className="text-cobalt font-bold">browse from your computer</span></p>
-                    <p className="text-[9px] text-slate-text-muted/70 mt-2 font-semibold">STEP · STL · IGES · DXF · OBJ</p>
+                    <p className="text-[9px] text-slate-text-muted/70 mt-2 font-semibold">STEP · STL · IGES · DXF · OBJ · PDF</p>
                   </div>
                 ) : (
                   <div className="border border-slate-border rounded-xl p-4 bg-white flex items-center justify-between gap-3">
@@ -711,7 +788,7 @@ export default function MachiningMarketplacePage() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".step,.stp,.stl,.iges,.igs,.dxf,.obj"
+                  accept=".step,.stp,.stl,.iges,.igs,.dxf,.obj,.pdf"
                   className="hidden"
                   onChange={handleFileSelect}
                 />
