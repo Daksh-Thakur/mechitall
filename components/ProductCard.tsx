@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Cpu, Download, Plus } from 'lucide-react';
+import { Cpu, Download, Plus, Heart } from 'lucide-react';
 import { Part } from './mockData';
 import { useCart } from './CartProvider';
 
@@ -11,7 +11,8 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
-  const { addToCart } = useCart();
+  const { addToCart, toggleWishlist, isWishlisted } = useCart();
+  const saved = isWishlisted(part.id);
 
   return (
     <div
@@ -28,6 +29,16 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
           <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-widest bg-white/90 text-slate-text-primary shadow-sm">
             {part.category}
           </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleWishlist(part.id);
+            }}
+            className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/95 backdrop-blur-sm text-slate-text-secondary hover:text-rose-500 shadow-sm transition-colors cursor-pointer z-10"
+            aria-label={saved ? "Remove from Wishlist" : "Add to Wishlist"}
+          >
+            <Heart className={`w-3.5 h-3.5 ${saved ? 'fill-rose-500 text-rose-500' : ''}`} />
+          </button>
           <div className="absolute bottom-2 right-2 text-[9px] font-bold text-slate-text-muted flex items-center gap-1 bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded">
             <Download className="w-2.5 h-2.5" /> CAD Available
           </div>

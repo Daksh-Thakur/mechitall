@@ -62,6 +62,9 @@ interface CartContextValue {
   isBoltsDiscountApplied: boolean;
   setIsBoltsDiscountApplied: (applied: boolean) => void;
   showToast: (message: string, type: 'success' | 'error') => void;
+  wishlist: string[];
+  toggleWishlist: (partId: string) => void;
+  isWishlisted: (partId: string) => boolean;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -94,12 +97,51 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // Bolts discount state
   const [isBoltsDiscountApplied, setIsBoltsDiscountApplied] = useState(false);
 
+  // Wishlist state
+  const [wishlist, setWishlist] = useState<string[]>([]);
+
   // Toast notifications state
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const showToast = useCallback((message: string, type: 'success' | 'error') => {
     setToast({ message, type });
   }, []);
+
+  // Load wishlist from local storage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('mechitall_wishlist');
+      if (stored) {
+        try {
+          setWishlist(JSON.parse(stored));
+        } catch (err) {
+          console.error('Failed to parse wishlist:', err);
+        }
+      }
+    }
+  }, []);
+
+  const toggleWishlist = useCallback((partId: string) => {
+    setWishlist(prev => {
+      const isSaved = prev.includes(partId);
+      let next;
+      if (isSaved) {
+        next = prev.filter(id => id !== partId);
+        showToast('Removed from wishlist.', 'success');
+      } else {
+        next = [...prev, partId];
+        showToast('Added to wishlist!', 'success');
+      }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('mechitall_wishlist', JSON.stringify(next));
+      }
+      return next;
+    });
+  }, [showToast]);
+
+  const isWishlisted = useCallback((partId: string) => {
+    return wishlist.includes(partId);
+  }, [wishlist]);
 
   // Auto-hide toast logic
   useEffect(() => {
@@ -276,6 +318,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       isBoltsDiscountApplied,
       setIsBoltsDiscountApplied,
       showToast,
+      wishlist,
+      toggleWishlist,
+      isWishlisted,
     }}>
       {children}
 

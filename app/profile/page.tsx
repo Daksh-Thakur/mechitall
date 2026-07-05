@@ -16,7 +16,7 @@ import {
 export default function ProfilePage() {
   const router = useRouter();
   const supabase = createClient();
-  const { profile, fetchProfile, showToast, addToCart } = useCart();
+  const { profile, fetchProfile, showToast, addToCart, wishlist, toggleWishlist } = useCart();
 
   const [activeTab, setActiveTab] = useState<'orders' | 'rewards' | 'wishlist' | 'settings' | 'address' | 'support'>('orders');
   const [orders, setOrders] = useState<any[]>([]);
@@ -462,25 +462,53 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  {dbProducts.slice(0, 3).map((item) => (
-                    <div key={item.id} className="bg-white border border-slate-border rounded-xl p-4 shadow-sm flex flex-col justify-between h-48 hover:shadow-md transition-shadow">
-                      <div className="space-y-1">
-                        <span className="block text-[8px] uppercase tracking-wider font-extrabold text-slate-text-muted">{item.category}</span>
-                        <h4 className="text-xs font-black text-slate-text-primary line-clamp-1 leading-tight">{item.title}</h4>
-                        <span className="block text-xs font-extrabold text-coral pt-1">₹{item.price.toFixed(2)}</span>
-                      </div>
+                  {dbProducts.filter(p => wishlist.includes(p.id)).length > 0 ? (
+                    dbProducts.filter(p => wishlist.includes(p.id)).map((item) => (
+                      <div key={item.id} className="bg-white border border-slate-border rounded-xl p-4 shadow-sm flex flex-col justify-between h-48 hover:shadow-md transition-shadow relative">
+                        <button
+                          onClick={() => toggleWishlist(item.id)}
+                          className="absolute top-2 right-2 p-1 text-slate-text-muted hover:text-rose-500 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                        <div className="space-y-1">
+                          <span className="block text-[8px] uppercase tracking-wider font-extrabold text-slate-text-muted">{item.category}</span>
+                          <h4 className="text-xs font-black text-slate-text-primary line-clamp-1 leading-tight">{item.title}</h4>
+                          <span className="block text-xs font-extrabold text-coral pt-1">₹{item.price.toFixed(2)}</span>
+                        </div>
 
-                      <button
-                        onClick={() => {
-                          addToCart(item, 1);
-                          showToast(`${item.title} added to cart!`, 'success');
-                        }}
-                        className="btn-cobalt py-2 rounded-lg text-[10px] font-bold w-full text-center cursor-pointer flex items-center justify-center gap-1"
-                      >
-                        <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart
-                      </button>
-                    </div>
-                  ))}
+                        <button
+                          onClick={() => {
+                            addToCart(item, 1);
+                            showToast(`${item.title} added to cart!`, 'success');
+                          }}
+                          className="btn-cobalt py-2 rounded-lg text-[10px] font-bold w-full text-center cursor-pointer flex items-center justify-center gap-1"
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    dbProducts.slice(0, 3).map((item) => (
+                      <div key={item.id} className="bg-white border border-slate-border rounded-xl p-4 shadow-sm flex flex-col justify-between h-48 hover:shadow-md transition-shadow">
+                        <div className="space-y-1">
+                          <span className="block text-[8px] uppercase tracking-wider font-extrabold text-slate-text-muted">{item.category}</span>
+                          <h4 className="text-xs font-black text-slate-text-primary line-clamp-1 leading-tight">{item.title}</h4>
+                          <span className="block text-xs font-extrabold text-coral pt-1">₹{item.price.toFixed(2)}</span>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            addToCart(item, 1);
+                            showToast(`${item.title} added to cart!`, 'success');
+                          }}
+                          className="btn-cobalt py-2 rounded-lg text-[10px] font-bold w-full text-center cursor-pointer flex items-center justify-center gap-1"
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart
+                        </button>
+                      </div>
+                    ))
+                  )}
 
                   <Link href="/products" className="bg-slate-bg/30 border border-dashed border-slate-border rounded-xl p-4 flex flex-col items-center justify-center text-center hover:bg-slate-bg/50 transition-colors h-48 group">
                     <Plus className="w-6 h-6 text-slate-text-muted group-hover:scale-110 transition-transform mb-2" />
@@ -650,34 +678,44 @@ export default function ProfilePage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {dbProducts.slice(0, 3).map((item) => (
-                  <div key={item.id} className="bg-white border border-slate-border rounded-xl p-5 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow">
-                    <button 
-                      onClick={() => showToast(`${item.title} removed from wishlist.`, 'success')}
-                      className="absolute top-3 right-3 p-1 rounded hover:bg-rose-50 text-slate-text-muted hover:text-rose-500 transition-colors cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                    <div className="space-y-2">
-                      <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-slate-bg text-slate-text-muted w-fit block">{item.category}</span>
-                      <h3 className="text-sm font-black text-slate-text-primary leading-tight line-clamp-1">{item.title}</h3>
-                      <p className="text-xs text-slate-text-muted line-clamp-2">{item.description}</p>
-                    </div>
-
-                    <div className="pt-4 border-t border-slate-border/50 mt-4 flex items-center justify-between">
-                      <span className="text-sm font-black text-coral">₹{item.price.toFixed(2)}</span>
-                      <button
-                        onClick={() => {
-                          addToCart(item, 1);
-                          showToast(`${item.title} added to cart!`, 'success');
-                        }}
-                        className="btn-cobalt py-2 px-3 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1.5"
+                {dbProducts.filter(p => wishlist.includes(p.id)).length > 0 ? (
+                  dbProducts.filter(p => wishlist.includes(p.id)).map((item) => (
+                    <div key={item.id} className="bg-white border border-slate-border rounded-xl p-5 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow">
+                      <button 
+                        onClick={() => toggleWishlist(item.id)}
+                        className="absolute top-3 right-3 p-1 rounded hover:bg-rose-50 text-slate-text-muted hover:text-rose-500 transition-colors cursor-pointer"
                       >
-                        <ShoppingCart className="w-3.5 h-3.5" /> Add
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
+                      <div className="space-y-2">
+                        <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-slate-bg text-slate-text-muted w-fit block">{item.category}</span>
+                        <h3 className="text-sm font-black text-slate-text-primary leading-tight line-clamp-1">{item.title}</h3>
+                        <p className="text-xs text-slate-text-muted line-clamp-2">{item.description}</p>
+                      </div>
+
+                      <div className="pt-4 border-t border-slate-border/50 mt-4 flex items-center justify-between">
+                        <span className="text-sm font-black text-coral">₹{item.price.toFixed(2)}</span>
+                        <button
+                          onClick={() => {
+                            addToCart(item, 1);
+                            showToast(`${item.title} added to cart!`, 'success');
+                          }}
+                          className="btn-cobalt py-2 px-3 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1.5"
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" /> Add
+                        </button>
+                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-16 border border-dashed border-slate-border rounded-2xl bg-slate-bg/10">
+                    <Heart className="w-10 h-10 text-slate-text-muted/30 mx-auto mb-2 animate-pulse" />
+                    <p className="text-xs font-bold text-slate-text-primary">Your wishlist is empty.</p>
+                    <p className="text-[10px] text-slate-text-muted mt-1 leading-normal">
+                      Tap the heart icon on any product in the Parts Catalog to save items here!
+                    </p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           )}
