@@ -104,40 +104,40 @@ export default function Home() {
       )
     },
     {
-      badge: '3D SLA resin',
-      title: 'High-Detail SLA Resin Printing',
+      badge: 'Motors & Drives',
+      title: 'Actuators & Stepper Motors',
       gradient: 'from-emerald-500/10 to-emerald-500/5 border-emerald-500/20',
-      cta: 'Instant Custom RFQ',
-      link: '/machining#rfq',
+      cta: 'Browse Actuators',
+      link: '/products',
       content: (
         <div className="py-3 text-center space-y-4">
           <div className="inline-flex w-12 h-12 rounded-xl bg-emerald/10 border border-emerald/30 items-center justify-center text-emerald shadow-sm">
-            <Cpu className="w-6 h-6" />
+            <Cpu className="w-6 h-6 animate-pulse" />
           </div>
           <div className="space-y-1 px-2">
-            <span className="block text-xs font-black uppercase text-emerald leading-tight">25-Micron layer finishes</span>
+            <span className="block text-xs font-black uppercase text-emerald leading-tight">High-Torque Actuators</span>
             <p className="text-[11px] text-slate-text-secondary leading-relaxed font-semibold">
-              Laser stereolithography (SLA) resin printing. Smooth finishes, perfect master mold casting, ships in 3 days!
+              Closed-loop steppers, NEMA motors, and high-performance servo controllers. Complete stock with detailed specifications!
             </p>
           </div>
         </div>
       )
     },
     {
-      badge: 'CNC machining',
-      title: 'CNC Mill 3-Axis & 5-Axis',
-      gradient: 'from-coral/10 to-coral/5 border-coral/20',
-      cta: 'Explore Catalog parts',
+      badge: 'Electronics',
+      title: 'Control Boards & Sensors',
+      gradient: 'from-purple-500/10 to-purple-500/5 border-purple-500/20',
+      cta: 'Explore Controllers',
       link: '/products',
       content: (
         <div className="py-3 text-center space-y-4">
-          <div className="inline-flex w-12 h-12 rounded-xl bg-coral/10 border border-coral/30 items-center justify-center text-coral shadow-sm">
+          <div className="inline-flex w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 items-center justify-center text-purple-500 shadow-sm">
             <Package className="w-6 h-6" />
           </div>
           <div className="space-y-1 px-2">
-            <span className="block text-xs font-black uppercase text-coral leading-tight">Aerospace aluminum & steel</span>
+            <span className="block text-xs font-black uppercase text-purple-500 leading-tight">Makers &amp; Industrial controllers</span>
             <p className="text-[11px] text-slate-text-secondary leading-relaxed font-semibold">
-              High durability CNC milling custom parts. Upload your STEP/STL model for instant quoting checks!
+              ESP32 modules, Arduino boards, lidar modules, and visual sensor shields. All items include fully validated datasheets!
             </p>
           </div>
         </div>
@@ -211,25 +211,18 @@ export default function Home() {
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-text-primary leading-[1.02]">
                 Shop Premium<br />
                 <span className="bg-gradient-to-r from-cobalt via-blue-500 to-emerald bg-clip-text text-transparent">
-                  Parts & Custom Builds
+                  Mechatronic Hardware
                 </span>
               </h1>
 
               <p className="text-base md:text-lg text-slate-text-secondary max-w-xl font-medium leading-relaxed">
-                Buy actuators, sensors, controllers and more — or upload your CAD file and get an instant price for custom-machined parts.
+                Buy actuators, sensors, controllers, and premium components for makers, engineers, and businesses. Same-day dispatch and quality verification on all items.
               </p>
 
               <div className="flex flex-wrap gap-4">
                 <Link
-                  href="/machining#rfq"
-                  className="btn-emerald animate-pulse-ring-emerald px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer shadow-lg"
-                >
-                  <FileUp className="w-4 h-4" />
-                  Get Instant Custom Quote
-                </Link>
-                <Link
                   href="/products"
-                  className="btn-secondary px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer"
+                  className="btn-cobalt px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer shadow-lg"
                 >
                   <span>Shop All Parts</span>
                   <ChevronRight className="w-4 h-4" />
@@ -386,90 +379,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* DIVIDER */}
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="h-px bg-gradient-to-r from-transparent via-slate-border to-transparent" />
-        </div>
 
-        {/* FEATURED SERVICES */}
-        <section className="max-w-7xl mx-auto px-6 py-16 space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald">On-Demand Manufacturing</span>
-              <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">Featured Services</h2>
-              <p className="text-xs text-slate-text-muted font-medium">High-precision manufacturing capabilities — discover what we can build for you.</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleShuffle}
-                className="btn-secondary px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer"
-              >
-                <Shuffle className="w-3.5 h-3.5" /> Shuffle
-              </button>
-              <Link
-                href="/machining"
-                className="btn-emerald px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer"
-              >
-                All Services <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          </div>
-
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-              {[1, 2, 3].map(n => (
-                <div key={n} className="h-56 bg-slate-bg/30 border border-slate-border/50 rounded-2xl"></div>
-              ))}
-            </div>
-          ) : displayedServices.length > 0 ? (
-            <div key={`services-${shuffleKey}`} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedServices.map((service) => (
-                <div
-                  key={service.id}
-                  onClick={() => setSelectedService(service)}
-                  className={`relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer ${service.gradient_class || 'border-slate-border/80'}`}
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-emerald/5 text-emerald border-emerald/20">{service.category}</span>
-                      <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-text-muted">{service.lead_time}</span>
-                    </div>
-                    <h3 className="text-base font-bold text-slate-text-primary tracking-tight">{service.title}</h3>
-                    <p className="text-xs text-slate-text-secondary leading-relaxed font-medium line-clamp-2">{service.description}</p>
-                  </div>
-                  <div className="pt-5 border-t border-slate-border/50 mt-5 flex items-center justify-between">
-                    <div>
-                      <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Base Price</span>
-                      <span className="text-base font-extrabold text-slate-text-primary">₹{Number(service.base_price).toFixed(2)}</span>
-                    </div>
-                    <Link
-                      href="/machining#rfq"
-                      onClick={(e) => e.stopPropagation()}
-                      className="btn-emerald text-xs font-bold px-3.5 py-2 rounded-lg cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
-                    >
-                      Configure RFQ <ChevronRight className="w-3.5 h-3.5" />
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 border border-dashed border-slate-border rounded-2xl bg-white">
-              <Package className="w-12 h-12 text-slate-text-muted/30 mx-auto mb-3" />
-              <p className="text-sm font-bold text-slate-text-primary">No services yet</p>
-            </div>
-          )}
-
-          <div className="flex items-center justify-center">
-            <Link
-              href="/machining"
-              className="inline-flex items-center gap-2 text-sm font-bold text-emerald hover:opacity-80 transition-opacity group"
-            >
-              Explore all manufacturing capabilities
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </section>
 
         {/* COMMUNITY TEASER */}
         <section className="bg-gradient-to-br from-slate-text-primary to-slate-text-secondary text-white">

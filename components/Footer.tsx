@@ -16,7 +16,7 @@ export default function Footer() {
             <span className="font-extrabold text-base tracking-tight text-white">MechItAll</span>
           </div>
           <p className="text-xs text-slate-text-muted leading-relaxed">
-            Premium mechatronics parts for makers, engineers, and businesses. Instant CAD quotes for custom parts.
+            Premium mechatronics parts and components for makers, engineers, and businesses.
           </p>
           <span className="block text-[10px] text-slate-text-muted">
             © 2026 MechItAll. All rights reserved. ISO 9001:2015 compliant.
@@ -27,19 +27,7 @@ export default function Footer() {
           <h4 className="text-xs font-extrabold uppercase tracking-widest text-white border-l-2 border-cobalt pl-2">Platform</h4>
           <ul className="space-y-2 text-xs text-slate-text-muted">
             <li><Link href="/products" className="hover:text-white transition-colors">Shop Parts</Link></li>
-            <li><Link href="/machining#rfq" className="hover:text-white transition-colors">Custom Parts Quote</Link></li>
-            <li><Link href="/machining" className="hover:text-white transition-colors">Manufacturing Services</Link></li>
             <li><Link href="/community" className="hover:text-white transition-colors">Community</Link></li>
-          </ul>
-        </div>
-
-        <div className="space-y-3">
-          <h4 className="text-xs font-extrabold uppercase tracking-widest text-white border-l-2 border-emerald pl-2">Manufacturing</h4>
-          <ul className="space-y-2 text-xs text-slate-text-muted">
-            <li className="hover:text-white transition-colors cursor-pointer">CNC Milling &amp; Turning</li>
-            <li className="hover:text-white transition-colors cursor-pointer">Industrial SLS 3D Printing</li>
-            <li className="hover:text-white transition-colors cursor-pointer">Sheet Metal Fabrication</li>
-            <li className="hover:text-white transition-colors cursor-pointer">Advanced Custom Alloys</li>
           </ul>
         </div>
 
