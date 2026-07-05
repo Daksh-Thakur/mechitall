@@ -23,6 +23,9 @@ import {
   Users,
   ArrowRight,
   Star,
+  Settings,
+  Upload,
+  Clock,
 } from 'lucide-react';
 
 function shuffle<T>(arr: T[]): T[] {
@@ -44,17 +47,19 @@ export default function Home() {
   // Shuffled subsets for discovery
   const [displayedParts, setDisplayedParts] = useState<Part[]>([]);
   const [displayedServices, setDisplayedServices] = useState<any[]>([]);
+  const [displayedMachining, setDisplayedMachining] = useState<any[]>([]);
   const [shuffleKey, setShuffleKey] = useState(0);
 
   // Hero Ad Carousel state
   const [currentAdSlide, setCurrentAdSlide] = useState(0);
+  const AD_SLIDE_COUNT = 5;
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentAdSlide((prev) => (prev + 1) % 4);
-    }, 5000); // 5 seconds auto-scroll
+      setCurrentAdSlide((prev) => (prev + 1) % AD_SLIDE_COUNT);
+    }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [AD_SLIDE_COUNT]);
 
   const adSlides = [
     {
@@ -66,7 +71,7 @@ export default function Home() {
       content: (
         <div className="space-y-2.5">
           {[
-            { icon: Zap, color: 'text-cobalt', bg: 'bg-cobalt/10', label: 'Instant CAD Quoting', desc: 'Upload STEP/STL, get price in seconds' },
+            { icon: Zap, color: 'text-cobalt', bg: 'bg-cobalt/10', label: 'Custom CAD Quoting', desc: 'Upload STEP/STL/PDF, sellers quote your design' },
             { icon: Package, color: 'text-emerald', bg: 'bg-emerald/10', label: 'Same-Day Dispatch', desc: 'Orders placed before 2 PM ship today' },
             { icon: CheckCircle2, color: 'text-coral', bg: 'bg-coral/10', label: 'Quality Certified', desc: 'ISO 9001:2015 & RoHS compliant parts' },
           ].map(({ icon: Icon, color, bg, label, desc }) => (
@@ -142,6 +147,32 @@ export default function Home() {
           </div>
         </div>
       )
+    },
+    {
+      badge: 'Custom Manufacturing',
+      title: 'Get Custom Parts Made',
+      gradient: 'from-orange-500/10 to-red-500/5 border-orange-500/20',
+      cta: 'Browse Machining Services',
+      link: '/machining',
+      content: (
+        <div className="space-y-2.5">
+          {[
+            { icon: Upload, color: 'text-orange-600', bg: 'bg-orange-500/10', label: 'Upload Your CAD File', desc: 'STEP, STL, IGES, DXF, OBJ or PDF' },
+            { icon: Settings, color: 'text-blue-600', bg: 'bg-blue-500/10', label: 'CNC, 3D Print, Laser Cut', desc: 'Multiple processes, one platform' },
+            { icon: CheckCircle2, color: 'text-emerald', bg: 'bg-emerald/10', label: 'Seller Sends You a Quote', desc: 'Accept when the price suits you' },
+          ].map(({ icon: Icon, color, bg, label, desc }) => (
+            <div key={label} className="flex items-center gap-3 p-2 bg-white/40 border border-slate-border/50 rounded-xl">
+              <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
+                <Icon className={`w-4 h-4 ${color}`} />
+              </div>
+              <div className="text-left">
+                <span className="block text-xs font-bold text-slate-text-primary leading-tight">{label}</span>
+                <span className="block text-[10px] text-slate-text-muted">{desc}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )
     }
   ];
 
@@ -151,6 +182,11 @@ export default function Home() {
         const supabase = createClient();
         const { data: productsData } = await supabase.from('products').select('*');
         const { data: servicesData } = await supabase.from('services').select('*');
+        const { data: machiningData } = await supabase
+          .from('machining_services')
+          .select('*, profiles:seller_profile_id(full_name)')
+          .order('created_at', { ascending: false })
+          .limit(6);
 
         const mappedParts: Part[] = (productsData || []).map((p: any) => ({
           id: p.id,
@@ -172,6 +208,10 @@ export default function Home() {
         setAllServices(servicesData || []);
         setDisplayedParts(shuffle(mappedParts).slice(0, 5));
         setDisplayedServices(shuffle(servicesData || []).slice(0, 5));
+        setDisplayedMachining((machiningData || []).map((s: any) => ({
+          ...s,
+          seller_name: s.profiles?.full_name || 'Expert Maker'
+        })));
       } catch (err) {
         console.error('Error loading data:', err);
       } finally {
@@ -227,6 +267,13 @@ export default function Home() {
                   <span>Shop All Parts</span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
+                <Link
+                  href="/machining"
+                  className="btn-secondary px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer"
+                >
+                  <Settings className="w-4 h-4" />
+                  <span>Get Custom Parts</span>
+                </Link>
               </div>
 
               {/* Stats */}
@@ -257,14 +304,14 @@ export default function Home() {
                   </span>
                   <div className="flex items-center gap-1">
                     <button 
-                      onClick={() => setCurrentAdSlide((prev) => (prev - 1 + 4) % 4)}
+                      onClick={() => setCurrentAdSlide((prev) => (prev - 1 + AD_SLIDE_COUNT) % AD_SLIDE_COUNT)}
                       className="p-1 rounded-md hover:bg-slate-bg/80 text-slate-text-secondary hover:text-slate-text-primary transition-colors cursor-pointer"
                       aria-label="Previous Slide"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
                     <button 
-                      onClick={() => setCurrentAdSlide((prev) => (prev + 1) % 4)}
+                      onClick={() => setCurrentAdSlide((prev) => (prev + 1) % AD_SLIDE_COUNT)}
                       className="p-1 rounded-md hover:bg-slate-bg/80 text-slate-text-secondary hover:text-slate-text-primary transition-colors cursor-pointer"
                       aria-label="Next Slide"
                     >
@@ -307,13 +354,13 @@ export default function Home() {
                       <button
                         key={idx}
                         onClick={() => setCurrentAdSlide(idx)}
-                        className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                          currentAdSlide === idx 
-                            ? 'bg-cobalt w-3.5' 
-                            : 'bg-slate-text-muted/40 hover:bg-slate-text-muted/60'
+                        className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                          currentAdSlide === idx
+                            ? 'bg-cobalt w-4'
+                            : 'w-1.5 bg-slate-text-muted/40 hover:bg-slate-text-muted/60'
                         }`}
                         aria-label={`Go to slide ${idx + 1}`}
-                      ></button>
+                      />
                     ))}
                   </div>
                 </div>
@@ -380,6 +427,88 @@ export default function Home() {
         </section>
 
 
+
+        {/* CUSTOM MANUFACTURING TEASER */}
+        <section className="max-w-7xl mx-auto px-6 py-16 space-y-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-orange-600">On-Demand Manufacturing</span>
+              <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">Custom Machining Hub</h2>
+              <p className="text-xs text-slate-text-muted font-medium">Upload your CAD files and get custom parts made by verified local machining services.</p>
+            </div>
+            <Link
+              href="/machining"
+              className="btn-cobalt px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer shrink-0"
+            >
+              Browse All Services <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          {/* How it works strip */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {[
+              { icon: Upload, color: 'text-orange-600', bg: 'bg-orange-500/8 border-orange-500/15', step: '01', title: 'Upload Design File', desc: 'Share your STEP, STL, IGES, DXF, OBJ or PDF file directly with a seller.' },
+              { icon: Settings, color: 'text-cobalt', bg: 'bg-cobalt/8 border-cobalt/15', step: '02', title: 'Seller Reviews & Quotes', desc: 'The machining expert reviews your geometry and sends back a custom price quote.' },
+              { icon: CheckCircle2, color: 'text-emerald', bg: 'bg-emerald/8 border-emerald/15', step: '03', title: 'Accept & Get Parts Made', desc: 'Accept the offer when satisfied. Track your manufacturing order from your dashboard.' },
+            ].map(({ icon: Icon, color, bg, step, title, desc }) => (
+              <div key={step} className={`bg-white border rounded-2xl p-5 space-y-3 hover:shadow-md transition-all ${bg}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${bg} border`}>
+                    <Icon className={`w-5 h-5 ${color}`} />
+                  </div>
+                  <span className="text-[10px] font-black text-slate-text-muted uppercase tracking-widest">Step {step}</span>
+                </div>
+                <h3 className="text-sm font-black text-slate-text-primary">{title}</h3>
+                <p className="text-xs text-slate-text-secondary leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Featured machining service cards */}
+          {displayedMachining.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {displayedMachining.slice(0, 3).map((service: any) => {
+                const PROCESS_COLORS: Record<string, string> = {
+                  'CNC Machining': 'bg-blue-500/8 text-blue-600 border-blue-500/15',
+                  '3D Printing': 'bg-violet-500/8 text-violet-600 border-violet-500/15',
+                  'Sheet Metal': 'bg-amber-500/8 text-amber-600 border-amber-500/15',
+                  'Laser Cutting': 'bg-red-500/8 text-red-600 border-red-500/15',
+                };
+                return (
+                  <Link href="/machining" key={service.id} className="bg-white border border-slate-border rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all block group">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className={`px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-wider ${PROCESS_COLORS[service.process_type] || 'bg-cobalt/5 text-cobalt border-cobalt/10'}`}>
+                          {service.process_type}
+                        </span>
+                        <span className="text-[9px] font-bold text-slate-text-muted flex items-center gap-1 shrink-0">
+                          <Clock className="w-3 h-3" /> {service.lead_time}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-black text-slate-text-primary group-hover:text-cobalt transition-colors">{service.title}</h3>
+                      <p className="text-[11px] text-slate-text-muted">by {service.seller_name}</p>
+                      <p className="text-xs text-slate-text-secondary line-clamp-2 leading-relaxed">{service.description}</p>
+                    </div>
+                    <div className="pt-3.5 mt-3 border-t border-slate-border/40 flex items-center justify-between">
+                      <span className="text-sm font-black text-coral">₹{Number(service.base_price).toLocaleString('en-IN')}</span>
+                      <span className="text-[10px] font-bold text-cobalt flex items-center gap-1">Get Quote <ArrowRight className="w-3 h-3" /></span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="flex items-center justify-center">
+            <Link
+              href="/machining"
+              className="inline-flex items-center gap-2 text-sm font-bold text-cobalt hover:text-cobalt-hover transition-colors group"
+            >
+              Explore all machining services
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </section>
 
         {/* COMMUNITY TEASER */}
         <section className="bg-gradient-to-br from-slate-text-primary to-slate-text-secondary text-white">
