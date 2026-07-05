@@ -163,19 +163,81 @@ export default function MachiningPage() {
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans flex flex-col">
       <Navbar />
 
-      {/* Page Header */}
+      {/* Page Header*/}
       <div className="bg-white border-b border-slate-border">
         <div className="max-w-7xl mx-auto px-6 py-10">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald">B2B Manufacturing</span>
           <h1 className="text-4xl font-extrabold text-slate-text-primary tracking-tight mt-1">Custom Machining &amp; Services</h1>
           <p className="text-sm text-slate-text-muted font-medium mt-2 max-w-xl">
-            Upload industrial design files for instant automated quoting, or browse our full range of manufacturing services.
+            Transform your designs into high-precision parts. Partner with our certified engineering team for high-precision mechatronics assembly, CNC milling, SLA/SLS 3D printing, and design consultation.
           </p>
         </div>
       </div>
 
       <main className="max-w-7xl mx-auto px-6 py-12 flex-1 space-y-16">
+        {/* SERVICES GRID */}
+        <section className="space-y-6">
+          {/*<div className="border-b border-slate-border pb-4">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald">Capabilities</span>
+            <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">All Manufacturing Services</h2>
+            <p className="text-xs text-slate-text-muted font-medium">Partner with our certified engineering team for high-precision mechatronics assembly, CNC milling, SLA/SLS 3D printing, and design consultation.</p>
+          </div>*/}
 
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+              {[1, 2, 3, 4, 5, 6].map(n => (
+                <div key={n} className="h-64 bg-slate-bg/30 border border-slate-border/50 rounded-2xl p-6 space-y-4">
+                  <div className="h-4 bg-slate-border w-20 rounded"></div>
+                  <div className="h-6 bg-slate-border w-3/4 rounded"></div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {services.map((service) => (
+                <div
+                  key={service.id}
+                  className={`relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300 ${service.gradient_class || 'border-slate-border/80'}`}
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-emerald/5 text-emerald border-emerald/20">{service.category}</span>
+                      <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-text-muted">{service.lead_time}</span>
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-bold text-slate-text-primary tracking-tight">{service.title}</h3>
+                      <p className="text-xs text-slate-text-secondary leading-relaxed font-medium">{service.description}</p>
+                    </div>
+                    {service.features && Array.isArray(service.features) && service.features.length > 0 && (
+                      <ul className="space-y-1.5 text-[11px] text-slate-text-secondary font-medium">
+                        {service.features.map((feature: any, idx: number) => (
+                          <li key={idx} className="flex items-start gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald shrink-0 mt-0.5" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="pt-6 border-t border-slate-border/50 mt-6 flex items-center justify-between">
+                    <div>
+                      <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Base Price</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-base font-extrabold text-slate-text-primary">₹{Number(service.base_price).toFixed(2)}</span>
+                        <span className="text-[10px] text-slate-text-muted font-bold">INR</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => document.getElementById('rfq')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="btn-emerald text-xs font-bold px-3.5 py-2 rounded-lg cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                    >
+                      Configure RFQ <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
         {/* RFQ CONFIGURATOR */}
         <section id="rfq" className="space-y-6">
           <div className="border-b border-slate-border pb-4">
@@ -341,71 +403,6 @@ export default function MachiningPage() {
               </div>
             </div>
           </div>
-        </section>
-
-        {/* SERVICES GRID */}
-        <section className="space-y-6">
-          <div className="border-b border-slate-border pb-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald">Capabilities</span>
-            <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">All Manufacturing Services</h2>
-            <p className="text-xs text-slate-text-muted font-medium">Partner with our certified engineering team for high-precision mechatronics assembly, CNC milling, SLA/SLS 3D printing, and design consultation.</p>
-          </div>
-
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-              {[1, 2, 3, 4, 5, 6].map(n => (
-                <div key={n} className="h-64 bg-slate-bg/30 border border-slate-border/50 rounded-2xl p-6 space-y-4">
-                  <div className="h-4 bg-slate-border w-20 rounded"></div>
-                  <div className="h-6 bg-slate-border w-3/4 rounded"></div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.map((service) => (
-                <div
-                  key={service.id}
-                  className={`relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300 ${service.gradient_class || 'border-slate-border/80'}`}
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-emerald/5 text-emerald border-emerald/20">{service.category}</span>
-                      <span className="text-[9px] uppercase tracking-wider font-extrabold text-slate-text-muted">{service.lead_time}</span>
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-bold text-slate-text-primary tracking-tight">{service.title}</h3>
-                      <p className="text-xs text-slate-text-secondary leading-relaxed font-medium">{service.description}</p>
-                    </div>
-                    {service.features && Array.isArray(service.features) && service.features.length > 0 && (
-                      <ul className="space-y-1.5 text-[11px] text-slate-text-secondary font-medium">
-                        {service.features.map((feature: any, idx: number) => (
-                          <li key={idx} className="flex items-start gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald shrink-0 mt-0.5" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                  <div className="pt-6 border-t border-slate-border/50 mt-6 flex items-center justify-between">
-                    <div>
-                      <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Base Price</span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-base font-extrabold text-slate-text-primary">₹{Number(service.base_price).toFixed(2)}</span>
-                        <span className="text-[10px] text-slate-text-muted font-bold">INR</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => document.getElementById('rfq')?.scrollIntoView({ behavior: 'smooth' })}
-                      className="btn-emerald text-xs font-bold px-3.5 py-2 rounded-lg cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
-                    >
-                      Configure RFQ <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </section>
       </main>
 

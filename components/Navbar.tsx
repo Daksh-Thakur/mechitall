@@ -14,8 +14,7 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/products', label: 'Parts Catalog' },
-    { href: '/machining', label: 'Services & Capabilities' },
-    { href: '/machining#rfq', label: 'Custom Parts', badge: '3D CAD' },
+    { href: '/machining', label: 'Custom Machining', badge: '3D CAD' },
     { href: '/community', label: 'Community' },
   ];
 
@@ -49,9 +48,8 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`text-sm font-semibold transition-colors duration-200 flex items-center gap-1.5 cursor-pointer ${
-                    isActive ? 'text-cobalt' : 'text-slate-text-secondary hover:text-cobalt'
-                  }`}
+                  className={`text-sm font-semibold transition-colors duration-200 flex items-center gap-1.5 cursor-pointer ${isActive ? 'text-cobalt' : 'text-slate-text-secondary hover:text-cobalt'
+                    }`}
                 >
                   <span>{link.label}</span>
                   {link.badge && (
