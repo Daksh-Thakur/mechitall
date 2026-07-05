@@ -2,40 +2,40 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '../components/Navbar';
-import { 
-  MFG_PROCESSES, 
-  MATERIALS, 
-  FINISHES, 
-  LEAD_TIMES, 
-  Part 
+import {
+  MFG_PROCESSES,
+  MATERIALS,
+  FINISHES,
+  LEAD_TIMES,
+  Part
 } from '../components/mockData';
 import { createClient } from '@/utils/supabase/client';
-import { 
-  Cpu, 
-  Search, 
-  ShoppingCart, 
-  Plus, 
-  Minus, 
-  Trash2, 
-  Download, 
-  ChevronRight, 
-  Info, 
-  Sliders, 
-  Database, 
-  Package, 
-  History, 
-  Sparkles, 
-  Clock, 
-  Coins, 
-  TrendingDown, 
-  Compass, 
-  HelpCircle, 
-  CheckCircle2, 
-  Printer, 
-  FileUp, 
-  ShieldCheck, 
-  Activity, 
-  X, 
+import {
+  Cpu,
+  Search,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2,
+  Download,
+  ChevronRight,
+  Info,
+  Sliders,
+  Database,
+  Package,
+  History,
+  Sparkles,
+  Clock,
+  Coins,
+  TrendingDown,
+  Compass,
+  HelpCircle,
+  CheckCircle2,
+  Printer,
+  FileUp,
+  ShieldCheck,
+  Activity,
+  X,
   ChevronDown,
   ExternalLink,
   ChevronRightSquare
@@ -79,11 +79,11 @@ export default function Home() {
     async function loadData() {
       try {
         const supabase = createClient();
-        
+
         // Fetch products
         const { data: productsData, error: productsError } = await supabase.from('products').select('*');
         if (productsError) throw productsError;
-        
+
         const mappedParts: Part[] = (productsData || []).map(p => ({
           id: p.id,
           partNumber: p.part_number,
@@ -143,7 +143,7 @@ export default function Home() {
   const [rfqStatus, setRfqStatus] = useState<'idle' | 'analyzing' | 'quoted' | 'submitted'>('idle');
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [analysisMessage, setAnalysisMessage] = useState('');
-  
+
   // RFQ Config Options
   const [selectedProcess, setSelectedProcess] = useState(MFG_PROCESSES[0].id);
   const [selectedMaterial, setSelectedMaterial] = useState(MATERIALS[0].id);
@@ -213,7 +213,7 @@ export default function Home() {
     // Pricing formulas
     const setupCost = proc.baseCost;
     const rawMaterialCost = weightKg * mat.pricePerKg;
-    
+
     // Complexity base rate
     let baseRate = 80; // $80/hr machining base
     if (proc.id.includes('5')) baseRate = 160;
@@ -231,7 +231,7 @@ export default function Home() {
 
     // Raw unit cost calculation
     let unitCostBeforeFinish = machiningCost + rawMaterialCost;
-    
+
     // Finish multiplier
     let unitCost = unitCostBeforeFinish * fin.costMultiplier;
 
@@ -304,7 +304,7 @@ export default function Home() {
         pricePerUnit: unitPrice
       }]);
     }
-    
+
     // Pulse animation confirmation
     setIsCartOpen(true);
   };
@@ -376,12 +376,12 @@ export default function Home() {
   // Cart financial summary
   const cartSummary = useMemo(() => {
     const subtotal = cart.reduce((sum, item) => sum + (item.pricePerUnit * item.quantity), 0);
-    
+
     // B2B incentives
     const bulkDiscountThreshold = 1500;
     const discountRate = 0.08; // 8% enterprise discount
     const discount = subtotal >= bulkDiscountThreshold ? subtotal * discountRate : 0;
-    
+
     const shipping = subtotal === 0 ? 0 : (subtotal >= 500 ? 0 : 45.00);
     const tax = (subtotal - discount) * 0.0825; // 8.25% standard B2B tax
     const total = subtotal - discount + shipping + tax;
@@ -404,8 +404,8 @@ export default function Home() {
     // Search query
     if (searchQuery.trim() !== '') {
       const q = searchQuery.toLowerCase();
-      result = result.filter(part => 
-        part.title.toLowerCase().includes(q) || 
+      result = result.filter(part =>
+        part.title.toLowerCase().includes(q) ||
         part.partNumber.toLowerCase().includes(q) ||
         part.description.toLowerCase().includes(q)
       );
@@ -432,7 +432,7 @@ export default function Home() {
   const handleCheckout = () => {
     if (cart.length === 0) return;
     setCheckoutStatus('submitting');
-    
+
     // Simulate order confirmation
     setTimeout(() => {
       const orderId = `PO-2026-${Math.floor(10000 + Math.random() * 90000)}`;
@@ -455,8 +455,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans flex flex-col">
       {/* Navbar Integration */}
-      <Navbar 
-        cartCount={cartSummary.itemCount} 
+      <Navbar
+        cartCount={cartSummary.itemCount}
         onCartClick={() => setIsCartOpen(true)}
         onNavigateToRFQ={() => scrollToSection('rfq-section')}
         onNavigateToInventory={() => scrollToSection('inventory-section')}
@@ -465,7 +465,7 @@ export default function Home() {
 
       {/* Main Body */}
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-16 flex-1">
-        
+
         {/* SECTION 1: BRAND HERO HEADER */}
         <section className="relative overflow-hidden rounded-3xl border border-slate-border/80 bg-white p-8 md:p-12 glow-cobalt flex flex-col md:flex-row items-center gap-10">
           {/* Subtle neon abstract shapes in bg */}
@@ -473,35 +473,35 @@ export default function Home() {
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-emerald/5 to-cobalt/5 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20"></div>
 
           <div className="flex-1 space-y-6 z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cobalt/5 border border-cobalt/15 text-cobalt">
+            {/* <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cobalt/5 border border-cobalt/15 text-cobalt">
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cobalt opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-cobalt"></span>
               </span>
               <span className="text-[10px] font-bold uppercase tracking-wider">ISO 9001:2015 Certified · Free Shipping on Orders over ₹5000</span>
             </div>
-            
+            */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-text-primary leading-[1.05]">
-              Shop Premium Mechatronics <br />
+              Shop Premium <br />
               <span className="bg-gradient-to-r from-cobalt to-emerald bg-clip-text text-transparent">
                 Parts & Custom Builds
               </span>
             </h1>
 
             <p className="text-sm md:text-base text-slate-text-secondary max-w-xl font-medium leading-relaxed">
-              Buy ready-to-ship actuators, sensors, and controllers — or upload your CAD file and get an instant price for custom-machined parts. Fast delivery, no minimums.
+              Buy actuators, sensors, controllers and more — or upload your CAD file and get an instant price for custom-machined parts.
             </p>
 
             {/* Micro CTAs & Metrics */}
             <div className="flex flex-wrap gap-4 pt-2">
-              <button 
+              <button
                 onClick={() => scrollToSection('rfq-section')}
                 className="btn-emerald animate-pulse-ring-emerald px-6 py-3 rounded-lg font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg"
               >
                 <FileUp className="w-4 h-4" />
                 Get Instant Custom Quote
               </button>
-              <button 
+              <button
                 onClick={() => scrollToSection('inventory-section')}
                 className="btn-secondary px-6 py-3 rounded-lg font-bold text-xs flex items-center gap-2 cursor-pointer"
               >
@@ -584,11 +584,10 @@ export default function Home() {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                      selectedCategory === cat 
-                        ? 'bg-white text-cobalt shadow-sm border border-slate-border/50' 
-                        : 'text-slate-text-secondary hover:text-slate-text-primary'
-                    }`}
+                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${selectedCategory === cat
+                      ? 'bg-white text-cobalt shadow-sm border border-slate-border/50'
+                      : 'text-slate-text-secondary hover:text-slate-text-primary'
+                      }`}
                   >
                     {cat}
                   </button>
@@ -618,7 +617,7 @@ export default function Home() {
               <span>Showing {filteredParts.length} mechatronics parts</span>
             </div>
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery('')}
                 className="text-cobalt hover:underline cursor-pointer flex items-center gap-1"
               >
@@ -641,13 +640,13 @@ export default function Home() {
           ) : filteredParts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredParts.map((part) => (
-                <div 
+                <div
                   key={part.id}
                   className="group bg-white rounded-xl border border-slate-border p-5 flex flex-col justify-between card-hover glow-cobalt"
                 >
                   <div className="space-y-4">
                     {/* Colored glass placeholder */}
-                    <div 
+                    <div
                       onClick={() => { setSelectedPart(part); setSpecModalTab('specs'); setModalQuantity(1); }}
                       className={`h-40 w-full rounded-lg bg-gradient-to-br ${part.gradientClass} relative overflow-hidden flex items-center justify-center cursor-pointer`}
                     >
@@ -656,7 +655,7 @@ export default function Home() {
                       <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-widest bg-white/90 text-slate-text-primary shadow-sm">
                         {part.category}
                       </div>
-                      
+
                       <div className="absolute bottom-2 right-2 text-[9px] font-bold text-slate-text-muted flex items-center gap-1 bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded">
                         <Download className="w-2.5 h-2.5" /> CAD Available
                       </div>
@@ -667,7 +666,7 @@ export default function Home() {
                       <span className="block font-mono text-[10px] text-slate-text-muted uppercase tracking-wider leading-tight">
                         {part.partNumber}
                       </span>
-                      <h3 
+                      <h3
                         onClick={() => { setSelectedPart(part); setSpecModalTab('specs'); setModalQuantity(1); }}
                         className="text-sm font-bold text-slate-text-primary leading-tight group-hover:text-cobalt transition-colors duration-200 cursor-pointer line-clamp-1"
                       >
@@ -747,8 +746,8 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {services.map((service) => (
-                <div 
-                  key={service.id} 
+                <div
+                  key={service.id}
                   className={`relative overflow-hidden rounded-2xl border bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 ${service.gradient_class || 'border-slate-border/80'}`}
                 >
                   <div className="space-y-4">
@@ -789,7 +788,7 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <button 
+                    <button
                       onClick={() => scrollToSection('rfq-section')}
                       className="btn-emerald text-xs font-bold px-3.5 py-2 rounded-lg cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
                     >
@@ -812,24 +811,23 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
+
             {/* Drag & Drop Upload Section (Col 5) */}
             <div className="lg:col-span-5 space-y-4">
-              <div 
+              <div
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                className={`bg-white border-2 border-dashed rounded-2xl p-8 text-center transition-all ${
-                  rfqStatus === 'analyzing' 
-                    ? 'border-cobalt bg-cobalt/5' 
-                    : rfqFile 
-                      ? 'border-emerald/40 bg-emerald/5' 
-                      : 'border-slate-border hover:border-cobalt/50 hover:bg-slate-bg/30'
-                }`}
+                className={`bg-white border-2 border-dashed rounded-2xl p-8 text-center transition-all ${rfqStatus === 'analyzing'
+                  ? 'border-cobalt bg-cobalt/5'
+                  : rfqFile
+                    ? 'border-emerald/40 bg-emerald/5'
+                    : 'border-slate-border hover:border-cobalt/50 hover:bg-slate-bg/30'
+                  }`}
               >
-                <input 
-                  type="file" 
+                <input
+                  type="file"
                   id="cad-upload-input"
-                  className="hidden" 
+                  className="hidden"
                   accept=".step,.stp,.stl,.igs,.iges,.pdf,.dwg"
                   onChange={handleFileUpload}
                   disabled={rfqStatus === 'analyzing'}
@@ -839,10 +837,10 @@ export default function Home() {
                   <div className="w-14 h-14 bg-slate-bg border border-slate-border text-slate-text-secondary rounded-xl flex items-center justify-center mx-auto shadow-sm">
                     <FileUp className="w-6 h-6 text-slate-text-muted" />
                   </div>
-                  
+
                   <div className="space-y-1.5">
-                    <label 
-                      htmlFor="cad-upload-input" 
+                    <label
+                      htmlFor="cad-upload-input"
                       className="text-xs font-bold text-cobalt hover:underline cursor-pointer"
                     >
                       Click to upload 3D CAD/PDF
@@ -868,7 +866,7 @@ export default function Home() {
                     <span>{analysisProgress}%</span>
                   </div>
                   <div className="w-full bg-slate-bg h-2 rounded-full overflow-hidden border border-slate-border/50">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-cobalt to-emerald h-full transition-all duration-150"
                       style={{ width: `${analysisProgress}%` }}
                     ></div>
@@ -912,7 +910,7 @@ export default function Home() {
                       <span className="block text-[8px] uppercase tracking-wider text-emerald font-extrabold">CAD Analyzed</span>
                       <span className="block text-xs font-bold text-slate-text-primary truncate max-w-[200px]">{rfqFile.name}</span>
                     </div>
-                    <button 
+                    <button
                       onClick={() => { setRfqFile(null); setRfqStatus('idle'); }}
                       className="text-slate-text-muted hover:text-coral transition-colors"
                       title="Remove file"
@@ -1114,19 +1112,17 @@ export default function Home() {
                     submittedOrders.map((order) => (
                       <tr key={order.orderId} className="hover:bg-slate-bg/30 transition-colors">
                         <td className="p-4 pl-6 font-mono font-bold text-slate-text-primary flex items-center gap-1.5">
-                          <span className={`w-2 h-2 rounded-full ${
-                            order.status === 'Shipped' ? 'bg-emerald' : 
+                          <span className={`w-2 h-2 rounded-full ${order.status === 'Shipped' ? 'bg-emerald' :
                             order.status === 'Approved' ? 'bg-cobalt' : 'bg-amber-500'
-                          }`}></span>
+                            }`}></span>
                           {order.orderId}
                         </td>
                         <td className="p-4">{order.date}</td>
                         <td className="p-4">
-                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${
-                            order.type === 'Custom Part' 
-                              ? 'bg-emerald/5 text-emerald border-emerald/20' 
-                              : 'bg-cobalt/5 text-cobalt border-cobalt/20'
-                          }`}>
+                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${order.type === 'Custom Part'
+                            ? 'bg-emerald/5 text-emerald border-emerald/20'
+                            : 'bg-cobalt/5 text-cobalt border-cobalt/20'
+                            }`}>
                             {order.type}
                           </span>
                           {order.fileAttached && (
@@ -1140,10 +1136,9 @@ export default function Home() {
                           ${order.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </td>
                         <td className="p-4">
-                          <span className={`inline-flex items-center gap-1 text-[11px] font-bold ${
-                            order.status === 'Shipped' ? 'text-emerald' : 
+                          <span className={`inline-flex items-center gap-1 text-[11px] font-bold ${order.status === 'Shipped' ? 'text-emerald' :
                             order.status === 'Approved' ? 'text-cobalt' : 'text-amber-500'
-                          }`}>
+                            }`}>
                             {order.status}
                           </span>
                         </td>
@@ -1223,7 +1218,7 @@ export default function Home() {
       {isCartOpen && (
         <>
           {/* Backdrop */}
-          <div 
+          <div
             className="fixed inset-0 bg-slate-text-primary/20 backdrop-blur-sm z-50 transition-opacity duration-300"
             onClick={() => setIsCartOpen(false)}
           ></div>
@@ -1239,7 +1234,7 @@ export default function Home() {
                   {cartSummary.itemCount} items
                 </span>
               </div>
-              <button 
+              <button
                 onClick={() => setIsCartOpen(false)}
                 className="p-1 rounded hover:bg-slate-bg transition-colors cursor-pointer"
               >
@@ -1251,7 +1246,7 @@ export default function Home() {
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {cart.length > 0 ? (
                 cart.map((item) => (
-                  <div 
+                  <div
                     key={item.id}
                     className="p-4 bg-slate-bg/50 border border-slate-border rounded-xl space-y-3 flex flex-col"
                   >
@@ -1283,7 +1278,7 @@ export default function Home() {
                       ) : null}
 
                       {/* Remove */}
-                      <button 
+                      <button
                         onClick={() => removeFromCart(item.id)}
                         className="text-slate-text-muted hover:text-coral transition-colors p-1"
                         title="Remove item"
@@ -1296,7 +1291,7 @@ export default function Home() {
                     <div className="flex items-center justify-between pt-2 border-t border-slate-border/30 mt-1">
                       {/* Interactive adjust */}
                       <div className="flex items-center border border-slate-border bg-white rounded-md">
-                        <button 
+                        <button
                           onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
                           className="px-2 py-1 text-slate-text-muted hover:text-slate-text-primary"
                         >
@@ -1305,7 +1300,7 @@ export default function Home() {
                         <span className="px-3 text-xs font-bold text-slate-text-primary min-w-[20px] text-center">
                           {item.quantity}
                         </span>
-                        <button 
+                        <button
                           onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
                           className="px-2 py-1 text-slate-text-muted hover:text-slate-text-primary"
                         >
@@ -1343,7 +1338,7 @@ export default function Home() {
                   <span>Cart Subtotal</span>
                   <span>₹{cartSummary.subtotal.toFixed(2)}</span>
                 </div>
-                
+
                 {/* Volume Discount indicator */}
                 {cartSummary.subtotal >= 1500 ? (
                   <div className="flex justify-between text-emerald">
@@ -1400,14 +1395,14 @@ export default function Home() {
       {selectedPart && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div 
+          <div
             className="fixed inset-0 bg-slate-text-primary/45 backdrop-blur-sm"
             onClick={() => setSelectedPart(null)}
           ></div>
 
           {/* Modal Container */}
           <div className="bg-white border border-slate-border rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl relative z-10 flex flex-col md:flex-row h-[550px]">
-            
+
             {/* Left Col: stylized gradient image placeholder + basic stats */}
             <div className={`md:w-5/12 bg-gradient-to-br ${selectedPart.gradientClass} p-6 flex flex-col justify-between relative`}>
               <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px] pointer-events-none"></div>
@@ -1417,7 +1412,7 @@ export default function Home() {
                 <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wider bg-white/90 text-slate-text-primary shadow-sm border border-slate-border/50">
                   {selectedPart.category}
                 </span>
-                
+
                 <span className="text-[10px] text-slate-text-primary/70 font-mono font-bold bg-white/40 px-1.5 py-0.5 rounded backdrop-blur-md">
                   {selectedPart.extendedSpecs.ingressProtection}
                 </span>
@@ -1452,7 +1447,7 @@ export default function Home() {
 
             {/* Right Col: details and configuration tabs */}
             <div className="md:w-7/12 flex flex-col justify-between bg-white">
-              
+
               {/* Top Details & Tab Selector */}
               <div className="p-6 pb-2 space-y-4">
                 {/* Header */}
@@ -1465,7 +1460,7 @@ export default function Home() {
                       {selectedPart.title}
                     </h3>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setSelectedPart(null)}
                     className="p-1 rounded hover:bg-slate-bg text-slate-text-muted hover:text-slate-text-primary transition-colors cursor-pointer"
                   >
@@ -1483,11 +1478,10 @@ export default function Home() {
                     <button
                       key={tab.id}
                       onClick={() => setSpecModalTab(tab.id)}
-                      className={`pb-2 border-b-2 transition-all cursor-pointer ${
-                        specModalTab === tab.id 
-                          ? 'border-cobalt text-cobalt font-extrabold' 
-                          : 'border-transparent text-slate-text-muted hover:text-slate-text-secondary'
-                      }`}
+                      className={`pb-2 border-b-2 transition-all cursor-pointer ${specModalTab === tab.id
+                        ? 'border-cobalt text-cobalt font-extrabold'
+                        : 'border-transparent text-slate-text-muted hover:text-slate-text-secondary'
+                        }`}
                     >
                       {tab.label}
                     </button>
@@ -1497,7 +1491,7 @@ export default function Home() {
 
               {/* Scrollable Center Content */}
               <div className="flex-1 overflow-y-auto px-6 py-2">
-                
+
                 {/* Specs Tab */}
                 {specModalTab === 'specs' && (
                   <div className="space-y-4 text-xs">
@@ -1535,7 +1529,7 @@ export default function Home() {
 
                     <div className="space-y-2">
                       {selectedPart.bulkPricing.map((tier, idx) => (
-                        <div 
+                        <div
                           key={idx}
                           className="flex items-center justify-between p-3 border border-slate-border/50 rounded-lg bg-slate-bg/30"
                         >
@@ -1567,7 +1561,7 @@ export default function Home() {
                     </span>
 
                     <div className="space-y-3">
-                      <a 
+                      <a
                         href={selectedPart.datasheetUrl}
                         className="flex items-center justify-between p-3 border border-slate-border rounded-lg hover:border-cobalt hover:bg-slate-bg/30 transition-all text-slate-text-primary font-bold cursor-pointer"
                       >
@@ -1578,7 +1572,7 @@ export default function Home() {
                         <Download className="w-4 h-4 text-slate-text-muted" />
                       </a>
 
-                      <a 
+                      <a
                         href={`#cad-file-${selectedPart.cadFile}`}
                         className="flex items-center justify-between p-3 border border-slate-border rounded-lg hover:border-cobalt hover:bg-slate-bg/30 transition-all text-slate-text-primary font-bold cursor-pointer"
                       >
@@ -1613,7 +1607,7 @@ export default function Home() {
                 <div className="flex items-center gap-3">
                   {/* Selector */}
                   <div className="flex items-center border border-slate-border bg-white rounded-md h-9">
-                    <button 
+                    <button
                       onClick={() => setModalQuantity(q => Math.max(1, q - 1))}
                       className="px-2.5 text-slate-text-muted hover:text-slate-text-primary"
                     >
@@ -1622,7 +1616,7 @@ export default function Home() {
                     <span className="px-3 text-xs font-bold text-slate-text-primary min-w-[20px] text-center">
                       {modalQuantity}
                     </span>
-                    <button 
+                    <button
                       onClick={() => setModalQuantity(q => q + 1)}
                       className="px-2.5 text-slate-text-muted hover:text-slate-text-primary"
                     >
@@ -1687,13 +1681,13 @@ export default function Home() {
 
             {/* Actions */}
             <div className="flex gap-3">
-              <button 
+              <button
                 onClick={() => setCheckoutStatus('idle')}
                 className="flex-1 btn-secondary text-xs font-bold py-2.5 rounded-lg cursor-pointer"
               >
                 Back to Catalog
               </button>
-              <button 
+              <button
                 onClick={() => { setCheckoutStatus('idle'); scrollToSection('orders-section'); }}
                 className="flex-1 btn-cobalt text-xs font-bold py-2.5 rounded-lg cursor-pointer flex items-center justify-center gap-1.5"
               >

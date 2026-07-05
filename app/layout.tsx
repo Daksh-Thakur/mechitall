@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MechItAll | High-Tech Mechatronics Marketplace & B2B Services",
+  title: "MechItAll | High-Tech Mechatronics Marketplace",
   description: "Next-generation B2B marketplace and custom manufacturing platform for actuators, sensors, control boards, and mechatronic components.",
 };
 
