@@ -1,16 +1,40 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Cpu, ShoppingCart, Bell, Settings, LogOut, ShieldCheck, Users } from 'lucide-react';
+import { Cpu, ShoppingCart, Bell, Settings, LogOut, ShieldCheck, Users, User } from 'lucide-react';
 import { useCart } from './CartProvider';
 import CartDrawer from './CartDrawer';
+import { createClient } from '../utils/supabase/client';
 
 export default function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
+  const [user, setUser] = useState<any | null>(null);
   const pathname = usePathname();
-  const { cartSummary, setIsCartOpen, profile } = useCart();
+  const { cartSummary, setIsCartOpen, profile, fetchProfile, showToast } = useCart();
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
+
+  const handleSignOut = async () => {
+    setProfileOpen(false);
+    await supabase.auth.signOut();
+    document.cookie = 'mechitall_profile_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    await fetchProfile();
+    showToast('Successfully signed out.', 'success');
+    window.location.href = '/';
+  };
 
   const navLinks = [
     { href: '/products', label: 'Parts Catalog' },
@@ -154,7 +178,7 @@ export default function Navbar() {
                 className="w-9 h-9 rounded-full border border-slate-border bg-slate-border/50 text-slate-text-secondary flex items-center justify-center font-bold text-xs hover:bg-slate-bg hover:border-slate-text-secondary/40 transition-all cursor-pointer"
                 aria-label="Open profile menu"
               >
-                {profile ? profile.loyalty_tier[0] + profile.loyalty_tier.split(' ').pop()![0] : 'GU'}
+                {user ? (profile?.full_name ? profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0] : 'U') : 'GU'}
               </button>
 
               {profileOpen && (
@@ -162,7 +186,9 @@ export default function Navbar() {
                   <div className="fixed inset-0 z-10" onClick={() => setProfileOpen(false)}></div>
                   <div className="absolute right-0 mt-2 w-56 rounded-xl border border-slate-border bg-white shadow-lg py-1.5 z-20 animate-slide-in md:origin-top-right">
                     <div className="px-4 py-2 border-b border-slate-border mb-1">
-                      <span className="block text-xs text-slate-text-muted">Shopper Account</span>
+                      <span className="block text-xs text-slate-text-muted">
+                        {user ? 'Shopper Account' : 'Guest Shopper'}
+                      </span>
                       <span className="block text-xs font-bold text-slate-text-primary truncate">
                         {profile?.full_name || 'Guest User'}
                       </span>
@@ -170,6 +196,15 @@ export default function Navbar() {
                         {profile?.loyalty_tier || 'Tinkerer'}
                       </span>
                     </div>
+                    {user && (
+                      <Link
+                        href="/profile"
+                        onClick={() => setProfileOpen(false)}
+                        className="w-full text-left px-4 py-2 text-xs text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary flex items-center gap-2 cursor-pointer"
+                      >
+                        <User className="w-3.5 h-3.5" /> My Profile
+                      </Link>
+                    )}
                     <Link
                       href="/dashboard"
                       onClick={() => setProfileOpen(false)}
@@ -178,12 +213,22 @@ export default function Navbar() {
                       <Settings className="w-3.5 h-3.5" /> Rewards & Orders
                     </Link>
                     <div className="border-t border-slate-border my-1"></div>
-                    <button
-                      onClick={() => { setProfileOpen(false); }}
-                      className="w-full text-left px-4 py-2 text-xs text-cobalt hover:bg-blue-50 flex items-center gap-2 cursor-pointer font-bold"
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5" /> Sign in / Create Account
-                    </button>
+                    {user ? (
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 cursor-pointer font-bold"
+                      >
+                        <LogOut className="w-3.5 h-3.5" /> Sign Out
+                      </button>
+                    ) : (
+                      <Link
+                        href="/login"
+                        onClick={() => setProfileOpen(false)}
+                        className="w-full text-left px-4 py-2 text-xs text-cobalt hover:bg-blue-50 flex items-center gap-2 cursor-pointer font-bold"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" /> Sign in / Create Account
+                      </Link>
+                    )}
                   </div>
                 </>
               )}

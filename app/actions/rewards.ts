@@ -5,6 +5,8 @@ import { cookies } from 'next/headers';
 
 export interface Profile {
   id: string;
+  user_id?: string | null;
+  email?: string | null;
   full_name: string;
   wallet_balance: number;
   loyalty_tier: 'Tinkerer' | 'Master Builder';
@@ -31,7 +33,86 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  // If a profileId was provided, try fetching it
+  // Check if a Supabase Auth session is active
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    // 1. Try to find profile linked to this authenticated user
+    const { data: authProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (authProfile) {
+      return authProfile as Profile;
+    }
+
+    // 2. If no profile exists for user, check if we have a guest profile to link
+    if (profileId) {
+      const { data: guestProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', profileId)
+        .maybeSingle();
+
+      if (guestProfile && !guestProfile.user_id) {
+        // Link the guest profile to this user
+        const { data: linkedProfile, error: linkError } = await supabase
+          .from('profiles')
+          .update({
+            user_id: user.id,
+            email: user.email,
+            full_name: guestProfile.full_name === 'Guest Maker' || guestProfile.full_name === 'Guest User'
+              ? (user.user_metadata?.full_name || 'Precision Maker')
+              : guestProfile.full_name,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', profileId)
+          .select()
+          .single();
+
+        if (!linkError && linkedProfile) {
+          return linkedProfile as Profile;
+        }
+      }
+    }
+
+    // 3. Create a new authenticated profile if none was found or linked
+    const { data: newProfile, error: createError } = await supabase
+      .from('profiles')
+      .insert([
+        {
+          user_id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || 'Precision Maker',
+          wallet_balance: 10, // Initial welcome bolts
+          loyalty_tier: 'Tinkerer',
+        },
+      ])
+      .select()
+      .single();
+
+    if (!createError && newProfile) {
+      // Create ledger entry
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 45);
+      await supabase
+        .from('bolts_transactions')
+        .insert([
+          {
+            profile_id: newProfile.id,
+            amount: 10,
+            type: 'credit',
+            description: 'Welcome Reward: 10 Demo Bolts credited',
+            expires_at: expirationDate.toISOString(),
+          },
+        ]);
+      return newProfile as Profile;
+    }
+  }
+
+  // --- Guest / Anonymous Fallbacks ---
   if (profileId) {
     const { data: profile, error } = await supabase
       .from('profiles')
@@ -89,12 +170,14 @@ export async function getProfileTransactions(profileId: string) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  // 1. Run expiration routine
-  try {
-    await supabase.rpc('expire_old_bolts');
-  } catch (err) {
-    console.error('Error running expire_old_bolts RPC:', err);
-  }
+  // 1. Run expiration routine asynchronously to prevent blocking the query
+  (async () => {
+    try {
+      await supabase.rpc('expire_old_bolts');
+    } catch (err) {
+      console.error('Error running expire_old_bolts RPC asynchronously:', err);
+    }
+  })();
 
   // 2. Fetch profile details
   const { data: profile, error: profileErr } = await supabase
@@ -394,5 +477,26 @@ export async function simulateOrderStatus(orderId: string, nextStatus: 'Shipped'
   }
 
   return order;
+}
+
+/**
+ * Updates full name in the user profile table.
+ */
+export async function updateProfileName(profileId: string, fullName: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ full_name: fullName, updated_at: new Date().toISOString() })
+    .eq('id', profileId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as Profile;
 }
 
