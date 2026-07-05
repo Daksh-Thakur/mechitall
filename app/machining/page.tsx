@@ -13,7 +13,7 @@ import {
 } from '@/app/actions/marketplace';
 import { 
   Cpu, FileUp, Settings, Plus, Sparkles, CheckCircle2, Clock, 
-  HelpCircle, ShieldCheck, ShoppingBag, Send, AlertTriangle, Layers, ChevronRight
+  HelpCircle, ShieldCheck, ShoppingBag, Send, AlertTriangle, Layers, ChevronRight, Info
 } from 'lucide-react';
 
 export default function MachiningMarketplacePage() {
