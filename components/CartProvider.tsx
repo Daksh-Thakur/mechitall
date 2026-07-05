@@ -258,13 +258,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (cart.length === 0) return;
     setCheckoutStatus('submitting');
     try {
-      // 1. Get active profile
+      // 1. Get active profile (must be authenticated to checkout)
       let activeProfile = profile;
       if (!activeProfile) {
         const storedId = getCookie('mechitall_profile_id');
-        activeProfile = await getOrCreateProfile(storedId);
-        setProfile(activeProfile);
-        setCookie('mechitall_profile_id', activeProfile.id);
+        activeProfile = await getAuthenticatedProfile(storedId);
+        if (activeProfile) {
+          setProfile(activeProfile);
+          setCookie('mechitall_profile_id', activeProfile.id);
+        } else {
+          showToast('Please sign in to complete your purchase.', 'error');
+          setCheckoutStatus('idle');
+          return;
+        }
       }
 
       // 2. Create the order in the database linked to this profile
