@@ -86,7 +86,7 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
           user_id: user.id,
           email: user.email,
           full_name: user.user_metadata?.full_name || 'Precision Maker',
-          wallet_balance: 10, // Initial welcome bolts
+          wallet_balance: 25, // Initial welcome bolts
           loyalty_tier: 'Tinkerer',
         },
       ])
@@ -102,9 +102,9 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
         .insert([
           {
             profile_id: newProfile.id,
-            amount: 10,
+            amount: 25,
             type: 'credit',
-            description: 'Welcome Reward: 10 Demo Bolts credited',
+            description: 'Welcome Reward: 25 Bolts credited',
             expires_at: expirationDate.toISOString(),
           },
         ]);
@@ -125,13 +125,13 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
     }
   }
 
-  // Create a new Guest profile with 10 Demo Bolts
+  // Create a new Guest profile with 25 Bolts
   const { data: newProfile, error: createError } = await supabase
     .from('profiles')
     .insert([
       {
         full_name: 'Guest Maker',
-        wallet_balance: 10,
+        wallet_balance: 25,
         loyalty_tier: 'Tinkerer',
       },
     ])
@@ -143,7 +143,7 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
     throw new Error('Failed to initialize profile');
   }
 
-  // Insert a welcome demo bolts transaction
+  // Insert a welcome bolts transaction
   const expirationDate = new Date();
   expirationDate.setDate(expirationDate.getDate() + 45);
 
@@ -152,9 +152,9 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
     .insert([
       {
         profile_id: newProfile.id,
-        amount: 10,
+        amount: 25,
         type: 'credit',
-        description: 'Welcome Reward: 10 Demo Bolts credited',
+        description: 'Welcome Reward: 25 Bolts credited',
         expires_at: expirationDate.toISOString(),
       },
     ]);
