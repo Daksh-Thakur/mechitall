@@ -114,53 +114,25 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
   }
 
   // --- Guest / Anonymous Fallbacks ---
-  if (profileId) {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', profileId)
-      .single();
+  // For unauthenticated visitors, return null so the UI shows 0 Bolts.
+  // We do NOT create guest profiles or award bolts to anonymous visitors.
+  return null as unknown as Profile;
+}
 
-    if (profile && !error) {
-      return profile as Profile;
-    }
-  }
+/**
+ * Like getOrCreateProfile but returns null for unauthenticated (guest) visitors.
+ * Use this in UI contexts where showing a zero balance for guests is correct.
+ */
+export async function getAuthenticatedProfile(profileId?: string): Promise<Profile | null> {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
 
-  // Create a new Guest profile with 25 Bolts
-  const { data: newProfile, error: createError } = await supabase
-    .from('profiles')
-    .insert([
-      {
-        full_name: 'Guest Maker',
-        wallet_balance: 25,
-        loyalty_tier: 'Tinkerer',
-      },
-    ])
-    .select()
-    .single();
+  // Only proceed if there is an active Supabase Auth session
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
 
-  if (createError) {
-    console.error('Error creating profile:', createError.message);
-    throw new Error('Failed to initialize profile');
-  }
-
-  // Insert a welcome bolts transaction
-  const expirationDate = new Date();
-  expirationDate.setDate(expirationDate.getDate() + 45);
-
-  await supabase
-    .from('bolts_transactions')
-    .insert([
-      {
-        profile_id: newProfile.id,
-        amount: 25,
-        type: 'credit',
-        description: 'Welcome Reward: 25 Bolts credited',
-        expires_at: expirationDate.toISOString(),
-      },
-    ]);
-
-  return newProfile as Profile;
+  // Re-use the full logic from getOrCreateProfile (which now only runs for auth users)
+  return getOrCreateProfile(profileId);
 }
 
 /**

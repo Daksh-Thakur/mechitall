@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
 import { Part } from './mockData';
-import { Profile, getOrCreateProfile, createDbOrder } from '@/app/actions/rewards';
+import { Profile, getAuthenticatedProfile, createDbOrder } from '@/app/actions/rewards';
 
 export interface CartItem {
   id: string;
@@ -156,11 +156,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = useCallback(async () => {
     try {
       const storedId = getCookie('mechitall_profile_id');
-      const activeProfile = await getOrCreateProfile(storedId);
-      setProfile(activeProfile);
-      setCookie('mechitall_profile_id', activeProfile.id);
+      const activeProfile = await getAuthenticatedProfile(storedId);
+      setProfile(activeProfile);  // null for guests → 0 Bolts shown
+      if (activeProfile) {
+        setCookie('mechitall_profile_id', activeProfile.id);
+      }
     } catch (err) {
       console.error('Failed to sync profile status:', err);
+      setProfile(null);
     }
   }, []);
 
