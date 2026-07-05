@@ -34,7 +34,7 @@ export default function Navbar({ cartCount, onCartClick, onNavigateToRFQ, onNavi
               <span className="font-extrabold text-lg text-slate-text-primary tracking-tight">All</span>
             </div>
             <span className="block text-[8px] uppercase tracking-[0.15em] text-slate-text-muted font-bold -mt-1">
-              B2B Mechatronics Hub
+              Mechatronics Store
             </span>
           </div>
         </div>
@@ -57,7 +57,7 @@ export default function Navbar({ cartCount, onCartClick, onNavigateToRFQ, onNavi
             onClick={onNavigateToRFQ}
             className="text-sm font-semibold text-slate-text-secondary hover:text-cobalt transition-colors duration-200 flex items-center gap-1.5 cursor-pointer"
           >
-            <span>Custom RFQ</span>
+            <span>Custom Parts</span>
             <span className="text-[9px] uppercase tracking-wider font-bold bg-emerald/10 text-emerald px-1.5 py-0.5 rounded border border-emerald/20">
               3D CAD
             </span>
@@ -76,7 +76,7 @@ export default function Navbar({ cartCount, onCartClick, onNavigateToRFQ, onNavi
           <div className="relative hidden sm:block w-64 lg:w-80">
             <input
               type="text"
-              placeholder="Search parts, CAD files, datasheets..."
+              placeholder="Search parts, products, datasheets..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full text-xs bg-slate-bg border border-slate-border text-slate-text-primary px-3 py-2 pl-9 rounded-lg focus:outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt/20 transition-all placeholder-slate-text-muted font-medium"
@@ -101,7 +101,7 @@ export default function Navbar({ cartCount, onCartClick, onNavigateToRFQ, onNavi
             )}
           </button>
 
-          {/* B2B User Profile dropdown */}
+          {/* User Profile dropdown */}
           <div className="relative">
             <button
               onClick={() => setProfileOpen(!profileOpen)}
@@ -113,7 +113,7 @@ export default function Navbar({ cartCount, onCartClick, onNavigateToRFQ, onNavi
               <div className="hidden lg:block text-left">
                 <span className="block text-[11px] font-bold text-slate-text-primary leading-tight">Guest User</span>
                 <span className="block text-[8px] text-slate-text-muted font-extrabold uppercase tracking-wider">
-                  Standard Tier
+                  Shop Account
                 </span>
               </div>
               <ChevronDown className="w-3 h-3 text-slate-text-muted hidden sm:block" />
@@ -127,24 +127,24 @@ export default function Navbar({ cartCount, onCartClick, onNavigateToRFQ, onNavi
                 ></div>
                 <div className="absolute right-0 mt-2 w-56 rounded-xl border border-slate-border bg-white shadow-lg py-1.5 z-20 animate-slide-in md:origin-top-right">
                   <div className="px-4 py-2 border-b border-slate-border mb-1">
-                    <span className="block text-xs text-slate-text-muted">Procurement Role</span>
-                    <span className="block text-xs font-bold text-slate-text-primary truncate">Guest Account</span>
+                    <span className="block text-xs text-slate-text-muted">Shopper Account</span>
+                    <span className="block text-xs font-bold text-slate-text-primary truncate">Guest User</span>
                     <span className="inline-block mt-1 text-[9px] uppercase tracking-wider font-extrabold bg-slate-bg text-slate-text-secondary border border-slate-border/80 px-1.5 py-0.5 rounded">
-                      ID: MECH-GUEST
+                      GUEST SESSION
                     </span>
                   </div>
                   <button 
                     onClick={() => { setProfileOpen(false); }}
                     className="w-full text-left px-4 py-2 text-xs text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary flex items-center gap-2 cursor-pointer"
                   >
-                    <Settings className="w-3.5 h-3.5" /> Platform settings
+                    <Settings className="w-3.5 h-3.5" /> Account settings
                   </button>
                   <div className="border-t border-slate-border my-1"></div>
                   <button 
                     onClick={() => { setProfileOpen(false); }}
                     className="w-full text-left px-4 py-2 text-xs text-cobalt hover:bg-blue-50 flex items-center gap-2 cursor-pointer font-bold"
                   >
-                    <ShieldCheck className="w-3.5 h-3.5" /> Sign in / Register SLA
+                    <ShieldCheck className="w-3.5 h-3.5" /> Sign in / Create Account
                   </button>
                 </div>
               </>

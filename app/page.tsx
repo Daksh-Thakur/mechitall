@@ -59,10 +59,10 @@ interface CartItem {
   pricePerUnit: number;
 }
 
-interface SubmittedB2BOrder {
+interface SubmittedOrder {
   orderId: string;
   date: string;
-  type: 'Marketplace Purchase' | 'Custom RFQ';
+  type: 'Shop Purchase' | 'Custom Part';
   itemsCount: number;
   total: number;
   status: 'Processing' | 'Analyzing CAD' | 'Approved' | 'Shipped';
@@ -152,11 +152,11 @@ export default function Home() {
   const [rfqQuantity, setRfqQuantity] = useState(10);
 
   // Submitted Orders Tracker
-  const [submittedOrders, setSubmittedOrders] = useState<SubmittedB2BOrder[]>([]);
+  const [submittedOrders, setSubmittedOrders] = useState<SubmittedOrder[]>([]);
 
   // Checkout Status
   const [checkoutStatus, setCheckoutStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
-  const [lastPlacedOrder, setLastPlacedOrder] = useState<SubmittedB2BOrder | null>(null);
+  const [lastPlacedOrder, setLastPlacedOrder] = useState<SubmittedOrder | null>(null);
 
   // Auto-scroll to section function
   const scrollToSection = (id: string) => {
@@ -428,18 +428,18 @@ export default function Home() {
     return result;
   }, [parts, searchQuery, selectedCategory, sortBy]);
 
-  // Place B2B Order checkout trigger
+  // Place order checkout trigger
   const handleCheckout = () => {
     if (cart.length === 0) return;
     setCheckoutStatus('submitting');
     
-    // Simulate B2B PO confirmation wait
+    // Simulate order confirmation
     setTimeout(() => {
       const orderId = `PO-2026-${Math.floor(10000 + Math.random() * 90000)}`;
-      const newOrder: SubmittedB2BOrder = {
+      const newOrder: SubmittedOrder = {
         orderId,
         date: new Date().toISOString().split('T')[0],
-        type: 'Marketplace Purchase',
+        type: 'Shop Purchase',
         itemsCount: cart.length,
         total: cartSummary.total,
         status: 'Processing'
@@ -478,18 +478,18 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cobalt opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-cobalt"></span>
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider">ISO 9001:2015 Certified Manufacturing</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider">ISO 9001:2015 Certified · Free Shipping on Orders over ₹5000</span>
             </div>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-text-primary leading-[1.05]">
-              Next-Gen Mechatronics <br />
+              Shop Premium Mechatronics <br />
               <span className="bg-gradient-to-r from-cobalt to-emerald bg-clip-text text-transparent">
-                Marketplace & B2B RFQ
+                Parts & Custom Builds
               </span>
             </h1>
 
             <p className="text-sm md:text-base text-slate-text-secondary max-w-xl font-medium leading-relaxed">
-              Procure precision actuators, high-fidelity sensors, and integrated controllers directly from stock, or upload CAD files for instant manufacturing quotes on custom parts.
+              Buy ready-to-ship actuators, sensors, and controllers — or upload your CAD file and get an instant price for custom-machined parts. Fast delivery, no minimums.
             </p>
 
             {/* Micro CTAs & Metrics */}
@@ -499,13 +499,13 @@ export default function Home() {
                 className="btn-emerald animate-pulse-ring-emerald px-6 py-3 rounded-lg font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg"
               >
                 <FileUp className="w-4 h-4" />
-                Upload CAD for Quote
+                Get Instant Custom Quote
               </button>
               <button 
                 onClick={() => scrollToSection('inventory-section')}
                 className="btn-secondary px-6 py-3 rounded-lg font-bold text-xs flex items-center gap-2 cursor-pointer"
               >
-                <span>Browse Inventory</span>
+                <span>Shop Parts</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -513,16 +513,16 @@ export default function Home() {
             {/* Divider */}
             <div className="border-t border-slate-border/60 pt-6 grid grid-cols-3 gap-6">
               <div>
-                <span className="block text-xl md:text-2xl font-extrabold text-cobalt">2.4 Hours</span>
-                <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Avg. CNC Lead Time</span>
+                <span className="block text-xl md:text-2xl font-extrabold text-cobalt">24–48 hrs</span>
+                <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Avg. Delivery Time</span>
               </div>
               <div>
-                <span className="block text-xl md:text-2xl font-extrabold text-emerald">150+ Tons</span>
-                <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Aerospace Grade Stock</span>
+                <span className="block text-xl md:text-2xl font-extrabold text-emerald">No Minimums</span>
+                <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Order 1 or 10,000 units</span>
               </div>
               <div>
-                <span className="block text-xl md:text-2xl font-extrabold text-slate-text-primary">18,500+</span>
-                <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Active B2B Parts</span>
+                <span className="block text-xl md:text-2xl font-extrabold text-slate-text-primary">10,000+</span>
+                <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Products In Stock</span>
               </div>
             </div>
           </div>
@@ -531,35 +531,35 @@ export default function Home() {
           <div className="w-full md:w-[400px] z-10">
             <div className="glassmorphism p-6 rounded-2xl border border-slate-border shadow-md space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-text-muted">Enterprise Account Status</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-text-muted">Your Shopping Summary</span>
                 <div className="flex items-center gap-1 bg-emerald/10 text-emerald text-[9px] font-bold px-2 py-0.5 rounded-full border border-emerald/20">
-                  <ShieldCheck className="w-3.5 h-3.5 animate-pulse" /> Active SLA
+                  <ShieldCheck className="w-3.5 h-3.5 animate-pulse" /> Secure Checkout
                 </div>
               </div>
 
               {/* Status parameters */}
               <div className="space-y-2.5 text-xs">
                 <div className="p-3 bg-slate-bg/50 border border-slate-border/50 rounded-lg flex items-center justify-between">
-                  <span className="text-slate-text-muted font-medium">B2B Account Code</span>
-                  <span className="font-bold text-slate-text-primary font-mono">MECH-9428-ENT</span>
+                  <span className="text-slate-text-muted font-medium">Free Shipping Above</span>
+                  <span className="font-bold text-slate-text-primary font-mono">₹5,000</span>
                 </div>
 
                 <div className="p-3 bg-slate-bg/50 border border-slate-border/50 rounded-lg flex items-center justify-between">
-                  <span className="text-slate-text-muted font-medium">Contract Terms</span>
-                  <span className="font-bold text-cobalt">Net-30 Invoicing</span>
+                  <span className="text-slate-text-muted font-medium">Returns</span>
+                  <span className="font-bold text-cobalt">7-Day Easy Returns</span>
                 </div>
 
                 <div className="p-3 bg-slate-bg/50 border border-slate-border/50 rounded-lg flex items-center justify-between">
-                  <span className="text-slate-text-muted font-medium">Global Discount Rate</span>
-                  <span className="font-bold text-emerald">8% Enterprise Rate</span>
+                  <span className="text-slate-text-muted font-medium">Bulk Discount</span>
+                  <span className="font-bold text-emerald">Up to 45% off</span>
                 </div>
               </div>
 
-              {/* Enterprise notice */}
+              {/* Info notice */}
               <div className="bg-cobalt/5 border border-cobalt/15 p-3 rounded-lg flex items-start gap-2 text-[10px] text-slate-text-secondary leading-relaxed">
                 <Info className="w-4 h-4 text-cobalt flex-shrink-0 mt-0.5" />
                 <span>
-                  All marketplace orders qualify for automated net-30 terms. CAD RFQs are processed via encrypted cloud solvers instantly.
+                  All orders ship within 24 hours. Custom machined parts are quoted instantly — no account needed to buy.
                 </span>
               </div>
             </div>
@@ -571,9 +571,9 @@ export default function Home() {
         <section id="inventory-section" className="space-y-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-border pb-4">
             <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-cobalt">Available Components</span>
-              <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">Ready-to-Ship Inventory</h2>
-              <p className="text-xs text-slate-text-muted font-medium">Verify CAD sheets and purchase high-precision modules immediately.</p>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-cobalt">In-Stock Products</span>
+              <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">Shop Ready-to-Ship Parts</h2>
+              <p className="text-xs text-slate-text-muted font-medium">Premium mechatronics components — add to cart and receive them at your door in 1–2 days.</p>
             </div>
 
             {/* Filters layout */}
@@ -894,7 +894,11 @@ export default function Home() {
                     </p>
                     <p className="font-semibold flex items-center gap-1">
                       <span className="inline-flex w-4 h-4 rounded-full bg-slate-border text-slate-text-primary items-center justify-center text-[9px]">3</span>
-                      Order prototypes with standard B2B net-terms
+                      Order 1 or more — single prototypes and bulk runs welcome
+                    </p>
+                    <p className="font-semibold flex items-center gap-1">
+                      <span className="inline-flex w-4 h-4 rounded-full bg-slate-border text-slate-text-primary items-center justify-center text-[9px]">3</span>
+                      Add to cart and pay online — fast, secure delivery
                     </p>
                   </div>
                 </div>
@@ -1086,9 +1090,9 @@ export default function Home() {
         {/* SECTION 4: B2B RECENT ORDERS & SUBMISSIONS */}
         <section id="orders-section" className="space-y-6">
           <div className="border-b border-slate-border pb-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-text-muted">Procurement Ledger</span>
-            <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">Active B2B Purchases</h2>
-            <p className="text-xs text-slate-text-muted font-medium">Monitor active manufacturing runs, CAD approvals, and dispatch statuses.</p>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-text-muted">Order History</span>
+            <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">Your Orders</h2>
+            <p className="text-xs text-slate-text-muted font-medium">Track your shop purchases and custom part orders in real time.</p>
           </div>
 
           <div className="bg-white border border-slate-border rounded-2xl overflow-hidden shadow-sm">
@@ -1096,12 +1100,12 @@ export default function Home() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-bg border-b border-slate-border text-[10px] font-extrabold uppercase tracking-wider text-slate-text-muted">
-                    <th className="p-4 pl-6">Order/RFQ ID</th>
-                    <th className="p-4">Submission Date</th>
+                    <th className="p-4 pl-6">Order ID</th>
+                    <th className="p-4">Date</th>
                     <th className="p-4">Type</th>
-                    <th className="p-4">Components</th>
-                    <th className="p-4">Total Price (INR)</th>
-                    <th className="p-4">Logistics Status</th>
+                    <th className="p-4">Items</th>
+                    <th className="p-4">Total (INR)</th>
+                    <th className="p-4">Status</th>
                     <th className="p-4 pr-6 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -1153,7 +1157,7 @@ export default function Home() {
                   ) : (
                     <tr>
                       <td colSpan={7} className="p-8 text-center text-slate-text-muted font-medium bg-slate-bg/10">
-                        No active B2B purchases or RFQ runs recorded. Placed orders and custom manufacturing quotes will be logged here in real-time.
+                        No orders yet. Shop from the catalog or configure a custom part above — your orders will appear here.
                       </td>
                     </tr>
                   )}
@@ -1176,20 +1180,20 @@ export default function Home() {
               <span className="font-extrabold text-base tracking-tight text-white">MechItAll</span>
             </div>
             <p className="text-xs text-slate-text-muted leading-relaxed">
-              Industrial mechatronics procurement infrastructure and advanced 3D automated CNC quotation algorithms.
+              Premium mechatronics parts for makers, engineers, and businesses. Instant CAD quotes for custom parts.
             </p>
             <span className="block text-[10px] text-slate-text-muted">
-              © 2026 MechItAll Inc. All specifications ISO/TC 184 compliant.
+              © 2026 MechItAll. All rights reserved. ISO 9001:2015 compliant.
             </span>
           </div>
 
           <div className="space-y-3">
             <h4 className="text-xs font-extrabold uppercase tracking-widest text-white border-l-2 border-cobalt pl-2">Platform</h4>
             <ul className="space-y-2 text-xs text-slate-text-muted">
-              <li><button onClick={() => scrollToSection('inventory-section')} className="hover:text-white cursor-pointer">Parts Catalog</button></li>
-              <li><button onClick={() => scrollToSection('rfq-section')} className="hover:text-white cursor-pointer">Custom B2B RFQ</button></li>
-              <li><a href="#cad-api" className="hover:text-white">API Integration</a></li>
-              <li><a href="#datasheet" className="hover:text-white">Datasheets Vault</a></li>
+              <li><button onClick={() => scrollToSection('inventory-section')} className="hover:text-white cursor-pointer">Shop Parts</button></li>
+              <li><button onClick={() => scrollToSection('rfq-section')} className="hover:text-white cursor-pointer">Custom Parts Quote</button></li>
+              <li><button onClick={() => scrollToSection('services-section')} className="hover:text-white cursor-pointer">Manufacturing Services</button></li>
+              <li><a href="#datasheet" className="hover:text-white">Datasheets & Specs</a></li>
             </ul>
           </div>
 
@@ -1204,11 +1208,11 @@ export default function Home() {
           </div>
 
           <div className="space-y-3">
-            <h4 className="text-xs font-extrabold uppercase tracking-widest text-white border-l-2 border-amber-500 pl-2">Enterprise Info</h4>
+            <h4 className="text-xs font-extrabold uppercase tracking-widest text-white border-l-2 border-amber-500 pl-2">Support & Info</h4>
             <ul className="space-y-2 text-xs text-slate-text-muted text-left">
-              <li className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-cobalt" /> Enterprise SLA Terms</li>
-              <li className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-emerald" /> Net 30 Billing Portal</li>
-              <li className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5 text-coral" /> Global Cargo Logistics</li>
+              <li className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-cobalt" /> Secure Payments</li>
+              <li className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-emerald" /> 7-Day Easy Returns</li>
+              <li className="flex items-center gap-1.5"><Package className="w-3.5 h-3.5 text-coral" /> Pan-India Shipping</li>
             </ul>
           </div>
         </div>
@@ -1230,7 +1234,7 @@ export default function Home() {
             <div className="p-5 border-b border-slate-border flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShoppingCart className="w-4.5 h-4.5 text-cobalt" />
-                <h3 className="text-base font-bold text-slate-text-primary leading-tight">B2B Purchase Cart</h3>
+                <h3 className="text-base font-bold text-slate-text-primary leading-tight">Shopping Cart</h3>
                 <span className="text-[10px] font-bold uppercase bg-cobalt/5 text-cobalt border border-cobalt/15 px-2 py-0.5 rounded">
                   {cartSummary.itemCount} items
                 </span>
@@ -1325,8 +1329,8 @@ export default function Home() {
                 <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-20 text-slate-text-muted">
                   <ShoppingCart className="w-12 h-12 text-slate-text-muted/30" />
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-slate-text-primary">Your procurement cart is empty</p>
-                    <p className="text-[10px] text-slate-text-muted max-w-[220px]">Browse the parts catalog or configure custom parts to initialize checkout.</p>
+                    <p className="text-xs font-bold text-slate-text-primary">Your cart is empty</p>
+                    <p className="text-[10px] text-slate-text-muted max-w-[220px]">Browse the parts catalog or configure a custom part to get started.</p>
                   </div>
                 </div>
               )}
@@ -1337,33 +1341,33 @@ export default function Home() {
               <div className="space-y-2 text-[11px] font-bold">
                 <div className="flex justify-between text-slate-text-secondary">
                   <span>Cart Subtotal</span>
-                  <span>${cartSummary.subtotal.toFixed(2)}</span>
+                  <span>₹{cartSummary.subtotal.toFixed(2)}</span>
                 </div>
                 
-                {/* B2B Volume Discount indicator */}
+                {/* Volume Discount indicator */}
                 {cartSummary.subtotal >= 1500 ? (
                   <div className="flex justify-between text-emerald">
-                    <span>Enterprise Volume Discount ({cartSummary.discountRatePercent}%)</span>
-                    <span>-${cartSummary.discount.toFixed(2)}</span>
+                    <span>Bulk Discount ({cartSummary.discountRatePercent}%)</span>
+                    <span>-₹{cartSummary.discount.toFixed(2)}</span>
                   </div>
                 ) : cartSummary.subtotal > 0 ? (
                   <div className="p-2 bg-cobalt/5 border border-cobalt/15 rounded flex items-center justify-between text-cobalt">
-                    <span>Add ${(1500 - cartSummary.subtotal).toFixed(2)} more for 8% Enterprise discount</span>
+                    <span>Add ₹{(1500 - cartSummary.subtotal).toFixed(2)} more for 8% bulk discount</span>
                   </div>
                 ) : null}
 
                 <div className="flex justify-between text-slate-text-secondary">
-                  <span>Standard Logistics Shipping</span>
-                  <span>{cartSummary.shipping === 0 ? 'FREE' : `$${cartSummary.shipping.toFixed(2)}`}</span>
+                  <span>Shipping</span>
+                  <span>{cartSummary.shipping === 0 ? 'FREE' : `₹${cartSummary.shipping.toFixed(2)}`}</span>
                 </div>
 
                 <div className="flex justify-between text-slate-text-secondary">
-                  <span>Estimated B2B Tax (8.25%)</span>
-                  <span>${cartSummary.tax.toFixed(2)}</span>
+                  <span>GST (18%)</span>
+                  <span>₹{cartSummary.tax.toFixed(2)}</span>
                 </div>
 
                 <div className="border-t border-slate-border/50 my-1 pt-2 flex justify-between text-slate-text-primary text-sm font-extrabold">
-                  <span>Total Purchase Order</span>
+                  <span>Order Total</span>
                   <span className="text-coral">₹{cartSummary.total.toFixed(2)} INR</span>
                 </div>
               </div>
@@ -1377,12 +1381,12 @@ export default function Home() {
                 {checkoutStatus === 'submitting' ? (
                   <>
                     <Activity className="w-4 h-4 animate-spin" />
-                    Generating B2B Purchase Order...
+                    Processing your order...
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="w-4 h-4" />
-                    Submit Net-30 Purchase Order
+                    Place Order Securely
                   </>
                 )}
               </button>
@@ -1654,26 +1658,26 @@ export default function Home() {
             </div>
 
             <div className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald">Purchase Confirmed</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald">Order Confirmed</span>
               <h3 className="text-xl font-extrabold text-slate-text-primary tracking-tight">Order Placed Successfully!</h3>
               <p className="text-xs text-slate-text-muted leading-relaxed max-w-sm mx-auto">
-                Your B2B Net-30 purchase order has been processed by the staging server. Invoices and assembly checklists have been forwarded to account handlers.
+                Your order is being packed and will be dispatched within 24 hours. A confirmation has been sent to your account.
               </p>
             </div>
 
             {/* PO details */}
             <div className="p-4 bg-slate-bg border border-slate-border rounded-xl space-y-2 text-left text-xs">
               <div className="flex justify-between font-medium">
-                <span className="text-slate-text-muted">Invoice PO ID:</span>
+                <span className="text-slate-text-muted">Order ID:</span>
                 <span className="text-slate-text-primary font-mono font-bold">{lastPlacedOrder.orderId}</span>
               </div>
               <div className="flex justify-between font-medium">
-                <span className="text-slate-text-muted">PO Total (INR):</span>
+                <span className="text-slate-text-muted">Order Total (INR):</span>
                 <span className="text-slate-text-primary font-bold">₹{lastPlacedOrder.total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between font-medium">
-                <span className="text-slate-text-muted">Payment Term:</span>
-                <span className="text-emerald font-bold">Net 30 Invoicing</span>
+                <span className="text-slate-text-muted">Est. Delivery:</span>
+                <span className="text-emerald font-bold">1–2 Business Days</span>
               </div>
               <div className="flex justify-between font-medium">
                 <span className="text-slate-text-muted">Est. Dispatch Date:</span>
@@ -1693,7 +1697,7 @@ export default function Home() {
                 onClick={() => { setCheckoutStatus('idle'); scrollToSection('orders-section'); }}
                 className="flex-1 btn-cobalt text-xs font-bold py-2.5 rounded-lg cursor-pointer flex items-center justify-center gap-1.5"
               >
-                <History className="w-4 h-4" /> Track PO Ledger
+                <History className="w-4 h-4" /> Track My Orders
               </button>
             </div>
           </div>
