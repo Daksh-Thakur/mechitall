@@ -16,6 +16,74 @@ import {
   HelpCircle, ShieldCheck, ShoppingBag, Send, AlertTriangle, Layers, ChevronRight, Info
 } from 'lucide-react';
 
+const MOCK_DEMO_SERVICES: MachiningService[] = [
+  {
+    id: 'demo-1',
+    seller_profile_id: 'mock-seller-1',
+    title: '5-Axis Precision CNC Milling',
+    process_type: 'CNC Machining',
+    description: 'High-fidelity subtractive CNC milling for custom metal parts. Aerospace tolerances, micro-inch finishes, and fully validated material certifications.',
+    base_price: 2500.00,
+    lead_time: '4 business days',
+    material_capabilities: ['Aluminium 6061', 'Stainless Steel 316', 'Brass C360', 'POM Delrin'],
+    finish_options: ['As-Machined', 'Bead Blasted', 'Clear Anodized', 'Hard Anodized (Black)'],
+    created_at: new Date().toISOString(),
+    seller_name: 'Alpha CNC Labs'
+  },
+  {
+    id: 'demo-2',
+    seller_profile_id: 'mock-seller-2',
+    title: 'Industrial SLS Nylon 3D Printing',
+    process_type: '3D Printing',
+    description: 'Selective Laser Sintering (SLS) using premium carbon-composite Nylon 12. Ideal for rugged gears, snap-fits, and structural prototyping.',
+    base_price: 650.00,
+    lead_time: '3 business days',
+    material_capabilities: ['Nylon PA12', 'Glass-Filled Nylon', 'Alumide Composite'],
+    finish_options: ['As-Printed', 'Media Tumbled', 'Black Dyed (Satin)'],
+    created_at: new Date().toISOString(),
+    seller_name: 'RapidPolymer 3D'
+  },
+  {
+    id: 'demo-3',
+    seller_profile_id: 'mock-seller-3',
+    title: 'High-Detail SLA Clear Resin Printing',
+    process_type: '3D Printing',
+    description: 'High-resolution laser stereolithography (SLA) resin printing. Ultra-smooth layers down to 25 microns. Perfect for clear lenses and microfluidics.',
+    base_price: 450.00,
+    lead_time: '2 business days',
+    material_capabilities: ['Standard Clear Resin', 'Tough ABS-like Resin', 'High-Temp 300C Resin'],
+    finish_options: ['As-Cured', 'UV Polished Clear', 'Frosted Matte Finish'],
+    created_at: new Date().toISOString(),
+    seller_name: 'OpticMicro Fab'
+  },
+  {
+    id: 'demo-4',
+    seller_profile_id: 'mock-seller-4',
+    title: 'Precision Sheet Metal Fabrication',
+    process_type: 'Sheet Metal',
+    description: 'CNC press brake bending, forming, and welding. Perfect for electrical enclosures, custom brackets, server racks, and metal panels.',
+    base_price: 1200.00,
+    lead_time: '5 business days',
+    material_capabilities: ['Aluminium 5052-H32', 'Cold Rolled Steel', 'Stainless Steel 304'],
+    finish_options: ['As-Bent', 'Powder Coated (Black)', 'Zinc Plated Clear'],
+    created_at: new Date().toISOString(),
+    seller_name: 'Metalsmith Enclosures'
+  },
+  {
+    id: 'demo-5',
+    seller_profile_id: 'mock-seller-5',
+    title: 'Fiber Laser Profile Sheet Cutting',
+    process_type: 'Laser Cutting',
+    description: 'Fiber laser profile sheet cutting. Ultra-clean kerf cuts, deburred edges, high dimensional accuracy on metals and plastics.',
+    base_price: 800.00,
+    lead_time: '2 business days',
+    material_capabilities: ['Mild Steel', 'Aluminium 5052', 'Copper C101', 'Acrylic PMMA'],
+    finish_options: ['As-Cut', 'Polished Edges', 'Passivated Coating'],
+    created_at: new Date().toISOString(),
+    seller_name: 'Quantum Cuts'
+  }
+];
+
 export default function MachiningMarketplacePage() {
   const router = useRouter();
   const supabase = createClient();
@@ -61,9 +129,14 @@ export default function MachiningMarketplacePage() {
       try {
         setLoadingServices(true);
         const activeServices = await getMachiningServices();
-        setServices(activeServices);
+        if (activeServices && activeServices.length > 0) {
+          setServices(activeServices);
+        } else {
+          setServices(MOCK_DEMO_SERVICES);
+        }
       } catch (err) {
         console.error('Failed to load services:', err);
+        setServices(MOCK_DEMO_SERVICES);
       } finally {
         setLoadingServices(false);
       }
