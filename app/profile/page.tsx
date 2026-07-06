@@ -11,14 +11,22 @@ import Footer from '@/components/Footer';
 import { 
   User, ShoppingBag, Gift, Heart, Settings, MapPin, MessageSquare, 
   ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus, 
-  Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play
+  Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play,
+  Send, Paperclip, FileText, ExternalLink
 } from 'lucide-react';
+import { 
+  getOngoingChats, 
+  getChatMessages, 
+  sendChatMessage, 
+  getChatUploadSignedUrl 
+} from '@/app/actions/machining-workflow';
+import { ChatThread, ChatMessage } from '@/types/machining';
 export default function ProfilePage() {
   const router = useRouter();
   const supabase = createClient();
   const { profile, fetchProfile, showToast, addToCart, wishlist, toggleWishlist } = useCart();
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'rewards' | 'wishlist' | 'settings' | 'address' | 'support'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'rewards' | 'wishlist' | 'settings' | 'address' | 'support' | 'chats'>('orders');
   const [orders, setOrders] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<BoltsTransaction[]>([]);
   const [dbProducts, setDbProducts] = useState<any[]>([]);
@@ -290,6 +298,18 @@ export default function ProfilePage() {
               >
                 <MessageSquare className="w-4 h-4 shrink-0" />
                 <span>Customer Support</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('chats')}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  activeTab === 'chats'
+                    ? 'bg-slate-text-primary text-white shadow-md'
+                    : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
+                }`}
+              >
+                <MessageSquare className="w-4 h-4 shrink-0" />
+                <span>Quotation Chats</span>
               </button>
             </nav>
           </div>
@@ -874,6 +894,11 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* TAB 7: QUOTATION CHATS */}
+          {activeTab === 'chats' && (
+            <QuotationChatsTab profile={profile} showToast={showToast} />
+          )}
+
         </section>
 
       </main>
@@ -882,3 +907,323 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: any }) {
+  const [threads, setThreads] = useState<ChatThread[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeThread, setActiveThread] = useState<ChatThread | null>(null);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  
+  // Load threads
+  const loadThreads = async () => {
+    setLoading(true);
+    const res = await getOngoingChats();
+    if (res.success && res.data) {
+      setThreads(res.data);
+    } else {
+      showToast(res.error || 'Failed to load chat threads', 'error');
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadThreads();
+  }, []);
+
+  // Poll for new messages when a thread is active
+  useEffect(() => {
+    if (!activeThread) return;
+    
+    const loadMessages = async () => {
+      const res = await getChatMessages(activeThread.quoteId);
+      if (res.success && res.data) {
+        setMessages(res.data);
+      }
+    };
+    
+    loadMessages();
+    const interval = setInterval(loadMessages, 5000); // Poll every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [activeThread]);
+
+  const selectThread = async (thread: ChatThread) => {
+    setActiveThread(thread);
+    setLoadingMessages(true);
+    const res = await getChatMessages(thread.quoteId);
+    if (res.success && res.data) {
+      setMessages(res.data);
+    } else {
+      showToast(res.error || 'Failed to load message history', 'error');
+    }
+    setLoadingMessages(false);
+  };
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !activeThread) return;
+
+    setSending(true);
+    const res = await sendChatMessage({
+      rfqId: activeThread.rfqId,
+      quoteId: activeThread.quoteId,
+      messageText: newMessage.trim(),
+    });
+
+    if (res.success && res.data) {
+      setMessages((prev) => [...prev, res.data!]);
+      setNewMessage('');
+      // Update thread last message in list
+      setThreads((prev) => 
+        prev.map((t) => 
+          t.quoteId === activeThread.quoteId 
+            ? { ...t, lastMessageText: res.data!.message_text, lastMessageTime: res.data!.created_at }
+            : t
+        )
+      );
+    } else {
+      showToast(res.error || 'Failed to send message', 'error');
+    }
+    setSending(false);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeThread) return;
+
+    setUploading(true);
+    try {
+      const signedRes = await getChatUploadSignedUrl(activeThread.quoteId, file.name);
+      if (!signedRes.success || !signedRes.data) {
+        showToast(signedRes.error || 'Failed to generate signed upload URL', 'error');
+        return;
+      }
+
+      const { signedUrl, path } = signedRes.data;
+
+      // Upload file directly to Supabase storage via PUT
+      const response = await fetch(signedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file to storage bucket');
+      }
+
+      // Send chat message with the attachment path
+      const res = await sendChatMessage({
+        rfqId: activeThread.rfqId,
+        quoteId: activeThread.quoteId,
+        messageText: `Shared an attachment: ${file.name}`,
+        fileAttachmentPath: path,
+      });
+
+      if (res.success && res.data) {
+        setMessages((prev) => [...prev, res.data!]);
+        setThreads((prev) => 
+          prev.map((t) => 
+            t.quoteId === activeThread.quoteId 
+              ? { ...t, lastMessageText: res.data!.message_text, lastMessageTime: res.data!.created_at }
+              : t
+          )
+        );
+        showToast('Attachment uploaded successfully!', 'success');
+      } else {
+        showToast(res.error || 'Failed to link attachment in chat', 'error');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Attachment upload failed', 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm min-h-[600px] flex flex-col md:flex-row gap-6">
+      {/* Threads List Sidebar */}
+      <div className={`md:w-5/12 flex flex-col gap-4 border-r border-slate-border/50 pr-0 md:pr-6 ${activeThread ? 'hidden md:flex' : 'flex'}`}>
+        <div className="space-y-1">
+          <h2 className="text-base font-black text-slate-text-primary tracking-tight uppercase">Quotation Negotiations</h2>
+          <p className="text-xs text-slate-text-muted leading-relaxed font-semibold">
+            Secure chats for open machining quotes and dispute resolution records.
+          </p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto max-h-[500px] space-y-2 mt-2">
+          {loading ? (
+            <div className="py-20 text-center">
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
+            </div>
+          ) : threads.length > 0 ? (
+            threads.map((t) => (
+              <div
+                key={t.quoteId}
+                onClick={() => selectThread(t)}
+                className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 text-left ${
+                  activeThread?.quoteId === t.quoteId 
+                    ? 'border-cobalt bg-cobalt/5 ring-1 ring-cobalt/10'
+                    : 'border-slate-border hover:bg-slate-bg/50'
+                }`}
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <h4 className="text-xs font-black text-slate-text-primary line-clamp-1 flex-1">{t.rfqTitle}</h4>
+                  <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                    t.status === 'ACCEPTED' 
+                      ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
+                      : t.status === 'REJECTED'
+                      ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                      : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                  }`}>
+                    {t.status}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-[10px] text-slate-text-muted">
+                  <span className="font-bold text-slate-text-secondary">With: {t.otherParticipantName}</span>
+                  {t.lastMessageTime && (
+                    <span className="font-mono">{new Date(t.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  )}
+                </div>
+                {t.lastMessageText && (
+                  <p className="text-[11px] text-slate-text-muted font-medium line-clamp-1 italic bg-slate-bg/30 px-2 py-1 rounded">
+                    "{t.lastMessageText}"
+                  </p>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="py-20 text-center border border-dashed border-slate-border rounded-xl">
+              <MessageSquare className="w-8 h-8 text-slate-text-muted/30 mx-auto mb-2" />
+              <p className="text-xs font-bold text-slate-text-primary">No active chats found</p>
+              <p className="text-[10px] text-slate-text-muted mt-1 leading-normal px-6">Ongoing negotiations will appear here once quote requests are submitted.</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Message Chat Panel */}
+      <div className={`flex-1 flex flex-col min-h-[500px] justify-between ${!activeThread ? 'hidden md:flex items-center justify-center text-center bg-slate-bg/10 rounded-2xl border border-dashed border-slate-border/50 p-6' : 'flex'}`}>
+        {activeThread ? (
+          <>
+            {/* Thread Header */}
+            <div className="pb-4 border-b border-slate-border flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <button onClick={() => setActiveThread(null)} className="md:hidden p-1 rounded-lg border border-slate-border hover:bg-slate-bg cursor-pointer">
+                  <ChevronRight className="w-4 h-4 rotate-180" />
+                </button>
+                <div>
+                  <h3 className="text-sm font-black text-slate-text-primary leading-tight">{activeThread.rfqTitle}</h3>
+                  <span className="text-[10px] font-bold text-slate-text-muted block mt-0.5">Participant: {activeThread.otherParticipantName}</span>
+                </div>
+              </div>
+              <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${
+                activeThread.status === 'ACCEPTED' 
+                  ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
+                  : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+              }`}>
+                {activeThread.status}
+              </span>
+            </div>
+
+            {/* Messages Log */}
+            <div className="flex-1 overflow-y-auto p-4 my-4 space-y-3 max-h-[360px] bg-slate-bg/30 rounded-xl border border-slate-border/30">
+              {loadingMessages ? (
+                <div className="py-20 text-center">
+                  <RefreshCw className="w-5 h-5 animate-spin mx-auto text-slate-text-muted/30" />
+                </div>
+              ) : messages.length > 0 ? (
+                messages.map((m) => {
+                  const isOwnMessage = m.sender_id === profile.id;
+                  return (
+                    <div key={m.id} className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'self-end ml-auto items-end' : 'self-start mr-auto items-start'}`}>
+                      <span className="text-[9px] font-bold text-slate-text-muted mb-0.5 px-1">{m.sender_name}</span>
+                      <div className={`p-3 rounded-xl border text-xs font-semibold leading-relaxed ${
+                        isOwnMessage 
+                          ? 'bg-cobalt text-white border-cobalt shadow-sm' 
+                          : 'bg-white text-slate-text-primary border-slate-border shadow-sm'
+                      }`}>
+                        <p>{m.message_text}</p>
+                        {m.file_attachment_path && (
+                          <div className={`mt-2 p-2 rounded-lg border flex items-center gap-2 ${isOwnMessage ? 'bg-white/10 border-white/20' : 'bg-slate-bg border-slate-border'}`}>
+                            <FileText className="w-4 h-4 shrink-0" />
+                            <div className="min-w-0 flex-1">
+                              <span className="block text-[10px] font-black truncate">{m.file_attachment_path.split('/').pop()}</span>
+                              <span className="block text-[8px] opacity-60">Attachment</span>
+                            </div>
+                            <button
+                              onClick={async () => {
+                                const client = createClient();
+                                const { data } = await client.storage.from('chat-attachments').createSignedUrl(m.file_attachment_path!, 60);
+                                if (data?.signedUrl) {
+                                  window.open(data.signedUrl, '_blank');
+                                } else {
+                                  showToast('Failed to open attachment link.', 'error');
+                                }
+                              }}
+                              className={`p-1 rounded hover:bg-black/10 text-xs cursor-pointer ${isOwnMessage ? 'text-white' : 'text-slate-text-secondary'}`}
+                              title="Download Attachment"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[8px] text-slate-text-muted mt-0.5 px-1 font-mono">
+                        {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="py-20 text-center">
+                  <p className="text-xs text-slate-text-muted font-bold italic">No messages sent yet. Send a message to start negotiation.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Input message bar */}
+            <form onSubmit={handleSendMessage} className="border-t border-slate-border/50 pt-4 flex gap-2">
+              <label className="btn-secondary p-3 rounded-lg border border-slate-border cursor-pointer flex items-center justify-center shrink-0 hover:bg-slate-bg transition-colors" title="Attach file">
+                <Paperclip className={`w-4 h-4 ${uploading ? 'animate-pulse text-cobalt' : 'text-slate-text-secondary'}`} />
+                <input type="file" onChange={handleFileUpload} disabled={uploading || sending} className="hidden" />
+              </label>
+              <input
+                type="text"
+                placeholder="Type your message or negotiate terms..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                disabled={sending || uploading}
+                className="flex-1 text-xs font-semibold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-cobalt transition-colors"
+              />
+              <button
+                type="submit"
+                disabled={sending || uploading || !newMessage.trim()}
+                className="btn-cobalt p-3 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-50 cursor-pointer"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </>
+        ) : (
+          <div className="space-y-3">
+            <MessageSquare className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
+            <div>
+              <p className="text-xs font-black text-slate-text-primary uppercase tracking-tight">Select a conversation</p>
+              <p className="text-[10px] text-slate-text-muted mt-1 max-w-xs leading-normal">
+                Choose a negotiation thread from the left menu to view secure messages, share CAD revisions, or review contract terms.
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+

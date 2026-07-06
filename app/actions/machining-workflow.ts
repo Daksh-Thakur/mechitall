@@ -1,0 +1,520 @@
+'use server';
+
+import { cookies } from 'next/headers';
+import { createClient } from '@/utils/supabase/server';
+import { 
+  RFQInput, 
+  QuoteInput, 
+  ActionResponse, 
+  RFQ, 
+  Quote, 
+  Profile,
+  ChatMessage,
+  ChatMessageInput,
+  ChatThread
+} from '@/types/machining';
+
+/**
+ * Helper to fetch the authenticated user's profile from the database.
+ */
+async function getAuthProfile(supabase: ReturnType<typeof createClient>): Promise<Profile> {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    throw new Error('Not authenticated');
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (profileError || !profile) {
+    throw new Error('User profile not found. Please complete registration.');
+  }
+
+  return profile as Profile;
+}
+
+/**
+ * Creates a new Request for Quote (RFQ).
+ */
+export async function createRFQ(data: RFQInput): Promise<ActionResponse<RFQ>> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+
+    const profile = await getAuthProfile(supabase);
+
+    const { data: rfq, error } = await supabase
+      .from('rfqs')
+      .insert([
+        {
+          buyer_id: profile.id,
+          title: data.title,
+          description: data.description || null,
+          material_preference: data.materialPreference || null,
+          quantity: data.quantity,
+          cad_file_path: data.cadFilePath || null,
+          status: data.status || 'DRAFT',
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, error: `Failed to create RFQ: ${error.message}` };
+    }
+
+    return { success: true, data: rfq as RFQ };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An unexpected error occurred' };
+  }
+}
+
+/**
+ * Generates a short-lived signed upload URL for raw CAD file storage.
+ */
+export async function getUploadSignedUrl(
+  rfqId: string, 
+  fileName: string
+): Promise<ActionResponse<{ signedUrl: string; token: string; path: string }>> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+
+    const profile = await getAuthProfile(supabase);
+
+    // Verify RFQ ownership before granting upload URL
+    const { data: rfq, error: rfqError } = await supabase
+      .from('rfqs')
+      .select('buyer_id')
+      .eq('id', rfqId)
+      .single();
+
+    if (rfqError || !rfq) {
+      return { success: false, error: 'RFQ not found' };
+    }
+
+    if (rfq.buyer_id !== profile.id) {
+      return { success: false, error: 'Unauthorized: You do not own this RFQ' };
+    }
+
+    const filePath = `${rfqId}/${fileName}`;
+    const { data, error } = await supabase.storage
+      .from('rfq-cad-files')
+      .createSignedUploadUrl(filePath);
+
+    if (error || !data) {
+      return { success: false, error: `Failed to create signed upload URL: ${error?.message || 'Storage error'}` };
+    }
+
+    return { 
+      success: true, 
+      data: {
+        signedUrl: data.signedUrl,
+        token: data.token,
+        path: filePath
+      } 
+    };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An unexpected error occurred' };
+  }
+}
+
+/**
+ * Submits a quote bid for an open RFQ. Only accessible to verified sellers.
+ */
+export async function submitQuote(data: QuoteInput): Promise<ActionResponse<Quote>> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+
+    const profile = await getAuthProfile(supabase);
+
+    // Check if profile is authorized to bid (seller, both, or admin)
+    if (profile.role === 'BUYER') {
+      return { success: false, error: 'Unauthorized: Only sellers can submit quotes' };
+    }
+
+    // Verify that the RFQ is still open for bidding
+    const { data: rfq, error: rfqError } = await supabase
+      .from('rfqs')
+      .select('status')
+      .eq('id', data.rfqId)
+      .single();
+
+    if (rfqError || !rfq) {
+      return { success: false, error: 'Target RFQ not found' };
+    }
+
+    if (rfq.status !== 'OPEN_FOR_BIDS') {
+      return { success: false, error: 'Unauthorized: Bidding is closed on this RFQ' };
+    }
+
+    const { data: quote, error } = await supabase
+      .from('quotes')
+      .insert([
+        {
+          rfq_id: data.rfqId,
+          seller_id: profile.id,
+          total_cost: data.totalCost,
+          lead_time_days: data.leadTimeDays,
+          seller_notes: data.sellerNotes || null,
+          status: 'SUBMITTED',
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, error: `Failed to submit quote: ${error.message}` };
+    }
+
+    return { success: true, data: quote as Quote };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An unexpected error occurred' };
+  }
+}
+
+/**
+ * A transaction-like flow allowing a buyer to accept a quote.
+ * Updates target quote status to ACCEPTED, parent RFQ status to CLOSED,
+ * and sets all other bids for the RFQ to REJECTED.
+ */
+export async function acceptQuote(quoteId: string, rfqId: string): Promise<ActionResponse<{ success: boolean }>> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+
+    const profile = await getAuthProfile(supabase);
+
+    // Verify that this user is the buyer who created the RFQ
+    const { data: rfq, error: rfqError } = await supabase
+      .from('rfqs')
+      .select('buyer_id, status')
+      .eq('id', rfqId)
+      .single();
+
+    if (rfqError || !rfq) {
+      return { success: false, error: 'RFQ not found' };
+    }
+
+    if (rfq.buyer_id !== profile.id) {
+      return { success: false, error: 'Unauthorized: You do not own this RFQ' };
+    }
+
+    if (rfq.status === 'CLOSED') {
+      return { success: false, error: 'This RFQ is already closed' };
+    }
+
+    // Step 1: Set the chosen quote status to ACCEPTED
+    const { error: acceptQuoteError } = await supabase
+      .from('quotes')
+      .update({ status: 'ACCEPTED' })
+      .eq('id', quoteId)
+      .eq('rfq_id', rfqId);
+
+    if (acceptQuoteError) {
+      return { success: false, error: `Failed to accept quote: ${acceptQuoteError.message}` };
+    }
+
+    // Step 2: Set the RFQ status to CLOSED
+    const { error: closeRfqError } = await supabase
+      .from('rfqs')
+      .update({ status: 'CLOSED' })
+      .eq('id', rfqId);
+
+    if (closeRfqError) {
+      // Rollback selected quote status
+      await supabase.from('quotes').update({ status: 'SUBMITTED' }).eq('id', quoteId);
+      return { success: false, error: `Failed to close RFQ: ${closeRfqError.message}` };
+    }
+
+    // Step 3: Reject all other quotes associated with this RFQ
+    const { error: rejectOthersError } = await supabase
+      .from('quotes')
+      .update({ status: 'REJECTED' })
+      .eq('rfq_id', rfqId)
+      .neq('id', quoteId);
+
+    if (rejectOthersError) {
+      console.warn('Failed to reject other quotes on target RFQ:', rejectOthersError.message);
+      // We don't rollback since accepting the primary quote was already complete, but report warning or complete.
+    }
+
+    return { success: true, data: { success: true } };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An unexpected error occurred' };
+  }
+}
+
+/**
+ * Fetches all ongoing quote chat threads for the current user (as buyer or seller).
+ */
+export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+
+    const profile = await getAuthProfile(supabase);
+
+    // Fetch quotes that belong to this user (as seller) OR are attached to RFQs this user owns (as buyer)
+    const { data: quotesData, error: quotesError } = await supabase
+      .from('quotes')
+      .select(`
+        *,
+        rfqs:rfq_id (
+          id,
+          title,
+          buyer_id,
+          profiles:buyer_id (
+            full_name
+          )
+        ),
+        seller_profile:seller_id (
+          full_name
+        )
+      `);
+
+    if (quotesError) {
+      return { success: false, error: `Failed to fetch quote threads: ${quotesError.message}` };
+    }
+
+    const threads: ChatThread[] = [];
+
+    for (const q of (quotesData || [])) {
+      const rfq = q.rfqs as any;
+      const sellerProfile = q.seller_profile as any;
+      if (!rfq) continue;
+
+      const buyerId = rfq.buyer_id;
+      const sellerId = q.seller_id;
+
+      // Check if user is either buyer or seller
+      if (profile.id !== buyerId && profile.id !== sellerId) {
+        continue;
+      }
+
+      // Determine other participant's name
+      const otherParticipantName = profile.id === buyerId 
+        ? (sellerProfile?.full_name || 'Seller') 
+        : (rfq.profiles?.full_name || 'Buyer');
+
+      // Fetch latest message for this quote
+      const { data: latestMsg } = await supabase
+        .from('chat_messages')
+        .select('message_text, created_at')
+        .eq('quote_id', q.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      threads.push({
+        quoteId: q.id,
+        rfqId: rfq.id,
+        rfqTitle: rfq.title,
+        otherParticipantName,
+        status: q.status,
+        lastMessageText: latestMsg?.message_text || null,
+        lastMessageTime: latestMsg?.created_at || null,
+      });
+    }
+
+    // Sort threads by latest message or creation time
+    threads.sort((a, b) => {
+      const timeA = a.lastMessageTime || '';
+      const timeB = b.lastMessageTime || '';
+      return timeB.localeCompare(timeA);
+    });
+
+    return { success: true, data: threads };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An unexpected error occurred' };
+  }
+}
+
+
+/**
+ * Sends a message in the secure negotiation/dispute chat.
+ */
+export async function sendChatMessage(data: ChatMessageInput): Promise<ActionResponse<ChatMessage>> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+
+    const profile = await getAuthProfile(supabase);
+
+    // Verify user participates in this RFQ/Quote
+    const { data: rfq, error: rfqError } = await supabase
+      .from('rfqs')
+      .select('buyer_id')
+      .eq('id', data.rfqId)
+      .single();
+
+    if (rfqError || !rfq) {
+      return { success: false, error: 'Target RFQ not found' };
+    }
+
+    let isAuthorized = rfq.buyer_id === profile.id;
+
+    if (!isAuthorized && data.quoteId) {
+      // Check if user is the seller of the quote
+      const { data: quote, error: quoteError } = await supabase
+        .from('quotes')
+        .select('seller_id')
+        .eq('id', data.quoteId)
+        .single();
+
+      if (!quoteError && quote && quote.seller_id === profile.id) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      return { success: false, error: 'Unauthorized: You are not a participant in this conversation' };
+    }
+
+    const { data: msg, error } = await supabase
+      .from('chat_messages')
+      .insert([
+        {
+          rfq_id: data.rfqId,
+          quote_id: data.quoteId || null,
+          sender_id: profile.id,
+          message_text: data.messageText,
+          file_attachment_path: data.fileAttachmentPath || null,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, error: `Failed to send message: ${error.message}` };
+    }
+
+    // Attach sender_name for visual rendering convenience
+    const chatMsg: ChatMessage = {
+      ...msg,
+      sender_name: profile.full_name,
+    };
+
+    return { success: true, data: chatMsg };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An unexpected error occurred' };
+  }
+}
+
+/**
+ * Fetches secure negotiation/dispute message history for a quote/RFQ.
+ */
+export async function getChatMessages(quoteId: string): Promise<ActionResponse<ChatMessage[]>> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+
+    const profile = await getAuthProfile(supabase);
+
+    // Verify the user owns the parent RFQ or the Quote
+    const { data: quote, error: quoteError } = await supabase
+      .from('quotes')
+      .select('seller_id, rfq_id, rfqs(buyer_id)')
+      .eq('id', quoteId)
+      .single();
+
+    if (quoteError || !quote) {
+      return { success: false, error: 'Quote not found' };
+    }
+
+    const rfqBuyerId = (quote.rfqs as any)?.buyer_id;
+    const sellerId = quote.seller_id;
+
+    if (profile.id !== rfqBuyerId && profile.id !== sellerId) {
+      return { success: false, error: 'Unauthorized: You are not a participant in this conversation' };
+    }
+
+    const { data: messages, error } = await supabase
+      .from('chat_messages')
+      .select(`
+        *,
+        profiles:sender_id (
+          full_name
+        )
+      `)
+      .eq('quote_id', quoteId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      return { success: false, error: `Failed to fetch messages: ${error.message}` };
+    }
+
+    const mappedMessages = (messages || []).map((m: any) => ({
+      id: m.id,
+      rfq_id: m.rfq_id,
+      quote_id: m.quote_id,
+      sender_id: m.sender_id,
+      message_text: m.message_text,
+      file_attachment_path: m.file_attachment_path,
+      created_at: m.created_at,
+      sender_name: m.profiles?.full_name || 'Participant',
+    })) as ChatMessage[];
+
+    return { success: true, data: mappedMessages };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An unexpected error occurred' };
+  }
+}
+
+/**
+ * Generates signed upload URL for attachments (CAD edits, inspection photos) shared in chat.
+ */
+export async function getChatUploadSignedUrl(
+  quoteId: string,
+  fileName: string
+): Promise<ActionResponse<{ signedUrl: string; token: string; path: string }>> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+
+    const profile = await getAuthProfile(supabase);
+
+    // Verify user owns the quote or parent RFQ
+    const { data: quote, error: quoteError } = await supabase
+      .from('quotes')
+      .select('seller_id, rfq_id, rfqs(buyer_id)')
+      .eq('id', quoteId)
+      .single();
+
+    if (quoteError || !quote) {
+      return { success: false, error: 'Quote not found' };
+    }
+
+    const rfqBuyerId = (quote.rfqs as any)?.buyer_id;
+    const sellerId = quote.seller_id;
+
+    if (profile.id !== rfqBuyerId && profile.id !== sellerId) {
+      return { success: false, error: 'Unauthorized: You do not own this RFQ/Quote' };
+    }
+
+    const filePath = `${quoteId}/${fileName}`;
+    const { data, error } = await supabase.storage
+      .from('chat-attachments')
+      .createSignedUploadUrl(filePath);
+
+    if (error || !data) {
+      return { success: false, error: `Failed to create signed upload URL: ${error?.message || 'Storage error'}` };
+    }
+
+    return {
+      success: true,
+      data: {
+        signedUrl: data.signedUrl,
+        token: data.token,
+        path: filePath
+      }
+    };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An unexpected error occurred' };
+  }
+}
+
