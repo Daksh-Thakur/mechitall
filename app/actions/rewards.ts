@@ -541,4 +541,86 @@ export async function submitSellerKYC(
   return data as Profile;
 }
 
+/**
+ * Fetches dashboard statistics and listings for the active seller.
+ */
+export async function getSellerDashboardData(sellerProfileId: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  // 1. Get active RFQs (all OPEN_FOR_BIDS RFQs)
+  const { data: openRfqs } = await supabase
+    .from('rfqs')
+    .select('*, buyer:profiles(full_name)')
+    .eq('status', 'OPEN_FOR_BIDS')
+    .order('created_at', { ascending: false });
+
+  // 2. Get my quotes (all quotes submitted by this seller)
+  const { data: myQuotes } = await supabase
+    .from('quotes')
+    .select('*, rfq:rfqs(*)')
+    .eq('seller_id', sellerProfileId);
+
+  // 3. Get my active production queue jobs (all quotes submitted by this seller with status ACCEPTED)
+  const { data: activeJobs } = await supabase
+    .from('quotes')
+    .select('*, rfq:rfqs(*, buyer:profiles(*))')
+    .eq('seller_id', sellerProfileId)
+    .eq('status', 'ACCEPTED');
+
+  // 4. Calculate monthly earnings (sum of accepted quotes total_cost)
+  const monthlyEarnings = activeJobs?.reduce((sum, job) => sum + Number(job.total_cost), 0) || 0;
+
+  // Calculate dynamic weekly earnings based on calendar
+  const now = new Date();
+  const msInDay = 24 * 60 * 60 * 1000;
+  const weeklyEarnings = [0, 0, 0, 0, 0];
+
+  activeJobs?.forEach(job => {
+    const jobDate = new Date(job.created_at);
+    const diffDays = Math.floor((now.getTime() - jobDate.getTime()) / msInDay);
+
+    if (diffDays >= 0 && diffDays < 7) {
+      weeklyEarnings[4] += Number(job.total_cost);
+    } else if (diffDays >= 7 && diffDays < 14) {
+      weeklyEarnings[3] += Number(job.total_cost);
+    } else if (diffDays >= 14 && diffDays < 21) {
+      weeklyEarnings[2] += Number(job.total_cost);
+    } else if (diffDays >= 21 && diffDays < 28) {
+      weeklyEarnings[1] += Number(job.total_cost);
+    } else if (diffDays >= 28 && diffDays < 35) {
+      weeklyEarnings[0] += Number(job.total_cost);
+    }
+  });
+
+  const getWeekLabel = (daysAgo: number) => {
+    const d = new Date(now.getTime() - daysAgo * msInDay);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const earningsVelocity = [
+    { label: getWeekLabel(28), amount: weeklyEarnings[0] },
+    { label: getWeekLabel(21), amount: weeklyEarnings[1] },
+    { label: getWeekLabel(14), amount: weeklyEarnings[2] },
+    { label: getWeekLabel(7), amount: weeklyEarnings[3] },
+    { label: 'This Wk', amount: weeklyEarnings[4] }
+  ];
+
+  // 5. Get listed capabilities
+  const { data: capabilities } = await supabase
+    .from('machining_services')
+    .select('*')
+    .eq('seller_profile_id', sellerProfileId);
+
+  return {
+    openRfqs: openRfqs || [],
+    myQuotes: myQuotes || [],
+    activeJobs: activeJobs || [],
+    monthlyEarnings,
+    earningsVelocity,
+    capabilities: capabilities || []
+  };
+}
+
+
 

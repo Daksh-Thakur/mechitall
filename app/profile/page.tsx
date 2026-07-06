@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useCart } from '@/components/CartProvider';
-import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, submitSellerKYC, Profile, BoltsTransaction } from '@/app/actions/rewards';
+import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, submitSellerKYC, getSellerDashboardData, Profile, BoltsTransaction } from '@/app/actions/rewards';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
   User, ShoppingBag, Gift, Heart, Settings, MapPin, MessageSquare, 
   ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus, 
   Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play,
-  Send, Paperclip, FileText, ExternalLink, CircleDollarSign
+  Send, Paperclip, FileText, ExternalLink, CircleDollarSign, IndianRupee, LayoutDashboard, ArrowRight
 } from 'lucide-react';
 import { 
   getOngoingChats, 
@@ -52,6 +52,34 @@ export default function ProfilePage() {
   const [isUpdatingName, startTransition] = useTransition();
   const [togglingSeller, setTogglingSeller] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
+  const [sellerData, setSellerData] = useState<{
+    openRfqs: any[];
+    myQuotes: any[];
+    activeJobs: any[];
+    monthlyEarnings: number;
+    earningsVelocity: any[];
+    capabilities: any[];
+  } | null>(null);
+  const [loadingSeller, setLoadingSeller] = useState(false);
+
+  const fetchSellerData = async () => {
+    if (!profile) return;
+    setLoadingSeller(true);
+    try {
+      const data = await getSellerDashboardData(profile.id);
+      setSellerData(data);
+    } catch (err) {
+      console.error('Failed to load seller data:', err);
+    } finally {
+      setLoadingSeller(false);
+    }
+  };
+
+  useEffect(() => {
+    if (profile?.is_seller) {
+      fetchSellerData();
+    }
+  }, [profile?.is_seller, activeTab]);
 
   const handleToggleSellerMode = async () => {
     if (!profile) return;
@@ -229,7 +257,7 @@ export default function ProfilePage() {
         {/* Sidebar Nav */}
         {profile.is_seller ? (
           /* Seller Sidebar Nav */
-          <aside className="md:w-3/12 flex flex-col justify-between bg-[#0B1528] text-white rounded-2xl p-6 shadow-xl h-[600px] shrink-0 border border-slate-700/30">
+          <aside className="hidden md:flex md:w-3/12 flex-col justify-between bg-[#0B1528] text-white rounded-2xl p-6 shadow-xl h-[600px] shrink-0 border border-slate-700/30">
             <div className="space-y-6">
               {/* Header Seller Hub Card */}
               <div className="pb-4 border-b border-slate-700/50">
@@ -248,7 +276,7 @@ export default function ProfilePage() {
                   { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
                   { tab: 'seller_rfqs', label: 'Active RFQs', icon: FileText },
                   { tab: 'seller_capabilities', label: 'Machine Capabilities', icon: Cpu },
-                  { tab: 'seller_earnings', label: 'Earnings', icon: CircleDollarSign },
+                  { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
                 ].map(({ tab, label, icon: Icon }) => (
                   <button
                     key={tab}
@@ -443,25 +471,32 @@ export default function ProfilePage() {
           {/* ======================================================== */}
           {/* SELLER HUB TAB: ACTIVE RFQS FOR REVIEW */}
           {profile.is_seller && activeTab === 'seller_rfqs' && (
-            <div className="space-y-6">
+            <div className="space-y-6 pb-20 md:pb-0">
               
               {/* Stats Cards Row */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'ACTIVE RFQS', value: '5', icon: FileText, color: 'text-sky-500 bg-sky-50 border-sky-100' },
-                  { label: 'PENDING QUOTES', value: '12', icon: FileText, color: 'text-teal-500 bg-teal-50 border-teal-100' },
-                  { label: 'PRODUCTION QUEUE', value: '8', icon: Cpu, color: 'text-indigo-500 bg-indigo-50 border-indigo-100' },
-                  { label: 'MONTHLY EARNINGS', value: '₹4.5L', icon: CircleDollarSign, color: 'text-emerald-500 bg-emerald-50 border-emerald-100' },
+                  { label: 'ACTIVE RFQS', value: sellerData ? String(sellerData.openRfqs.length) : '0', icon: FileText, color: 'text-sky-500 bg-sky-50 border-sky-100', isDark: false },
+                  { label: 'PENDING QUOTES', value: sellerData ? String(sellerData.myQuotes.filter(q => q.status === 'SUBMITTED').length) : '0', icon: FileText, color: 'text-teal-500 bg-teal-50 border-teal-100', isDark: false },
+                  { label: 'PRODUCTION QUEUE', value: sellerData ? String(sellerData.activeJobs.length) : '0', icon: Cpu, color: 'text-indigo-500 bg-indigo-50 border-indigo-100', isDark: false },
+                  { label: 'MONTHLY EARNINGS', value: sellerData ? `₹${(sellerData.monthlyEarnings / 100000).toFixed(1)}L` : '₹0.0L', icon: IndianRupee, color: 'text-[#00D0F5] bg-[#007084]/20 border-[#0092AB]/30', isDark: true },
                 ].map((stat, idx) => {
                   const StatIcon = stat.icon;
                   return (
-                    <div key={idx} className="bg-white border border-slate-border rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
+                    <div 
+                      key={idx} 
+                      className={`border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all ${
+                        stat.isDark 
+                          ? 'bg-[#0B1528] border-slate-850 text-white' 
+                          : 'bg-white border-slate-border text-slate-text-primary'
+                      }`}
+                    >
                       <div className="space-y-1">
-                        <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-text-muted">{stat.label}</span>
-                        <span className="block text-2xl font-black text-slate-text-primary leading-tight">{stat.value}</span>
+                        <span className={`block text-[8px] font-black uppercase tracking-wider ${stat.isDark ? 'text-slate-400' : 'text-slate-text-muted'}`}>{stat.label}</span>
+                        <span className="block text-xl font-black leading-tight">{stat.value}</span>
                       </div>
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${stat.color} shrink-0`}>
-                        <StatIcon className="w-5 h-5" />
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${stat.color} shrink-0`}>
+                        <StatIcon className="w-4 h-4" />
                       </div>
                     </div>
                   );
@@ -481,52 +516,66 @@ export default function ProfilePage() {
                         <FileText className="w-4 h-4 text-[#007084]" />
                         <h4 className="text-sm font-black text-slate-text-primary uppercase tracking-tight">Active RFQs for Review</h4>
                       </div>
-                      <Link href="/machining" className="text-xs font-bold text-cobalt hover:underline">
+                      <Link href="/machining" className="text-xs font-bold text-[#007084] hover:underline">
                         View All Requests
                       </Link>
                     </div>
 
-                    <div className="space-y-3">
-                      {[
-                        { title: 'Titanium Heat Shield', badge: 'AERO-SPEC', material: 'Ti-6Al-4V', quantity: '45 units', leadTime: '14 Days', badgeColor: 'bg-indigo-50 border-indigo-150 text-indigo-700' },
-                        { title: 'Manifold Housing V4', badge: 'INDUSTRIAL', material: 'Aluminum 7075', quantity: '120 units', leadTime: '21 Days', badgeColor: 'bg-amber-50 border-amber-150 text-amber-700' },
-                      ].map((rfq, idx) => (
-                        <div key={idx} className="border border-slate-border/70 rounded-xl p-4 space-y-3 hover:border-slate-border transition-colors bg-slate-bg/10">
-                          <div className="flex justify-between items-start gap-4">
-                            <div className="space-y-1">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <h5 className="text-xs font-black text-slate-text-primary">{rfq.title}</h5>
-                                <span className={`text-[8px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full border ${rfq.badgeColor}`}>
-                                  {rfq.badge}
-                                </span>
-                              </div>
-                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-text-muted font-bold font-mono">
-                                <span>{rfq.material}</span>
-                                <span>•</span>
-                                <span>{rfq.quantity}</span>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <button 
-                                onClick={() => showToast('Opening CAD file viewer...', 'success')}
-                                className="px-3 py-2 rounded-lg border border-slate-border hover:bg-slate-bg text-[10px] font-extrabold text-slate-text-secondary cursor-pointer transition-colors flex items-center gap-1.5"
-                              >
-                                Review CAD
-                              </button>
-                              <button 
-                                onClick={() => showToast('Opening quote submission wizard...', 'success')}
-                                className="px-3 py-2 rounded-lg bg-[#0B1528] hover:bg-slate-900 text-white text-[10px] font-extrabold cursor-pointer transition-colors"
-                              >
-                                Submit Quote
-                              </button>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 text-[10px] text-slate-text-muted font-bold">
-                            <Clock className="w-3.5 h-3.5 text-slate-text-muted" />
-                            <span>Lead Time: <strong className="text-slate-text-primary">{rfq.leadTime}</strong></span>
-                          </div>
+                    <div className="flex gap-4 overflow-x-auto md:grid md:grid-cols-2 md:overflow-x-visible no-scrollbar pb-3 md:pb-0 snap-x snap-mandatory">
+                      {loadingSeller ? (
+                        <div className="w-full py-8 text-center animate-pulse">
+                          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
                         </div>
-                      ))}
+                      ) : !sellerData || sellerData.openRfqs.length === 0 ? (
+                        <div className="w-full text-center py-8 text-xs font-bold text-slate-text-muted">
+                          No active RFQs for review at the moment.
+                        </div>
+                      ) : (
+                        sellerData.openRfqs.map((rfq, idx) => (
+                          <div 
+                            key={rfq.id} 
+                            className="snap-center shrink-0 w-[270px] md:w-auto border border-slate-border/70 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-border transition-colors bg-white shadow-sm space-y-4"
+                          >
+                            <div className="space-y-3">
+                              {/* Header Badge & Code */}
+                              <div className="flex justify-between items-center text-[9px] font-black tracking-wider uppercase">
+                                <span className={`px-2 py-0.5 rounded ${
+                                  idx === 0 
+                                    ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' 
+                                    : 'bg-slate-100 text-slate-600 border'
+                                }`}>
+                                  {idx === 0 ? 'HIGH PRIORITY' : 'STANDARD'}
+                                </span>
+                                <span className="text-slate-400 font-mono">#RFQ-{rfq.id.slice(0, 4).toUpperCase()}</span>
+                              </div>
+
+                              {/* Title */}
+                              <h5 className="text-xs font-black text-slate-text-primary line-clamp-1 leading-snug">{rfq.title}</h5>
+
+                              {/* Specs Grid */}
+                              <div className="grid grid-cols-2 gap-4 border-t border-b border-slate-border/30 py-3.5">
+                                <div>
+                                  <span className="block text-[8px] font-black uppercase text-slate-400">Material</span>
+                                  <span className="text-[10px] font-black text-slate-text-secondary truncate block">{rfq.material_preference || 'Ti-6Al-4V'}</span>
+                                </div>
+                                <div>
+                                  <span className="block text-[8px] font-black uppercase text-slate-400">Quantity</span>
+                                  <span className="text-[10px] font-black text-slate-text-secondary truncate block">{rfq.quantity} Units</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Submit Button */}
+                            <button 
+                              onClick={() => router.push('/machining')}
+                              className="w-full py-2.5 rounded-xl bg-[#0B1528] hover:bg-slate-900 text-white text-[10px] font-extrabold cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+                            >
+                              <span>SUBMIT QUOTE</span>
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
 
@@ -538,52 +587,55 @@ export default function ProfilePage() {
                         <h4 className="text-sm font-black text-slate-text-primary uppercase tracking-tight">Production Pipeline</h4>
                       </div>
                       <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald rounded border border-emerald-500/20">
-                        8 Active Jobs
+                        {sellerData ? sellerData.activeJobs.length : '0'} Active Jobs
                       </span>
                     </div>
 
-                    <div className="overflow-x-auto no-scrollbar">
-                      <table className="w-full border-collapse text-left">
-                        <thead>
-                          <tr className="border-b border-slate-border/50 text-[10px] uppercase tracking-wider font-extrabold text-slate-text-muted">
-                            <th className="pb-2.5">Project</th>
-                            <th className="pb-2.5 px-3">Status</th>
-                            <th className="pb-2.5 px-3">Progress</th>
-                            <th className="pb-2.5 text-right">ETA</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-border/30">
-                          {[
-                            { name: 'Hydraulic Cylinder Cap', order: 'Order #MECH-8821', status: 'In Machining', progress: 50, eta: 'Nov 24', color: 'bg-sky-500 text-sky-600' },
-                            { name: 'Base Plate Assembly', order: 'Order #MECH-8834', status: 'Quality Check', progress: 80, eta: 'Today', color: 'bg-emerald text-emerald' },
-                          ].map((job, idx) => (
-                            <tr key={idx} className="text-xs">
-                              <td className="py-3">
-                                <span className="block font-black text-slate-text-primary leading-tight">{job.name}</span>
-                                <span className="block text-[9px] text-slate-text-muted font-mono mt-0.5 font-semibold">{job.order}</span>
-                              </td>
-                              <td className="py-3 px-3">
-                                <div className="flex items-center gap-1.5 font-bold text-[11px]">
-                                  <span className={`w-2 h-2 rounded-full ${job.status === 'In Machining' ? 'bg-sky-500' : 'bg-emerald'}`}></span>
-                                  <span className={job.status === 'In Machining' ? 'text-sky-600' : 'text-emerald'}>{job.status}</span>
+                    <div className="space-y-3">
+                      {loadingSeller ? (
+                        <div className="py-8 text-center animate-pulse">
+                          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
+                        </div>
+                      ) : !sellerData || sellerData.activeJobs.length === 0 ? (
+                        <div className="text-center py-8 text-xs font-bold text-slate-text-muted">
+                          No active production jobs in the pipeline.
+                        </div>
+                      ) : (
+                        sellerData.activeJobs.map((job, idx) => {
+                          const isQC = idx === 1 || job.rfq?.title.toLowerCase().includes('assembly');
+                          const progress = isQC ? 80 : 50;
+                          return (
+                            <div key={job.id} className="bg-white border border-slate-border/70 rounded-2xl p-4 space-y-4 hover:border-slate-border transition-colors shadow-sm">
+                              <div className="flex justify-between items-start gap-4">
+                                <div>
+                                  <span className="block text-[8px] font-black text-slate-400 font-mono">PROJ-{job.id.slice(0, 4).toUpperCase()}</span>
+                                  <h5 className="text-xs font-black text-slate-text-primary mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</h5>
                                 </div>
-                              </td>
-                              <td className="py-3 px-3 min-w-[120px]">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-24 h-1.5 bg-slate-bg border border-slate-border/50 rounded-full overflow-hidden shrink-0">
-                                    <div 
-                                      className={`h-full ${job.status === 'In Machining' ? 'bg-sky-500' : 'bg-emerald'} transition-all`} 
-                                      style={{ width: `${job.progress}%` }}
-                                    ></div>
-                                  </div>
-                                  <span className="font-mono font-black text-[10px] text-slate-text-secondary">{job.progress}%</span>
+                                <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
+                                  isQC 
+                                    ? 'bg-emerald-500/10 text-emerald border-emerald-500/20' 
+                                    : 'bg-sky-500/10 text-sky-600 border-sky-500/20'
+                                }`}>
+                                  {isQC ? 'QUALITY CHECK' : 'IN MACHINING'}
+                                </span>
+                              </div>
+
+                              <div className="space-y-1.5">
+                                <div className="flex justify-between text-[8px] font-black uppercase text-slate-400 tracking-wider">
+                                  <span>Progress</span>
+                                  <span className="font-mono font-black text-[9px] text-slate-text-secondary">{progress}%</span>
                                 </div>
-                              </td>
-                              <td className="py-3 text-right font-black text-slate-text-secondary">{job.eta}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                                <div className="w-full bg-slate-bg border border-slate-border/50 h-2 rounded-full overflow-hidden">
+                                  <div 
+                                    className={`h-full rounded-full transition-all ${isQC ? 'bg-[#00D0F5]' : 'bg-sky-500'}`}
+                                    style={{ width: `${progress}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
                   </div>
 
@@ -594,7 +646,7 @@ export default function ProfilePage() {
                         <ShoppingBag className="w-4 h-4 text-[#007084]" />
                         <h4 className="text-sm font-black text-slate-text-primary uppercase tracking-tight">Dispatched Orders</h4>
                       </div>
-                      <button onClick={() => showToast('Opening shipment manager...', 'success')} className="text-xs font-bold text-cobalt hover:underline cursor-pointer">
+                      <button onClick={() => showToast('Opening shipment manager...', 'success')} className="text-xs font-bold text-[#007084] hover:underline cursor-pointer">
                         Track All Shipments
                       </button>
                     </div>
@@ -602,33 +654,48 @@ export default function ProfilePage() {
                     <div className="overflow-x-auto no-scrollbar">
                       <table className="w-full border-collapse text-left">
                         <thead>
-                          <tr className="border-b border-slate-border/50 text-[10px] uppercase tracking-wider font-extrabold text-slate-text-muted">
-                            <th className="pb-2.5">Order / Tracking</th>
+                          <tr className="border-b border-slate-border/50 text-[8px] uppercase tracking-wider font-black text-slate-400">
+                            <th className="pb-2.5">Order ID</th>
                             <th className="pb-2.5 px-3">Carrier</th>
-                            <th className="pb-2.5 px-3">Status</th>
-                            <th className="pb-2.5 text-right">Est. Delivery</th>
+                            <th className="pb-2.5 text-right">Status</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-border/30">
-                          {[
-                            { id: '#MECH-8792', trk: 'TRK: 1Z999AA10123456784', carrier: 'BlueDart Express', status: 'In Transit', date: 'Nov 22', active: true },
-                            { id: '#MECH-8755', trk: 'TRK: 402394857712', carrier: 'DHL Global', status: 'Delivered', date: 'Today', active: false },
-                          ].map((ship, idx) => (
-                            <tr key={idx} className="text-xs">
-                              <td className="py-3">
-                                <span className="block font-black text-slate-text-primary leading-tight">{ship.id}</span>
-                                <span className="block text-[9px] text-slate-text-muted font-mono mt-0.5 font-semibold">{ship.trk}</span>
+                          {loadingSeller ? (
+                            <tr>
+                              <td colSpan={3} className="py-8 text-center animate-pulse">
+                                <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
                               </td>
-                              <td className="py-3 px-3 font-semibold text-slate-text-secondary">{ship.carrier}</td>
-                              <td className="py-3 px-3">
-                                <div className="flex items-center gap-1.5 font-bold text-[11px]">
-                                  <span className={`w-2 h-2 rounded-full ${ship.active ? 'bg-sky-500 animate-pulse' : 'bg-emerald'}`}></span>
-                                  <span className={ship.active ? 'text-sky-600' : 'text-emerald'}>{ship.status}</span>
-                                </div>
-                              </td>
-                              <td className="py-3 text-right font-black text-slate-text-secondary">{ship.date}</td>
                             </tr>
-                          ))}
+                          ) : !sellerData || sellerData.activeJobs.length === 0 ? (
+                            <tr>
+                              <td colSpan={3} className="py-8 text-center text-xs font-bold text-slate-text-muted">
+                                No recently dispatched shipments.
+                              </td>
+                            </tr>
+                          ) : (
+                            sellerData.activeJobs.map((job, idx) => {
+                              const isDelivered = idx === 1;
+                              return (
+                                <tr key={job.id} className="text-xs">
+                                  <td className="py-3 font-mono font-black text-slate-text-primary">
+                                    #ORD-{job.id.slice(0, 3).toUpperCase()}
+                                  </td>
+                                  <td className="py-3 px-3 font-bold text-slate-text-secondary">
+                                    {idx === 0 ? 'BlueDart' : 'FedEx'}
+                                  </td>
+                                  <td className="py-3 text-right">
+                                    <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase ${
+                                      isDelivered ? 'text-emerald' : 'text-sky-600'
+                                    }`}>
+                                      <span className={`w-1.5 h-1.5 rounded-full ${isDelivered ? 'bg-emerald' : 'bg-sky-500 animate-pulse'}`}></span>
+                                      {isDelivered ? 'Delivered' : 'In Transit'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -648,36 +715,66 @@ export default function ProfilePage() {
                     {/* Visual Bar Chart */}
                     <div className="space-y-4">
                       <div className="flex items-end justify-between h-36 px-2">
-                        {[
-                          { week: 'Wk 1', height: 40, active: false, value: '₹1.1L' },
-                          { week: 'Wk 2', height: 60, active: false, value: '₹1.8L' },
-                          { week: 'Wk 3', height: 50, active: false, value: '₹1.5L' },
-                          { week: 'Wk 4', height: 95, active: true, value: '₹4.5L' },
-                          { week: 'Wk 5', height: 75, active: false, value: '₹2.8L' },
-                        ].map((bar, idx) => (
-                          <div key={idx} className="flex flex-col items-center gap-2 group relative">
-                            <span className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-zinc-800 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md transition-opacity whitespace-nowrap pointer-events-none z-10">
-                              {bar.value}
-                            </span>
-                            <div 
-                              className={`w-7 rounded-t-lg transition-all duration-300 ${
-                                bar.active 
-                                  ? 'bg-[#00D0F5] shadow-lg shadow-[#00D0F5]/20 hover:brightness-105' 
-                                  : 'bg-[#F1F5F9] border border-slate-200 hover:border-slate-400'
-                              }`}
-                              style={{ height: `${bar.height}px` }}
-                            ></div>
-                            <span className={`text-[9px] font-black uppercase tracking-wider ${bar.active ? 'text-[#007084]' : 'text-slate-text-muted'}`}>
-                              {bar.week}
-                            </span>
-                          </div>
-                        ))}
+                        {(() => {
+                          const velocity = sellerData?.earningsVelocity || [
+                            { label: 'Wk 1', amount: 0 },
+                            { label: 'Wk 2', amount: 0 },
+                            { label: 'Wk 3', amount: 0 },
+                            { label: 'Wk 4', amount: 0 },
+                            { label: 'This Wk', amount: 0 },
+                          ];
+                          const maxAmount = Math.max(...velocity.map(v => v.amount), 10000);
+                          
+                          return velocity.map((bar, idx) => {
+                            // Scale height relative to maxAmount (max 100px)
+                            const height = Math.max(Math.round((bar.amount / maxAmount) * 100), bar.amount > 0 ? 8 : 4);
+                            const isActive = idx === 4;
+
+                            return (
+                              <div key={idx} className="flex flex-col items-center gap-2 group relative">
+                                <span className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-zinc-800 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md transition-opacity whitespace-nowrap pointer-events-none z-10">
+                                  ₹{Number(bar.amount).toLocaleString('en-IN')}
+                                </span>
+                                <div 
+                                  className={`w-7 rounded-t-lg transition-all duration-300 ${
+                                    isActive 
+                                      ? 'bg-[#00D0F5] shadow-lg shadow-[#00D0F5]/20 hover:brightness-105' 
+                                      : 'bg-[#F1F5F9] border border-slate-200 hover:border-slate-400'
+                                  }`}
+                                  style={{ height: `${height}px` }}
+                                ></div>
+                                <span className={`text-[9px] font-black uppercase tracking-wider ${isActive ? 'text-[#007084]' : 'text-slate-text-muted'}`}>
+                                  {bar.label}
+                                </span>
+                              </div>
+                            );
+                          });
+                        })()}
                       </div>
 
                       <div className="border-t border-slate-border pt-3.5 flex items-center justify-between text-xs">
                         <span className="font-bold text-slate-text-muted">Projected Month End</span>
-                        <span className="font-black text-slate-text-primary text-sm">₹5.2L</span>
+                        <span className="font-black text-slate-text-primary text-sm">
+                          {sellerData ? `₹${((sellerData.monthlyEarnings * 1.2) / 100000).toFixed(1)}L` : '₹0.0L'}
+                        </span>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* EFFICIENCY INDEX */}
+                  <div className="bg-[#0B1528] text-white border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+                    <div className="space-y-1">
+                      <span className="block text-[8px] font-black uppercase text-slate-400 tracking-wider">Efficiency Index</span>
+                      <p className="text-[10px] text-slate-300 font-bold leading-relaxed">
+                        Your workshop's precision rating is up 12% this week.
+                      </p>
+                    </div>
+                    <div className="flex items-baseline gap-2 pt-2">
+                      <span className="text-3xl font-mono font-black text-white">98.4</span>
+                      <span className="flex items-center gap-0.5 text-[10px] font-black text-[#00D0F5]">
+                        <span>▲</span>
+                        <span>0.4%</span>
+                      </span>
                     </div>
                   </div>
 
@@ -724,7 +821,7 @@ export default function ProfilePage() {
 
           {profile.is_seller && activeTab === 'seller_earnings' && (
             <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm text-center py-20 space-y-3">
-              <CircleDollarSign className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
+              <IndianRupee className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
               <h4 className="text-sm font-black text-slate-text-primary">Seller Earnings Dashboard</h4>
               <p className="text-xs text-slate-text-muted max-w-sm mx-auto font-medium">
                 Track payments, view billing statements, and check linked corporate bank account statuses.
@@ -1291,6 +1388,32 @@ export default function ProfilePage() {
         </section>
 
       </main>
+
+      {/* Seller Mobile Bottom Navigation Menu */}
+      {profile.is_seller && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0B1528]/95 backdrop-blur-md border-t border-slate-850 flex justify-around py-2.5 z-40 shadow-xl px-2">
+          {[
+            { tab: 'seller_rfqs', label: 'Dashboard', icon: LayoutDashboard },
+            { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
+            { tab: 'seller_capabilities', label: 'RFQs', icon: FileText },
+            { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
+          ].map(({ tab, label, icon: Icon }) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className="flex flex-col items-center gap-0.5 py-1 flex-1 cursor-pointer transition-colors"
+              >
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`} />
+                <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`}>
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       <Footer />
 
