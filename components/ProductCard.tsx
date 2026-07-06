@@ -57,15 +57,7 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
           <p className="text-xs text-slate-text-muted line-clamp-2 leading-relaxed">{part.description}</p>
         </div>
 
-        {/* Specs mini grid */}
-        <div className="border-t border-b border-slate-border/50 py-2.5 space-y-1.5 text-[11px]">
-          {Object.entries(part.specs).slice(0, 3).map(([key, val]) => (
-            <div key={key} className="flex justify-between font-medium">
-              <span className="text-slate-text-muted">{key}</span>
-              <span className="text-slate-text-secondary truncate max-w-[140px] font-bold">{val}</span>
-            </div>
-          ))}
-        </div>
+
       </div>
 
       {/* Price + Add */}

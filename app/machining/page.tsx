@@ -110,6 +110,32 @@ export default function MachiningMarketplacePage() {
   // Search & filter state (buyer view)
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProcess, setSelectedProcess] = useState('All');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside for auto-complete dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const suggestions = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return services.filter(s =>
+      s.title.toLowerCase().includes(q) ||
+      s.description.toLowerCase().includes(q) ||
+      s.process_type.toLowerCase().includes(q) ||
+      (s.seller_name || '').toLowerCase().includes(q) ||
+      s.material_capabilities.some(m => m.toLowerCase().includes(q))
+    ).slice(0, 5);
+  }, [services, searchQuery]);
+
 
   // Buyer: Get Quote modal state
   const [selectedService, setSelectedService] = useState<MachiningService | null>(null);
@@ -400,22 +426,87 @@ export default function MachiningMarketplacePage() {
               {/* Search & Filter Bar */}
               <div className="flex flex-col sm:flex-row gap-3 p-4 bg-white rounded-xl border border-slate-border shadow-sm">
                 {/* Search input */}
-                <div className="relative flex-1">
+                <div ref={searchRef} className={`relative flex-1 ${showSuggestions && suggestions.length > 0 ? 'z-30' : 'z-10'}`}>
                   <input
                     type="text"
                     placeholder="Search by service, material, seller..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur();
+                        setShowSuggestions(false);
+                      }
+                    }}
                     className="w-full text-xs bg-slate-bg border border-slate-border text-slate-text-primary px-3 py-2.5 pl-9 rounded-lg focus:outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt/20 transition-all placeholder-slate-text-muted font-medium"
                   />
                   <Search className="w-3.5 h-3.5 text-slate-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
                   {searchQuery && (
                     <button
-                      onClick={() => setSearchQuery('')}
+                      onClick={() => {
+                        setSearchQuery('');
+                        setShowSuggestions(false);
+                      }}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-text-muted hover:text-coral cursor-pointer transition-colors"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
+                  )}
+
+                  {/* Auto-complete suggestions dropdown */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-slate-border rounded-xl shadow-lg overflow-hidden py-1 max-h-72 overflow-y-auto divide-y divide-slate-border/50 animate-fade-in-down">
+                      {suggestions.map((service) => (
+                        <div
+                          key={service.id}
+                          onClick={() => {
+                            setSearchQuery(service.title);
+                            setShowSuggestions(false);
+                          }}
+                          className="p-3 hover:bg-slate-bg flex items-center justify-between gap-3 cursor-pointer group transition-colors"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-black text-slate-text-primary truncate block">
+                                {service.title}
+                              </span>
+                              <span className={`px-2 py-0.5 rounded border text-[8px] font-black uppercase tracking-wider ${PROCESS_COLORS[service.process_type] || 'bg-cobalt/5 text-cobalt border-cobalt/10'} select-none`}>
+                                {service.process_type}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-slate-text-muted mt-0.5 block font-semibold">
+                              by {service.seller_name} · <span className="font-mono text-slate-text-muted">{service.lead_time}</span>
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2.5 shrink-0">
+                            <div className="text-right">
+                              <span className="block text-xs font-black text-coral">
+                                ₹{Number(service.base_price).toLocaleString('en-IN')}
+                              </span>
+                              <span className="block text-[8px] text-slate-text-muted font-semibold">
+                                Base Price
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedService(service);
+                                setShowSuggestions(false);
+                              }}
+                              className="btn-cobalt text-[9px] font-black px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
+                            >
+                              Get Quote <ArrowRight className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
 

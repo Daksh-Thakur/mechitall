@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import ProductCard from '../../components/ProductCard';
 import ProductModal from '../../components/ProductModal';
 import { Part } from '../../components/mockData';
 import { createClient } from '@/utils/supabase/client';
-import { Search, Database, X, SlidersHorizontal } from 'lucide-react';
+import { Search, Database, X, SlidersHorizontal, Eye } from 'lucide-react';
 
 export default function ProductsPage() {
   const [parts, setParts] = useState<Part[]>([]);
@@ -17,6 +17,8 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sortBy, setSortBy] = useState<string>('featured');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -47,6 +49,28 @@ export default function ProductsPage() {
     }
     loadData();
   }, []);
+
+  // Handle click outside for auto-complete dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const suggestions = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return parts.filter(part =>
+      part.title.toLowerCase().includes(q) ||
+      part.partNumber.toLowerCase().includes(q) ||
+      part.category.toLowerCase().includes(q)
+    ).slice(0, 5);
+  }, [parts, searchQuery]);
+
 
   const filteredParts = useMemo(() => {
     let result = [...parts];
@@ -82,26 +106,92 @@ export default function ProductsPage() {
         </div>
       </div>
 */}
-      <main className="max-w-7xl mx-auto px-6 py-4 flex-1 space-y-6">
+      <main className="max-w-8xl mx-auto px-6 py-4 flex-1 space-y-6">
         {/* Filters Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-slate-border shadow-sm">
           {/* Search */}
-          <div className="relative flex-1 max-w-sm">
+          <div ref={searchRef} className={`relative flex-1 max-w-sm ${showSuggestions && suggestions.length > 0 ? 'z-30' : 'z-10'}`}>
             <input
               type="text"
               placeholder="Search parts, products, datasheets..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => setShowSuggestions(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.currentTarget.blur();
+                  setShowSuggestions(false);
+                }
+              }}
               className="w-full text-xs bg-slate-bg border border-slate-border text-slate-text-primary px-3 py-2 pl-9 rounded-lg focus:outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt/20 transition-all placeholder-slate-text-muted font-medium"
             />
             <Search className="w-3.5 h-3.5 text-slate-text-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
             {searchQuery && (
               <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-text-muted hover:text-coral"
+                onClick={() => {
+                  setSearchQuery('');
+                  setShowSuggestions(false);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-text-muted hover:text-coral cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
+            )}
+
+            {/* Auto-complete suggestions dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-slate-border rounded-xl shadow-lg overflow-hidden py-1 max-h-72 overflow-y-auto divide-y divide-slate-border/50 animate-fade-in-down">
+                {suggestions.map((part) => (
+                  <div
+                    key={part.id}
+                    onClick={() => {
+                      setSearchQuery(part.title);
+                      setShowSuggestions(false);
+                    }}
+                    className="p-3 hover:bg-slate-bg flex items-center justify-between gap-3 cursor-pointer group transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-black text-slate-text-primary truncate block">
+                          {part.title}
+                        </span>
+                        <span className="text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded border bg-slate-bg border-slate-border/50 text-slate-text-muted select-none">
+                          {part.category}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-text-muted font-mono block mt-0.5">
+                        {part.partNumber}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <div className="text-right">
+                        <span className="block text-xs font-black text-coral">
+                          ₹{part.price.toLocaleString('en-IN')}
+                        </span>
+                        <span className="block text-[8px] text-slate-text-muted font-semibold">
+                          {part.stock > 0 ? `${part.stock} in stock` : 'Out of stock'}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedPart(part);
+                          setShowSuggestions(false);
+                        }}
+                        title="Quick View Details"
+                        className="p-1.5 rounded-lg border border-slate-border bg-white text-slate-text-secondary hover:text-cobalt hover:border-cobalt/30 transition-all cursor-pointer flex items-center justify-center"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -150,13 +240,13 @@ export default function ProductsPage() {
 
         {/* Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 animate-pulse">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 animate-pulse">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
               <div key={n} className="bg-slate-bg/30 border border-slate-border/50 rounded-xl p-5 h-72"></div>
             ))}
           </div>
         ) : filteredParts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
             {filteredParts.map(part => (
               <ProductCard key={part.id} part={part} onViewDetails={setSelectedPart} />
             ))}
