@@ -90,7 +90,7 @@ export default function Navbar() {
           {/* Right controls */}
           <div className="flex items-center gap-3">
             {/* Rewards Wallet Widget with Hover Rules Card */}
-            <div className="relative group/rewards">
+            <div className="hidden sm:block relative group/rewards">
               <Link
                 href="/dashboard?tab=rewards"
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all text-amber-600 dark:text-amber-400 cursor-pointer group"
@@ -301,6 +301,34 @@ export default function Navbar() {
               );
             })}
           </nav>
+          {profile && (
+            <div className="border-t border-slate-border pt-4 px-1 flex items-center justify-between text-xs font-bold text-slate-text-secondary">
+              <span className="flex items-center gap-1.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-4 h-4 text-amber-500 animate-spin-slow"
+                >
+                  <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
+                  <line x1="10" y1="3" x2="10" y2="11" />
+                  <line x1="14" y1="3" x2="14" y2="11" />
+                  <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
+                  <line x1="9" y1="13.5" x2="15" y2="12" />
+                  <line x1="9" y1="16" x2="15" y2="14.5" />
+                  <line x1="9" y1="18.5" x2="15" y2="17" />
+                </svg>
+                <span>Loyalty Vault:</span>
+              </span>
+              <span className="text-amber-600 font-extrabold font-mono text-sm">
+                {profile.wallet_balance || 0} Bolts
+              </span>
+            </div>
+          )}
         </div>
       )}
 

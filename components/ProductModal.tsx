@@ -57,6 +57,14 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
     }
   }, [tab, part.id]);
 
+  // Lock body scroll when modal is active to let scrolling work on the card itself
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   const handleAdd = () => {
     addToCart(part, quantity);
     onClose();
@@ -113,7 +121,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-slate-text-primary/45 backdrop-blur-sm" onClick={onClose} />
-      <div className="bg-white border border-slate-border rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl relative z-10 flex flex-col md:flex-row h-[580px]">
+      <div className="bg-white border border-slate-border rounded-2xl w-full max-w-3xl shadow-2xl relative z-10 flex flex-col md:flex-row h-[85vh] md:h-[580px] overflow-y-auto md:overflow-hidden no-scrollbar">
 
         {/* Left — gradient image */}
         <div className={`md:w-5/12 bg-gradient-to-br ${part.gradientClass} p-6 flex flex-col justify-between relative`}>
@@ -160,7 +168,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="border-b border-slate-border flex gap-4 text-xs font-bold overflow-x-auto">
+            <div className="border-b border-slate-border flex gap-4 text-xs font-bold overflow-x-auto no-scrollbar">
               {(['specs', 'pricing', 'cad', 'reviews'] as const).map(t => (
                 <button
                   key={t}
@@ -177,7 +185,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 py-2">
+          <div className="flex-1 overflow-y-auto px-6 py-2 no-scrollbar">
             {tab === 'specs' && (
               <div className="space-y-4 text-xs">
                 <p className="text-slate-text-secondary leading-relaxed">{part.description}</p>

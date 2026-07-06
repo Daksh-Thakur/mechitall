@@ -195,14 +195,14 @@ export default function ProductsPage() {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
             {/* Category tabs */}
-            <div className="bg-slate-bg border border-slate-border p-1 rounded-lg flex items-center gap-1">
+            <div className="bg-slate-bg border border-slate-border p-1 rounded-lg flex items-center gap-1 overflow-x-auto max-w-full no-scrollbar whitespace-nowrap shrink-0">
               {['All', 'Actuators', 'Sensors', 'Control Boards', 'Mechanical'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${selectedCategory === cat
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer shrink-0 ${selectedCategory === cat
                     ? 'bg-white text-cobalt shadow-sm border border-slate-border/50'
                     : 'text-slate-text-secondary hover:text-slate-text-primary'}`}
                 >
@@ -215,7 +215,7 @@ export default function ProductsPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white border border-slate-border px-3 py-2 rounded-lg text-xs font-bold text-slate-text-secondary focus:outline-none focus:border-cobalt transition-colors"
+              className="bg-white border border-slate-border px-3 py-2 rounded-lg text-xs font-bold text-slate-text-secondary focus:outline-none focus:border-cobalt transition-colors w-full sm:w-auto cursor-pointer"
             >
               <option value="featured">Sort: Featured</option>
               <option value="price-asc">Price: Low to High</option>
@@ -240,13 +240,13 @@ export default function ProductsPage() {
 
         {/* Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 animate-pulse">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-5 animate-pulse">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-              <div key={n} className="bg-slate-bg/30 border border-slate-border/50 rounded-xl p-5 h-72"></div>
+              <div key={n} className="bg-slate-bg/30 border border-slate-border/50 rounded-xl p-3 sm:p-5 h-44 sm:h-72"></div>
             ))}
           </div>
         ) : filteredParts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-5">
             {filteredParts.map(part => (
               <ProductCard key={part.id} part={part} onViewDetails={setSelectedPart} />
             ))}

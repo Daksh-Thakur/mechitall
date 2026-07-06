@@ -191,4 +191,13 @@ h1, h2, h3, h4, h5, h6 {
   animation: fade-in-slide-down 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Utility to hide scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 
