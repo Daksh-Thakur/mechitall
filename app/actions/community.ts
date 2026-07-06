@@ -15,6 +15,7 @@ export interface Review {
   author_name?: string;
   author_avatar?: string;
   likes?: number;
+  is_verified_buyer?: boolean;
 }
 
 export interface Discussion {
@@ -27,6 +28,7 @@ export interface Discussion {
   author_name?: string;
   reply_count?: number;
   likes?: number;
+  is_verified_buyer?: boolean;
 }
 
 /**
@@ -69,7 +71,7 @@ export async function getReviews(opts: { productId?: string; serviceId?: string 
 
   let query = supabase
     .from('reviews')
-    .select(`*, profiles:profile_id(full_name)`)
+    .select(`*, profiles:profile_id(full_name, is_verified_buyer)`)
     .order('created_at', { ascending: false });
 
   if (opts.productId) query = query.eq('product_id', opts.productId);
@@ -82,6 +84,7 @@ export async function getReviews(opts: { productId?: string; serviceId?: string 
     ...r,
     author_name: r.profiles?.full_name || 'Anonymous',
     author_avatar: (r.profiles?.full_name || 'AN').substring(0, 2).toUpperCase(),
+    is_verified_buyer: r.profiles?.is_verified_buyer || false,
   })) as Review[];
 }
 
@@ -94,7 +97,7 @@ export async function getAllReviews() {
 
   const { data, error } = await supabase
     .from('reviews')
-    .select(`*, profiles:profile_id(full_name)`)
+    .select(`*, profiles:profile_id(full_name, is_verified_buyer)`)
     .order('created_at', { ascending: false })
     .limit(30);
 
@@ -104,6 +107,7 @@ export async function getAllReviews() {
     ...r,
     author_name: r.profiles?.full_name || 'Anonymous',
     author_avatar: (r.profiles?.full_name || 'AN').substring(0, 2).toUpperCase(),
+    is_verified_buyer: r.profiles?.is_verified_buyer || false,
   })) as Review[];
 }
 
@@ -143,7 +147,7 @@ export async function getDiscussions() {
 
   const { data, error } = await supabase
     .from('discussions')
-    .select(`*, profiles:profile_id(full_name)`)
+    .select(`*, profiles:profile_id(full_name, is_verified_buyer)`)
     .order('created_at', { ascending: false })
     .limit(50);
 
@@ -152,5 +156,6 @@ export async function getDiscussions() {
   return (data || []).map((d: any) => ({
     ...d,
     author_name: d.profiles?.full_name || 'Anonymous',
+    is_verified_buyer: d.profiles?.is_verified_buyer || false,
   })) as Discussion[];
 }

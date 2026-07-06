@@ -11,7 +11,7 @@ import {
 import {
   Star, Megaphone, Newspaper, MessageSquare, ThumbsUp, CheckCircle2,
   Zap, Pin, Clock, ArrowRight, Users, Cpu, Package, Plus, RotateCcw,
-  Send, X
+  Send, X, ShieldCheck
 } from 'lucide-react';
 
 const ANNOUNCEMENTS = [
@@ -246,7 +246,7 @@ export default function CommunityPage() {
       showToast('Discussion posted!', 'success');
       setShowDiscussionCompose(false);
       setDiscussionTitle(''); setDiscussionBody(''); setDiscussionCategory('General');
-      setDiscussions(prev => [{ ...newPost, author_name: profile.full_name || 'You' }, ...prev]);
+      setDiscussions(prev => [{ ...newPost, author_name: profile.full_name || 'You', is_verified_buyer: profile.is_verified_buyer }, ...prev]);
     } catch (err: any) {
       showToast(err.message || 'Failed to post discussion.', 'error');
     } finally {
@@ -269,6 +269,7 @@ export default function CommunityPage() {
       verified: true,
       likes: 0,
       isLive: true,
+      is_verified_buyer: r.is_verified_buyer,
     })),
     ...STATIC_REVIEWS.map(r => ({ ...r, isLive: false })),
   ];
@@ -447,7 +448,14 @@ export default function CommunityPage() {
                           </span>
                         </div>
                         <h3 className="text-sm font-black text-slate-text-primary leading-tight">{disc.title}</h3>
-                        <p className="text-[11px] text-slate-text-muted font-semibold mt-0.5">by {disc.author_name}</p>
+                        <p className="text-[11px] text-slate-text-muted font-semibold mt-0.5 flex items-center gap-1.5">
+                          <span>by {disc.author_name}</span>
+                          {disc.is_verified_buyer && (
+                            <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald border border-emerald/20 px-1 py-0.5 rounded scale-90" title="Verified Buyer">
+                              <ShieldCheck className="w-2.5 h-2.5" /> Verified
+                            </span>
+                          )}
+                        </p>
                         <p className="text-xs text-slate-text-secondary leading-relaxed mt-2 line-clamp-3">{disc.body}</p>
                       </div>
                     </div>
@@ -552,7 +560,14 @@ export default function CommunityPage() {
                             {review.avatar}
                           </div>
                           <div>
-                            <span className="block text-xs font-bold text-slate-text-primary">{review.author}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="block text-xs font-bold text-slate-text-primary">{review.author}</span>
+                              {review.is_verified_buyer && (
+                                <span className="text-emerald shrink-0" title="Verified Buyer">
+                                  <ShieldCheck className="w-3.5 h-3.5 fill-emerald/5" />
+                                </span>
+                              )}
+                            </div>
                             <span className="block text-[10px] text-slate-text-muted">{review.role}</span>
                           </div>
                         </div>

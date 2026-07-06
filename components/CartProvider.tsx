@@ -336,10 +336,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       {/* Floating Toast Notification */}
       {toast && (
         <div className="fixed top-20 right-6 z-50 animate-slide-in max-w-sm w-full font-sans">
-          <div className={`p-4 rounded-xl border-2 shadow-2xl flex items-start gap-3 transition-all duration-300 ${
+          <div className={`p-4 rounded-xl border backdrop-blur-md shadow-2xl flex items-start gap-3 transition-all duration-300 ${
             toast.type === 'success'
-              ? 'bg-zinc-900 border-emerald-500/80 text-emerald-400 shadow-emerald-950/20'
-              : 'bg-zinc-900 border-rose-500/80 text-rose-400 shadow-rose-950/20'
+              ? 'bg-emerald-950/75 border-emerald-500/40 text-emerald-400 shadow-emerald-950/30'
+              : 'bg-rose-950/75 border-rose-500/40 text-rose-400 shadow-rose-950/30'
           }`}>
             {toast.type === 'success' ? (
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5 shrink-0 mt-0.5 text-emerald-500">

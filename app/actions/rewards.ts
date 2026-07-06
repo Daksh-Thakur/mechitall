@@ -11,6 +11,7 @@ export interface Profile {
   wallet_balance: number;
   loyalty_tier: 'Tinkerer' | 'Master Builder';
   is_seller?: boolean;
+  is_verified_buyer?: boolean;
   created_at: string;
 }
 
@@ -318,6 +319,7 @@ export async function confirmDeliveryAndClaimBolts(
     .from('profiles')
     .update({
       wallet_balance: newBalance,
+      is_verified_buyer: true,
       updated_at: new Date().toISOString(),
     })
     .eq('id', profileId)

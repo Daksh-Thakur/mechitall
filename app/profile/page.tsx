@@ -214,15 +214,24 @@ export default function ProfilePage() {
             <div className="text-center space-y-3 pb-6 border-b border-slate-border">
               <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-full bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow-md">
                 {profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0]}
-                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald text-white flex items-center justify-center border border-white shadow-sm">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                </div>
+                {profile.is_verified_buyer && (
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald text-white flex items-center justify-center border border-white shadow-sm" title="Verified Buyer">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  </div>
+                )}
               </div>
               <div>
                 <h3 className="text-sm font-black text-slate-text-primary tracking-tight truncate">Hello, {profile.full_name.split(' ')[0]}</h3>
-                <span className="inline-block mt-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded-full">
-                  {profile.loyalty_tier}
-                </span>
+                <div className="flex flex-col items-center gap-1 mt-1.5">
+                  <span className="inline-block text-[9px] uppercase tracking-wider font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                    {profile.loyalty_tier}
+                  </span>
+                  {profile.is_verified_buyer && (
+                    <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald border border-emerald/20 px-2.5 py-0.5 rounded-full">
+                      <ShieldCheck className="w-2.5 h-2.5" /> Verified Buyer
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
