@@ -92,7 +92,7 @@ export default function ProductsPage() {
   }, [parts, searchQuery, selectedCategory, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans flex flex-col">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans flex flex-col overflow-x-hidden">
       <Navbar />
 
       {/* Page Header 
@@ -106,11 +106,11 @@ export default function ProductsPage() {
         </div>
       </div>
 */}
-      <main className="max-w-8xl mx-auto px-3 sm:px-6 py-4 flex-1 space-y-6 overflow-x-hidden">
+      <main className="max-w-8xl mx-auto px-2 sm:px-6 py-4 flex-1 space-y-4 overflow-x-hidden w-full">
         {/* Filters Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-slate-border shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-4 p-3 md:p-4 bg-white rounded-xl border border-slate-border shadow-sm min-w-0 w-full">
           {/* Search */}
-          <div ref={searchRef} className={`relative flex-1 max-w-sm ${showSuggestions && suggestions.length > 0 ? 'z-30' : 'z-10'}`}>
+          <div ref={searchRef} className={`relative w-full md:w-auto md:flex-1 max-w-full md:max-w-sm ${showSuggestions && suggestions.length > 0 ? 'z-30' : 'z-10'}`}>
             <input
               type="text"
               placeholder="Search parts, products, datasheets..."
@@ -195,14 +195,14 @@ export default function ProductsPage() {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+          <div className="flex items-center gap-2 w-full min-w-0 overflow-hidden">
             {/* Category tabs */}
-            <div className="bg-slate-bg border border-slate-border p-1 rounded-lg flex items-center gap-1 overflow-x-auto max-w-full no-scrollbar whitespace-nowrap shrink-0">
+            <div className="bg-slate-bg border border-slate-border p-0.5 rounded-lg flex items-center gap-0.5 overflow-x-auto flex-1 min-w-0 no-scrollbar">
               {['All', 'Actuators', 'Sensors', 'Control Boards', 'Mechanical'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer shrink-0 ${selectedCategory === cat
+                  className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer shrink-0 whitespace-nowrap ${selectedCategory === cat
                     ? 'bg-white text-cobalt shadow-sm border border-slate-border/50'
                     : 'text-slate-text-secondary hover:text-slate-text-primary'}`}
                 >
@@ -215,7 +215,7 @@ export default function ProductsPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-white border border-slate-border px-3 py-2 rounded-lg text-xs font-bold text-slate-text-secondary focus:outline-none focus:border-cobalt transition-colors w-full sm:w-auto cursor-pointer"
+              className="bg-white border border-slate-border px-2 py-1.5 rounded-lg text-[10px] font-bold text-slate-text-secondary focus:outline-none focus:border-cobalt transition-colors shrink-0 w-auto cursor-pointer"
             >
               <option value="featured">Sort: Featured</option>
               <option value="price-asc">Price: Low to High</option>
@@ -240,13 +240,13 @@ export default function ProductsPage() {
 
         {/* Grid */}
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-5 animate-pulse">
+          <div className="grid grid-cols-2 gap-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-5 animate-pulse">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
               <div key={n} className="bg-slate-bg/30 border border-slate-border/50 rounded-xl p-3 sm:p-5 h-44 sm:h-72"></div>
             ))}
           </div>
         ) : filteredParts.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-5">
+          <div className="grid grid-cols-2 gap-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 sm:gap-5 w-full min-w-0">
             {filteredParts.map(part => (
               <ProductCard key={part.id} part={part} onViewDetails={setSelectedPart} />
             ))}

@@ -17,7 +17,7 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
   return (
     <div
       onClick={() => onViewDetails(part)}
-      className="group bg-white rounded-xl border border-slate-border p-2 sm:p-5 flex flex-col justify-between card-hover glow-cobalt cursor-pointer min-w-0"
+      className="group bg-white rounded-xl border border-slate-border p-2 sm:p-5 flex flex-col justify-between card-hover glow-cobalt cursor-pointer min-w-0 w-full"
     >
       <div className="space-y-1.5 sm:space-y-4">
         {/* Image placeholder */}
