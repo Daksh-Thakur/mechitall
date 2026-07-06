@@ -17,14 +17,14 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
   return (
     <div
       onClick={() => onViewDetails(part)}
-      className="group bg-white rounded-xl border border-slate-border p-3 sm:p-5 flex flex-col justify-between card-hover glow-cobalt cursor-pointer"
+      className="group bg-white rounded-xl border border-slate-border p-2 sm:p-5 flex flex-col justify-between card-hover glow-cobalt cursor-pointer min-w-0"
     >
-      <div className="space-y-2 sm:space-y-4">
+      <div className="space-y-1.5 sm:space-y-4">
         {/* Image placeholder */}
         <div
-          className={`h-24 sm:h-40 w-full rounded-lg bg-gradient-to-br ${part.gradientClass} relative overflow-hidden flex items-center justify-center`}
+          className={`h-20 sm:h-40 w-full rounded-lg bg-gradient-to-br ${part.gradientClass} relative overflow-hidden flex items-center justify-center`}
         >
-          <Cpu className="w-8 h-8 sm:w-10 sm:h-10 text-slate-text-muted/30 group-hover:scale-110 transition-transform duration-300" />
+          <Cpu className="w-6 h-6 sm:w-10 sm:h-10 text-slate-text-muted/30 group-hover:scale-110 transition-transform duration-300" />
           <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="hidden sm:block absolute top-2 left-2 px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-widest bg-white/90 text-slate-text-primary shadow-sm">
             {part.category}
@@ -60,7 +60,7 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
             {part.partNumber}
           </span>
           <h3
-            className="text-xs sm:text-sm font-bold text-slate-text-primary leading-tight group-hover:text-cobalt transition-colors duration-200 line-clamp-1"
+            className="text-[10px] sm:text-sm font-extrabold text-slate-text-primary leading-tight group-hover:text-cobalt transition-colors duration-200 line-clamp-1"
           >
             {part.title}
           </h3>
@@ -71,12 +71,12 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
       </div>
 
       {/* Price + Add */}
-      <div className="pt-2 sm:pt-4 flex items-center justify-between gap-2 mt-2 sm:mt-4">
+      <div className="pt-1.5 sm:pt-4 flex items-center justify-between gap-1.5 mt-1.5 sm:mt-4">
         <div>
           <span className="hidden sm:block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Unit Price</span>
-          <div className="flex items-baseline gap-1">
-            <span className="text-sm sm:text-base font-extrabold text-coral">₹{part.price.toFixed(2)}</span>
-            <span className="text-[9px] sm:text-[10px] text-slate-text-muted font-bold">INR</span>
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-xs sm:text-base font-extrabold text-coral">₹{part.price.toFixed(2)}</span>
+            <span className="text-[8px] sm:text-[10px] text-slate-text-muted font-bold">INR</span>
           </div>
         </div>
         <button

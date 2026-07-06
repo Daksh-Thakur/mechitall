@@ -12,6 +12,12 @@ export interface Profile {
   loyalty_tier: 'Tinkerer' | 'Master Builder';
   is_seller?: boolean;
   is_verified_buyer?: boolean;
+  seller_kyc_completed?: boolean;
+  company_name?: string | null;
+  tax_id?: string | null;
+  machine_count?: number;
+  business_address?: string | null;
+  primary_capability?: string | null;
   created_at: string;
 }
 
@@ -495,4 +501,44 @@ export async function toggleProfileSellerMode(profileId: string, isSeller: boole
 
   return data as Profile;
 }
+
+/**
+ * Submits Seller KYC details and activates Seller Mode.
+ */
+export async function submitSellerKYC(
+  profileId: string,
+  formData: {
+    companyName: string;
+    taxId: string;
+    machineCount: number;
+    businessAddress: string;
+    primaryCapability: string;
+  }
+) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      seller_kyc_completed: true,
+      is_seller: true,
+      company_name: formData.companyName,
+      tax_id: formData.taxId,
+      machine_count: formData.machineCount,
+      business_address: formData.businessAddress,
+      primary_capability: formData.primaryCapability,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', profileId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as Profile;
+}
+
 

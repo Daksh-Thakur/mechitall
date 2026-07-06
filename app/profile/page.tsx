@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useCart } from '@/components/CartProvider';
-import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, Profile, BoltsTransaction } from '@/app/actions/rewards';
+import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, submitSellerKYC, Profile, BoltsTransaction } from '@/app/actions/rewards';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
   User, ShoppingBag, Gift, Heart, Settings, MapPin, MessageSquare, 
   ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus, 
   Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play,
-  Send, Paperclip, FileText, ExternalLink
+  Send, Paperclip, FileText, ExternalLink, CircleDollarSign
 } from 'lucide-react';
 import { 
   getOngoingChats, 
@@ -26,7 +26,17 @@ export default function ProfilePage() {
   const supabase = createClient();
   const { profile, fetchProfile, showToast, addToCart, wishlist, toggleWishlist } = useCart();
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'rewards' | 'wishlist' | 'settings' | 'address' | 'support' | 'chats'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'rewards' | 'wishlist' | 'settings' | 'address' | 'support' | 'chats' | 'seller_orders' | 'seller_rfqs' | 'seller_capabilities' | 'seller_earnings'>('orders');
+
+  // Switch tabs dynamically when toggling Seller Mode
+  useEffect(() => {
+    if (profile?.is_seller) {
+      setActiveTab('seller_rfqs');
+    } else {
+      setActiveTab('orders');
+    }
+  }, [profile?.is_seller]);
+
   const [orders, setOrders] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<BoltsTransaction[]>([]);
   const [dbProducts, setDbProducts] = useState<any[]>([]);
@@ -41,12 +51,21 @@ export default function ProfilePage() {
   const [editName, setEditName] = useState('');
   const [isUpdatingName, startTransition] = useTransition();
   const [togglingSeller, setTogglingSeller] = useState(false);
+  const [showKYCModal, setShowKYCModal] = useState(false);
 
   const handleToggleSellerMode = async () => {
     if (!profile) return;
+    
+    const nextState = !profile.is_seller;
+
+    // If turning ON seller mode and KYC is not completed, show the KYC wizard modal
+    if (nextState && !profile.seller_kyc_completed) {
+      setShowKYCModal(true);
+      return;
+    }
+
     setTogglingSeller(true);
     try {
-      const nextState = !profile.is_seller;
       await toggleProfileSellerMode(profile.id, nextState);
       showToast(nextState ? 'Seller Mode Activated!' : 'Seller Mode Deactivated.', 'success');
       await fetchProfile();
@@ -208,151 +227,512 @@ export default function ProfilePage() {
       <main className="flex-1 max-w-7xl mx-auto px-6 py-10 w-full flex flex-col md:flex-row gap-8">
         
         {/* Sidebar Nav */}
-        <aside className="md:w-3/12 flex flex-col justify-between bg-white border border-slate-border rounded-2xl p-6 shadow-sm h-fit">
-          <div className="space-y-6">
-            {/* Header User Card */}
-            <div className="text-center space-y-3 pb-6 border-b border-slate-border">
-              <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-full bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow-md">
-                {profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0]}
-                {profile.is_verified_buyer && (
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald text-white flex items-center justify-center border border-white shadow-sm" title="Verified Buyer">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                  </div>
-                )}
+        {profile.is_seller ? (
+          /* Seller Sidebar Nav */
+          <aside className="md:w-3/12 flex flex-col justify-between bg-[#0B1528] text-white rounded-2xl p-6 shadow-xl h-[600px] shrink-0 border border-slate-700/30">
+            <div className="space-y-6">
+              {/* Header Seller Hub Card */}
+              <div className="pb-4 border-b border-slate-700/50">
+                <h3 className="text-base font-black tracking-tight text-white flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#00D0F5] animate-pulse"></span>
+                  Seller Hub
+                </h3>
+                <span className="block text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
+                  Precision Engineering
+                </span>
               </div>
-              <div>
-                <h3 className="text-sm font-black text-slate-text-primary tracking-tight truncate">Hello, {profile.full_name.split(' ')[0]}</h3>
-                <div className="flex flex-col items-center gap-1 mt-1.5">
-                  <span className="inline-block text-[9px] uppercase tracking-wider font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded-full">
-                    {profile.loyalty_tier}
-                  </span>
+
+              {/* Nav Tabs */}
+              <nav className="space-y-1">
+                {[
+                  { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
+                  { tab: 'seller_rfqs', label: 'Active RFQs', icon: FileText },
+                  { tab: 'seller_capabilities', label: 'Machine Capabilities', icon: Cpu },
+                  { tab: 'seller_earnings', label: 'Earnings', icon: CircleDollarSign },
+                ].map(({ tab, label, icon: Icon }) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab as any)}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                      activeTab === tab
+                        ? 'bg-[#007084] text-white shadow-lg shadow-[#007084]/20 border border-[#0092AB]/30'
+                        : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 shrink-0 ${activeTab === tab ? 'text-[#00D0F5]' : 'text-slate-400'}`} />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </nav>
+
+              {/* Quick Action Button: New Listing */}
+              <button 
+                onClick={() => showToast('Create Listing service is in demonstration mode.', 'success')}
+                className="w-full bg-[#00D0F5] hover:bg-[#00B9DB] text-slate-900 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md shadow-[#00D0F5]/10 hover:-translate-y-0.5 active:translate-y-0 active:shadow-none"
+              >
+                <Plus className="w-4 h-4 shrink-0 stroke-[3]" />
+                <span>New Listing</span>
+              </button>
+            </div>
+
+            {/* Exit/Deactivate Seller Mode */}
+            <div className="pt-4 border-t border-slate-700/50">
+              <button
+                disabled={togglingSeller}
+                onClick={handleToggleSellerMode}
+                className="w-full py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer border border-slate-700 hover:bg-slate-800 text-slate-300 hover:text-white transition-all"
+              >
+                <ArrowLeftRight className="w-4 h-4 shrink-0" />
+                <span>Switch to Customer Mode</span>
+              </button>
+            </div>
+          </aside>
+        ) : (
+          /* Sidebar Nav */
+          <aside className="md:w-3/12 flex flex-col justify-between bg-white border border-slate-border rounded-2xl p-6 shadow-sm h-fit">
+            <div className="space-y-6">
+              {/* Header User Card */}
+              <div className="text-center space-y-3 pb-6 border-b border-slate-border">
+                <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-full bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow-md">
+                  {profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0]}
                   {profile.is_verified_buyer && (
-                    <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald border border-emerald/20 px-2.5 py-0.5 rounded-full">
-                      <ShieldCheck className="w-2.5 h-2.5" /> Verified Buyer
-                    </span>
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald text-white flex items-center justify-center border border-white shadow-sm" title="Verified Buyer">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                    </div>
                   )}
                 </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-text-primary tracking-tight truncate">Hello, {profile.full_name.split(' ')[0]}</h3>
+                  <div className="flex flex-col items-center gap-1 mt-1.5">
+                    <span className="inline-block text-[9px] uppercase tracking-wider font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                      {profile.loyalty_tier}
+                    </span>
+                    {profile.is_verified_buyer && (
+                      <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                        <ShieldCheck className="w-2.5 h-2.5" /> Verified Buyer
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
+
+              {/* Nav Tabs */}
+              <nav className="space-y-1">
+                <button
+                  onClick={() => setActiveTab('orders')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    activeTab === 'orders'
+                      ? 'bg-slate-text-primary text-white shadow-md'
+                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
+                  }`}
+                >
+                  <ShoppingBag className="w-4 h-4 shrink-0" />
+                  <span>My Orders</span>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('rewards')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    activeTab === 'rewards'
+                      ? 'bg-slate-text-primary text-white shadow-md'
+                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
+                  }`}
+                >
+                  <Gift className="w-4 h-4 shrink-0" />
+                  <span>Rewards & Offers</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('wishlist')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    activeTab === 'wishlist'
+                      ? 'bg-slate-text-primary text-white shadow-md'
+                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
+                  }`}
+                >
+                  <Heart className="w-4 h-4 shrink-0" />
+                  <span>Wishlist</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    activeTab === 'settings'
+                      ? 'bg-slate-text-primary text-white shadow-md'
+                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
+                  }`}
+                >
+                  <Settings className="w-4 h-4 shrink-0" />
+                  <span>Account Settings</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('address')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    activeTab === 'address'
+                      ? 'bg-slate-text-primary text-white shadow-md'
+                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
+                  }`}
+                >
+                  <MapPin className="w-4 h-4 shrink-0" />
+                  <span>Address Book</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('support')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    activeTab === 'support'
+                      ? 'bg-slate-text-primary text-white shadow-md'
+                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4 shrink-0" />
+                  <span>Customer Support</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('chats')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                    activeTab === 'chats'
+                      ? 'bg-slate-text-primary text-white shadow-md'
+                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4 shrink-0" />
+                  <span>Quotation Chats</span>
+                </button>
+              </nav>
             </div>
 
-            {/* Nav Tabs */}
-            <nav className="space-y-1">
+            {/* Switch/Activate Seller Mode */}
+            <div className="pt-6 border-t border-slate-border mt-8 space-y-2">
+              <div className="flex justify-between items-center text-[10px] font-bold text-slate-text-secondary">
+                <span>Seller Account</span>
+                <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                  profile.seller_kyc_completed 
+                    ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20' 
+                    : 'bg-slate-bg text-slate-text-muted border'
+                }`}>
+                  {profile.seller_kyc_completed ? 'Active' : 'Inactive'}
+                </span>
+              </div>
               <button
-                onClick={() => setActiveTab('orders')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  activeTab === 'orders'
-                    ? 'bg-slate-text-primary text-white shadow-md'
-                    : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
+                disabled={togglingSeller}
+                onClick={handleToggleSellerMode}
+                className={`w-full transition-all py-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer ${
+                  profile.is_seller
+                    ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
+                    : 'border border-slate-border text-slate-text-secondary hover:text-slate-text-primary hover:border-slate-text-primary bg-slate-bg/30'
                 }`}
               >
-                <ShoppingBag className="w-4 h-4 shrink-0" />
-                <span>My Orders</span>
+                <ArrowLeftRight className="w-4 h-4 shrink-0" />
+                <span>
+                  {profile.is_seller 
+                    ? 'Deactivate Seller Mode' 
+                    : profile.seller_kyc_completed 
+                    ? 'Switch to Seller Mode' 
+                    : 'Activate Seller Mode'}
+                </span>
               </button>
-              
-              <button
-                onClick={() => setActiveTab('rewards')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  activeTab === 'rewards'
-                    ? 'bg-slate-text-primary text-white shadow-md'
-                    : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                }`}
-              >
-                <Gift className="w-4 h-4 shrink-0" />
-                <span>Rewards & Offers</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('wishlist')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  activeTab === 'wishlist'
-                    ? 'bg-slate-text-primary text-white shadow-md'
-                    : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                }`}
-              >
-                <Heart className="w-4 h-4 shrink-0" />
-                <span>Wishlist</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('settings')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  activeTab === 'settings'
-                    ? 'bg-slate-text-primary text-white shadow-md'
-                    : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                }`}
-              >
-                <Settings className="w-4 h-4 shrink-0" />
-                <span>Account Settings</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('address')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  activeTab === 'address'
-                    ? 'bg-slate-text-primary text-white shadow-md'
-                    : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                }`}
-              >
-                <MapPin className="w-4 h-4 shrink-0" />
-                <span>Address Book</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('support')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  activeTab === 'support'
-                    ? 'bg-slate-text-primary text-white shadow-md'
-                    : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                }`}
-              >
-                <MessageSquare className="w-4 h-4 shrink-0" />
-                <span>Customer Support</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('chats')}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  activeTab === 'chats'
-                    ? 'bg-slate-text-primary text-white shadow-md'
-                    : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                }`}
-              >
-                <MessageSquare className="w-4 h-4 shrink-0" />
-                <span>Quotation Chats</span>
-              </button>
-            </nav>
-          </div>
-
-          {/* Switch/Activate Seller Mode */}
-          <div className="pt-6 border-t border-slate-border mt-8 space-y-2">
-            <div className="flex justify-between items-center text-[10px] font-bold text-slate-text-secondary">
-              <span>Seller Account</span>
-              <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
-                profile.is_seller 
-                  ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20' 
-                  : 'bg-slate-bg text-slate-text-muted border'
-              }`}>
-                {profile.is_seller ? 'Active' : 'Inactive'}
-              </span>
             </div>
-            <button
-              disabled={togglingSeller}
-              onClick={handleToggleSellerMode}
-              className={`w-full transition-all py-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer ${
-                profile.is_seller
-                  ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
-                  : 'border border-slate-border text-slate-text-secondary hover:text-slate-text-primary hover:border-slate-text-primary bg-slate-bg/30'
-              }`}
-            >
-              <ArrowLeftRight className="w-4 h-4 shrink-0" />
-              <span>{profile.is_seller ? 'Deactivate Seller Mode' : 'Activate Seller Mode'}</span>
-            </button>
-          </div>
-        </aside>
+          </aside>
+        )}
 
         {/* Main Content Area */}
         <section className="md:w-9/12 space-y-6">
-          
+          {/* ======================================================== */}
+          {/* SELLER HUB TAB: ACTIVE RFQS FOR REVIEW */}
+          {profile.is_seller && activeTab === 'seller_rfqs' && (
+            <div className="space-y-6">
+              
+              {/* Stats Cards Row */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: 'ACTIVE RFQS', value: '5', icon: FileText, color: 'text-sky-500 bg-sky-50 border-sky-100' },
+                  { label: 'PENDING QUOTES', value: '12', icon: FileText, color: 'text-teal-500 bg-teal-50 border-teal-100' },
+                  { label: 'PRODUCTION QUEUE', value: '8', icon: Cpu, color: 'text-indigo-500 bg-indigo-50 border-indigo-100' },
+                  { label: 'MONTHLY EARNINGS', value: '₹4.5L', icon: CircleDollarSign, color: 'text-emerald-500 bg-emerald-50 border-emerald-100' },
+                ].map((stat, idx) => {
+                  const StatIcon = stat.icon;
+                  return (
+                    <div key={idx} className="bg-white border border-slate-border rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all">
+                      <div className="space-y-1">
+                        <span className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-text-muted">{stat.label}</span>
+                        <span className="block text-2xl font-black text-slate-text-primary leading-tight">{stat.value}</span>
+                      </div>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${stat.color} shrink-0`}>
+                        <StatIcon className="w-5 h-5" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Grid Layout for Main Content & Sidebar */}
+              <div className="flex flex-col lg:flex-row gap-6">
+                
+                {/* Left Column (8/12) */}
+                <div className="lg:w-8/12 space-y-6">
+                  
+                  {/* ACTIVE RFQS FOR REVIEW */}
+                  <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-slate-border">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-[#007084]" />
+                        <h4 className="text-sm font-black text-slate-text-primary uppercase tracking-tight">Active RFQs for Review</h4>
+                      </div>
+                      <Link href="/machining" className="text-xs font-bold text-cobalt hover:underline">
+                        View All Requests
+                      </Link>
+                    </div>
+
+                    <div className="space-y-3">
+                      {[
+                        { title: 'Titanium Heat Shield', badge: 'AERO-SPEC', material: 'Ti-6Al-4V', quantity: '45 units', leadTime: '14 Days', badgeColor: 'bg-indigo-50 border-indigo-150 text-indigo-700' },
+                        { title: 'Manifold Housing V4', badge: 'INDUSTRIAL', material: 'Aluminum 7075', quantity: '120 units', leadTime: '21 Days', badgeColor: 'bg-amber-50 border-amber-150 text-amber-700' },
+                      ].map((rfq, idx) => (
+                        <div key={idx} className="border border-slate-border/70 rounded-xl p-4 space-y-3 hover:border-slate-border transition-colors bg-slate-bg/10">
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="space-y-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <h5 className="text-xs font-black text-slate-text-primary">{rfq.title}</h5>
+                                <span className={`text-[8px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full border ${rfq.badgeColor}`}>
+                                  {rfq.badge}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-text-muted font-bold font-mono">
+                                <span>{rfq.material}</span>
+                                <span>•</span>
+                                <span>{rfq.quantity}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <button 
+                                onClick={() => showToast('Opening CAD file viewer...', 'success')}
+                                className="px-3 py-2 rounded-lg border border-slate-border hover:bg-slate-bg text-[10px] font-extrabold text-slate-text-secondary cursor-pointer transition-colors flex items-center gap-1.5"
+                              >
+                                Review CAD
+                              </button>
+                              <button 
+                                onClick={() => showToast('Opening quote submission wizard...', 'success')}
+                                className="px-3 py-2 rounded-lg bg-[#0B1528] hover:bg-slate-900 text-white text-[10px] font-extrabold cursor-pointer transition-colors"
+                              >
+                                Submit Quote
+                              </button>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] text-slate-text-muted font-bold">
+                            <Clock className="w-3.5 h-3.5 text-slate-text-muted" />
+                            <span>Lead Time: <strong className="text-slate-text-primary">{rfq.leadTime}</strong></span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* PRODUCTION PIPELINE */}
+                  <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-slate-border">
+                      <div className="flex items-center gap-2">
+                        <Cpu className="w-4 h-4 text-[#007084]" />
+                        <h4 className="text-sm font-black text-slate-text-primary uppercase tracking-tight">Production Pipeline</h4>
+                      </div>
+                      <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald rounded border border-emerald-500/20">
+                        8 Active Jobs
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto no-scrollbar">
+                      <table className="w-full border-collapse text-left">
+                        <thead>
+                          <tr className="border-b border-slate-border/50 text-[10px] uppercase tracking-wider font-extrabold text-slate-text-muted">
+                            <th className="pb-2.5">Project</th>
+                            <th className="pb-2.5 px-3">Status</th>
+                            <th className="pb-2.5 px-3">Progress</th>
+                            <th className="pb-2.5 text-right">ETA</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-border/30">
+                          {[
+                            { name: 'Hydraulic Cylinder Cap', order: 'Order #MECH-8821', status: 'In Machining', progress: 50, eta: 'Nov 24', color: 'bg-sky-500 text-sky-600' },
+                            { name: 'Base Plate Assembly', order: 'Order #MECH-8834', status: 'Quality Check', progress: 80, eta: 'Today', color: 'bg-emerald text-emerald' },
+                          ].map((job, idx) => (
+                            <tr key={idx} className="text-xs">
+                              <td className="py-3">
+                                <span className="block font-black text-slate-text-primary leading-tight">{job.name}</span>
+                                <span className="block text-[9px] text-slate-text-muted font-mono mt-0.5 font-semibold">{job.order}</span>
+                              </td>
+                              <td className="py-3 px-3">
+                                <div className="flex items-center gap-1.5 font-bold text-[11px]">
+                                  <span className={`w-2 h-2 rounded-full ${job.status === 'In Machining' ? 'bg-sky-500' : 'bg-emerald'}`}></span>
+                                  <span className={job.status === 'In Machining' ? 'text-sky-600' : 'text-emerald'}>{job.status}</span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-3 min-w-[120px]">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-24 h-1.5 bg-slate-bg border border-slate-border/50 rounded-full overflow-hidden shrink-0">
+                                    <div 
+                                      className={`h-full ${job.status === 'In Machining' ? 'bg-sky-500' : 'bg-emerald'} transition-all`} 
+                                      style={{ width: `${job.progress}%` }}
+                                    ></div>
+                                  </div>
+                                  <span className="font-mono font-black text-[10px] text-slate-text-secondary">{job.progress}%</span>
+                                </div>
+                              </td>
+                              <td className="py-3 text-right font-black text-slate-text-secondary">{job.eta}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* DISPATCHED ORDERS */}
+                  <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-slate-border">
+                      <div className="flex items-center gap-2">
+                        <ShoppingBag className="w-4 h-4 text-[#007084]" />
+                        <h4 className="text-sm font-black text-slate-text-primary uppercase tracking-tight">Dispatched Orders</h4>
+                      </div>
+                      <button onClick={() => showToast('Opening shipment manager...', 'success')} className="text-xs font-bold text-cobalt hover:underline cursor-pointer">
+                        Track All Shipments
+                      </button>
+                    </div>
+
+                    <div className="overflow-x-auto no-scrollbar">
+                      <table className="w-full border-collapse text-left">
+                        <thead>
+                          <tr className="border-b border-slate-border/50 text-[10px] uppercase tracking-wider font-extrabold text-slate-text-muted">
+                            <th className="pb-2.5">Order / Tracking</th>
+                            <th className="pb-2.5 px-3">Carrier</th>
+                            <th className="pb-2.5 px-3">Status</th>
+                            <th className="pb-2.5 text-right">Est. Delivery</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-border/30">
+                          {[
+                            { id: '#MECH-8792', trk: 'TRK: 1Z999AA10123456784', carrier: 'BlueDart Express', status: 'In Transit', date: 'Nov 22', active: true },
+                            { id: '#MECH-8755', trk: 'TRK: 402394857712', carrier: 'DHL Global', status: 'Delivered', date: 'Today', active: false },
+                          ].map((ship, idx) => (
+                            <tr key={idx} className="text-xs">
+                              <td className="py-3">
+                                <span className="block font-black text-slate-text-primary leading-tight">{ship.id}</span>
+                                <span className="block text-[9px] text-slate-text-muted font-mono mt-0.5 font-semibold">{ship.trk}</span>
+                              </td>
+                              <td className="py-3 px-3 font-semibold text-slate-text-secondary">{ship.carrier}</td>
+                              <td className="py-3 px-3">
+                                <div className="flex items-center gap-1.5 font-bold text-[11px]">
+                                  <span className={`w-2 h-2 rounded-full ${ship.active ? 'bg-sky-500 animate-pulse' : 'bg-emerald'}`}></span>
+                                  <span className={ship.active ? 'text-sky-600' : 'text-emerald'}>{ship.status}</span>
+                                </div>
+                              </td>
+                              <td className="py-3 text-right font-black text-slate-text-secondary">{ship.date}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Right Column (4/12) */}
+                <div className="lg:w-4/12 space-y-6">
+                  
+                  {/* EARNINGS VELOCITY */}
+                  <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-5">
+                    <div className="pb-3 border-b border-slate-border">
+                      <h4 className="text-xs font-black text-slate-text-muted uppercase tracking-wider">Earnings Velocity</h4>
+                    </div>
+
+                    {/* Visual Bar Chart */}
+                    <div className="space-y-4">
+                      <div className="flex items-end justify-between h-36 px-2">
+                        {[
+                          { week: 'Wk 1', height: 40, active: false, value: '₹1.1L' },
+                          { week: 'Wk 2', height: 60, active: false, value: '₹1.8L' },
+                          { week: 'Wk 3', height: 50, active: false, value: '₹1.5L' },
+                          { week: 'Wk 4', height: 95, active: true, value: '₹4.5L' },
+                          { week: 'Wk 5', height: 75, active: false, value: '₹2.8L' },
+                        ].map((bar, idx) => (
+                          <div key={idx} className="flex flex-col items-center gap-2 group relative">
+                            <span className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-zinc-800 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md transition-opacity whitespace-nowrap pointer-events-none z-10">
+                              {bar.value}
+                            </span>
+                            <div 
+                              className={`w-7 rounded-t-lg transition-all duration-300 ${
+                                bar.active 
+                                  ? 'bg-[#00D0F5] shadow-lg shadow-[#00D0F5]/20 hover:brightness-105' 
+                                  : 'bg-[#F1F5F9] border border-slate-200 hover:border-slate-400'
+                              }`}
+                              style={{ height: `${bar.height}px` }}
+                            ></div>
+                            <span className={`text-[9px] font-black uppercase tracking-wider ${bar.active ? 'text-[#007084]' : 'text-slate-text-muted'}`}>
+                              {bar.week}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="border-t border-slate-border pt-3.5 flex items-center justify-between text-xs">
+                        <span className="font-bold text-slate-text-muted">Projected Month End</span>
+                        <span className="font-black text-slate-text-primary text-sm">₹5.2L</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ISO 9001:2015 Certification */}
+                  <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-100 text-[#007084] flex items-center justify-center shrink-0 shadow-sm">
+                      <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <h4 className="text-xs font-black text-slate-text-primary">ISO 9001:2015 Compliance</h4>
+                      <p className="text-[10px] text-slate-text-muted font-bold leading-normal">
+                        Certified Operations since 2021. Complies with global precision aerospace &amp; industrial machining guidelines.
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+          {/* OTHER SELLER HUB TABS */}
+          {profile.is_seller && activeTab === 'seller_orders' && (
+            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm text-center py-20 space-y-3">
+              <ShoppingBag className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
+              <h4 className="text-sm font-black text-slate-text-primary">Seller Orders Manager</h4>
+              <p className="text-xs text-slate-text-muted max-w-sm mx-auto font-medium">
+                View, track, and complete purchase orders submitted for custom fabrication jobs or catalog parts.
+              </p>
+            </div>
+          )}
+
+          {profile.is_seller && activeTab === 'seller_capabilities' && (
+            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm text-center py-20 space-y-3">
+              <Cpu className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
+              <h4 className="text-sm font-black text-slate-text-primary">Machine Capabilities Registry</h4>
+              <p className="text-xs text-slate-text-muted max-w-sm mx-auto font-medium">
+                Edit machine tolerances, list raw materials, and update CNC envelope dimensions.
+              </p>
+            </div>
+          )}
+
+          {profile.is_seller && activeTab === 'seller_earnings' && (
+            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm text-center py-20 space-y-3">
+              <CircleDollarSign className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
+              <h4 className="text-sm font-black text-slate-text-primary">Seller Earnings Dashboard</h4>
+              <p className="text-xs text-slate-text-muted max-w-sm mx-auto font-medium">
+                Track payments, view billing statements, and check linked corporate bank account statuses.
+              </p>
+            </div>
+          )}
+
+          {/* ======================================================== */}
           {/* TAB 1: ORDERS */}
           {activeTab === 'orders' && (
             <div className="space-y-6">
@@ -913,6 +1293,141 @@ export default function ProfilePage() {
       </main>
 
       <Footer />
+
+      {/* Seller KYC Modal */}
+      {showKYCModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"
+            onClick={() => setShowKYCModal(false)}
+          ></div>
+
+          {/* Modal Container */}
+          <div className="bg-white/95 backdrop-blur-lg border border-slate-200/50 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative z-10 animate-fade-in-down max-h-[90vh] overflow-y-auto no-scrollbar space-y-6">
+            <div className="text-center space-y-2">
+              <div className="w-12 h-12 rounded-2xl bg-[#0B1528]/10 text-[#0B1528] flex items-center justify-center mx-auto shadow-sm">
+                <Cpu className="w-6 h-6 stroke-[2]" />
+              </div>
+              <h3 className="text-lg font-black text-slate-text-primary tracking-tight uppercase">Seller Registration &amp; KYC</h3>
+              <p className="text-xs text-slate-text-muted max-w-sm mx-auto leading-relaxed font-semibold">
+                Please complete your shop verification details to register as a custom fabrication seller on MechItAll.
+              </p>
+            </div>
+
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const target = e.target as any;
+              const companyName = target.companyName.value.trim();
+              const taxId = target.taxId.value.trim();
+              const machineCount = parseInt(target.machineCount.value) || 0;
+              const businessAddress = target.businessAddress.value.trim();
+              const primaryCapability = target.primaryCapability.value;
+
+              if (!companyName || !taxId || !businessAddress || !primaryCapability) {
+                showToast('Please fill in all required fields.', 'error');
+                return;
+              }
+
+              setTogglingSeller(true);
+              try {
+                await submitSellerKYC(profile.id, {
+                  companyName,
+                  taxId,
+                  machineCount,
+                  businessAddress,
+                  primaryCapability
+                });
+                showToast('KYC Verified & Seller Mode Activated!', 'success');
+                setShowKYCModal(false);
+                await fetchProfile();
+              } catch (err: any) {
+                showToast(err.message || 'Failed to submit KYC.', 'error');
+              } finally {
+                setTogglingSeller(false);
+              }
+            }} className="space-y-4 text-left">
+              
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Company / Shop Name *</label>
+                <input 
+                  type="text" 
+                  name="companyName" 
+                  required 
+                  placeholder="e.g. Precision CNC Lab Ltd."
+                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]" 
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Tax Identification ID (GSTIN/EIN) *</label>
+                <input 
+                  type="text" 
+                  name="taxId" 
+                  required 
+                  placeholder="e.g. 27AAAAA1111A1Z1"
+                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]" 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Machine Count</label>
+                  <input 
+                    type="number" 
+                    name="machineCount" 
+                    min={0}
+                    defaultValue={1}
+                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]" 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Primary Capability *</label>
+                  <select 
+                    name="primaryCapability"
+                    required
+                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]"
+                  >
+                    <option value="CNC Machining">CNC Machining</option>
+                    <option value="3D Printing">3D Printing</option>
+                    <option value="Sheet Metal Fabrication">Sheet Metal Fabrication</option>
+                    <option value="Laser Cutting">Laser Cutting</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Business Address *</label>
+                <textarea 
+                  name="businessAddress" 
+                  required 
+                  rows={2} 
+                  placeholder="Street, City, Zip Code..."
+                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084] resize-none"
+                ></textarea>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  type="button" 
+                  onClick={() => setShowKYCModal(false)}
+                  className="flex-1 py-3 rounded-lg border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={togglingSeller}
+                  className="flex-1 bg-[#0B1528] hover:bg-slate-900 text-white py-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+                >
+                  Verify &amp; Activate
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -106,7 +106,7 @@ export default function ProductsPage() {
         </div>
       </div>
 */}
-      <main className="max-w-8xl mx-auto px-6 py-4 flex-1 space-y-6">
+      <main className="max-w-8xl mx-auto px-3 sm:px-6 py-4 flex-1 space-y-6 overflow-x-hidden">
         {/* Filters Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white rounded-xl border border-slate-border shadow-sm">
           {/* Search */}
