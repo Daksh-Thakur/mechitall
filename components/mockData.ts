@@ -29,6 +29,7 @@ export interface Part {
     ingressProtection: string; // IP Rating
   };
   imageData?: string;
+  imagesData?: string[];
 }
 
 // Cleared products catalog as requested

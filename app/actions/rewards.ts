@@ -12,6 +12,7 @@ export interface Profile {
   loyalty_tier: 'Tinkerer' | 'Master Builder';
   is_seller?: boolean;
   is_verified_buyer?: boolean;
+  is_verified_seller?: boolean;
   seller_kyc_completed?: boolean;
   company_name?: string | null;
   tax_id?: string | null;
@@ -201,6 +202,16 @@ export async function confirmDeliveryAndClaimBolts(
     throw new Error(`Order ${orderId} not found`);
   }
 
+  // Enforce that the order has been successfully received (status must be Shipped or Delivered)
+  if (order.status !== 'Shipped' && order.status !== 'Delivered') {
+    throw new Error(`Order must be Shipped or Delivered to confirm delivery. Current status: ${order.status}`);
+  }
+
+  // Enforce that mandatory unboxing confirmation steps are completed
+  if (!photoUrl || photoUrl.trim() === '' || photoUrl.startsWith('data:;base64,')) {
+    throw new Error('Unboxing verification photo is required to complete the mandatory confirmation steps.');
+  }
+
   if (order.rewards_claimed) {
     throw new Error('Rewards have already been claimed for this order');
   }
@@ -336,6 +347,21 @@ export async function confirmDeliveryAndClaimBolts(
     throw new Error(`Failed to update profile wallet balance: ${finalProfileErr.message}`);
   }
 
+  // If the order has an associated seller, mark the seller as verified!
+  if (order && (order as any).seller_id) {
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          is_verified_seller: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', (order as any).seller_id);
+    } catch (sellerErr) {
+      console.error(`Failed to update seller verification status:`, sellerErr);
+    }
+  }
+
   return {
     success: true,
     earnedBolts,
@@ -455,6 +481,21 @@ export async function simulateOrderStatus(orderId: string, nextStatus: 'Shipped'
   if (error) {
     console.error('Database order status update failed:', error.message);
     throw new Error(`Failed to update order status: ${error.message}`);
+  }
+
+  // If status is updated to Completed and order has a seller_id, mark the seller as verified!
+  if (nextStatus === 'Completed' && order && (order as any).seller_id) {
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          is_verified_seller: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', (order as any).seller_id);
+    } catch (sellerErr) {
+      console.error(`Failed to update seller verification status in simulation:`, sellerErr);
+    }
   }
 
   return order;

@@ -16,6 +16,8 @@ export default function Navbar() {
   const { cartSummary, setIsCartOpen, profile, fetchProfile, showToast } = useCart();
   const supabase = createClient();
 
+
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
@@ -163,7 +165,7 @@ export default function Navbar() {
                   </li>
                 </ul>
                 <div className="mt-3 pt-2 border-t border-zinc-700/40 text-[10px] text-zinc-400 text-center font-bold">
-                  Click to view full loyalty vault
+                  Click to view full Bolts Wallet
                 </div>
               </div>
             </div>
@@ -226,6 +228,11 @@ export default function Navbar() {
                       {profile?.is_verified_buyer && (
                         <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald border border-emerald/20 px-1.5 py-0.5 rounded">
                           Verified
+                        </span>
+                      )}
+                      {profile?.is_verified_seller && (
+                        <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                          Seller Verified
                         </span>
                       )}
                     </div>
@@ -299,11 +306,30 @@ export default function Navbar() {
               );
             })}
           </nav>
+
+
           {profile && (
             <div className="border-t border-[#E4E4E7] pt-3 px-1 flex items-center justify-between text-[10px] font-bold text-[#76777d] font-mono uppercase tracking-wider">
               <span className="flex items-center gap-1.5">
-                <Cpu className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
-                <span>Loyalty Vault:</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-3.5 h-3.5 text-amber-500 animate-pulse"
+                >
+                  <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
+                  <line x1="10" y1="3" x2="10" y2="11" />
+                  <line x1="14" y1="3" x2="14" y2="11" />
+                  <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
+                  <line x1="9" y1="13.5" x2="15" y2="12" />
+                  <line x1="9" y1="16" x2="15" y2="14.5" />
+                  <line x1="9" y1="18.5" x2="15" y2="17" />
+                </svg>
+                <span>Bolts Wallet:</span>
               </span>
               <span className="text-amber-600 font-extrabold font-mono text-xs">
                 {profile.wallet_balance || 0} Bolts

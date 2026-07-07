@@ -10,6 +10,7 @@ export interface Profile {
   wallet_balance: number;
   loyalty_tier: 'Tinkerer' | 'Master Builder';
   role: UserRole;
+  is_verified_seller?: boolean;
   created_at: string;
   updated_at: string;
 }

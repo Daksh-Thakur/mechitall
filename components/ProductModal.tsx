@@ -35,6 +35,7 @@ function StarRating({ rating, interactive = false, onChange }: { rating: number;
 export default function ProductModal({ part, onClose }: ProductModalProps) {
   const [tab, setTab] = useState<'specs' | 'pricing' | 'cad' | 'reviews'>('specs');
   const [quantity, setQuantity] = useState(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart, getPartPriceForQuantity, showToast, profile } = useCart();
 
   // Reviews state
@@ -139,44 +140,127 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
       <div className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm" onClick={onClose} />
       <div className="bg-white border border-[#E4E4E7] rounded-2xl w-full max-w-3xl shadow-2xl relative z-10 flex flex-col md:flex-row h-[85vh] md:h-[580px] overflow-y-auto md:overflow-hidden no-scrollbar animate-slide-in">
 
-        {/* Left — gradient image */}
-        <div className={`md:w-5/12 bg-gradient-to-br ${part.gradientClass} p-6 flex flex-col justify-between relative overflow-hidden`}>
-          <div 
-            className="absolute inset-0 opacity-15 pointer-events-none" 
-            style={{
-              backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px)',
-              backgroundSize: '24px 24px',
-            }}
-          />
-          <div className="z-10 flex justify-between items-start">
-            <span className="px-2 py-0.5 rounded text-[8px] font-mono font-bold uppercase tracking-wider bg-white text-[#0F172A] shadow-sm border border-[#E4E4E7]">
-              {part.category}
-            </span>
-            <span className="text-[9px] text-slate-text-primary/70 font-mono font-bold bg-white/40 px-2 py-0.5 rounded backdrop-blur-md border border-white/20">
-              {part.extendedSpecs.ingressProtection}
-            </span>
-          </div>
-          <div className="z-10 flex flex-col items-center justify-center py-6 text-center space-y-3">
-            <CategoryIcon className="w-16 h-16 text-slate-text-primary/20 animate-pulse" />
-            <div>
-              <span className="block font-mono text-[9px] text-slate-text-primary/60 tracking-wider font-bold">CAD SOLID LAYER</span>
-              <span className="block text-[10px] text-slate-text-primary/80 font-bold font-mono border-t border-slate-text-primary/20 pt-1 mt-0.5">{part.cadFile}</span>
-            </div>
-          </div>
-          <div className="z-10 space-y-1.5">
-            <div className="text-[9px] uppercase tracking-wider text-slate-text-primary/60 font-bold font-mono">Lifespan &amp; Thermal</div>
-            <div className="grid grid-cols-2 gap-2 text-slate-text-primary text-[10px] font-bold font-mono">
-              <div className="bg-white/45 p-2 rounded backdrop-blur-md border border-white/10">
-                <span className="block text-[7px] text-slate-text-primary/60 uppercase font-bold">MTBF</span>
-                {part.extendedSpecs.mtbf}
+        {/* Left — image carousel or gradient fallback */}
+        {(() => {
+          const images = part.imagesData && part.imagesData.length > 0 
+            ? part.imagesData 
+            : (part.imageData ? [part.imageData] : []);
+
+          return images.length > 0 ? (
+            <div className="md:w-5/12 bg-slate-900 relative flex flex-col justify-between overflow-hidden group p-6 shrink-0">
+              {/* Background Image Carousel */}
+              <div className="absolute inset-0 w-full h-full">
+                <img 
+                  src={images[currentImageIndex]} 
+                  alt={part.title} 
+                  className="w-full h-full object-cover transition-all duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent" />
               </div>
-              <div className="bg-white/45 p-2 rounded backdrop-blur-md border border-white/10">
-                <span className="block text-[7px] text-slate-text-primary/60 uppercase font-bold">Oper Temp</span>
-                {part.extendedSpecs.temperatureRange}
+
+              {/* Carousel navigation arrows */}
+              {images.length > 1 && (
+                <>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+                    }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#06B6D4] transition-all text-xs font-bold z-20 cursor-pointer border-none outline-none"
+                  >
+                    &larr;
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#06B6D4] transition-all text-xs font-bold z-20 cursor-pointer border-none outline-none"
+                  >
+                    &rarr;
+                  </button>
+                </>
+              )}
+
+              {/* Category overlay */}
+              <div className="z-10 flex justify-between items-start">
+                <span className="px-2 py-0.5 rounded text-[8px] font-mono font-bold uppercase tracking-wider bg-white text-[#0F172A] shadow-sm border border-[#E4E4E7]">
+                  {part.category}
+                </span>
+                <span className="text-[9px] text-white font-mono font-bold bg-black/40 px-2 py-0.5 rounded backdrop-blur-md border border-white/10">
+                  {part.extendedSpecs?.ingressProtection || 'IP65'}
+                </span>
+              </div>
+
+              {/* Bottom info Overlay & Dots */}
+              <div className="z-10 space-y-3">
+                {images.length > 1 && (
+                  <div className="flex justify-center gap-1.5">
+                    {images.map((_, idx) => (
+                      <button 
+                        key={idx}
+                        onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
+                        className={`w-1.5 h-1.5 rounded-full transition-all border-none outline-none cursor-pointer ${idx === currentImageIndex ? 'bg-[#06B6D4] w-3' : 'bg-white/40 hover:bg-white/70'}`}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                <div className="space-y-1.5 text-left">
+                  <div className="text-[9px] uppercase tracking-wider text-slate-300/80 font-bold font-mono">Lifespan &amp; Thermal</div>
+                  <div className="grid grid-cols-2 gap-2 text-white text-[10px] font-bold font-mono">
+                    <div className="bg-black/60 p-2 rounded backdrop-blur-md border border-white/5">
+                      <span className="block text-[7px] text-slate-300/60 uppercase font-bold">MTBF</span>
+                      {part.extendedSpecs?.mtbf || '50,000 Hours'}
+                    </div>
+                    <div className="bg-black/60 p-2 rounded backdrop-blur-md border border-white/5">
+                      <span className="block text-[7px] text-slate-300/60 uppercase font-bold">Oper Temp</span>
+                      {part.extendedSpecs?.temperatureRange || '-20°C to 80°C'}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          ) : (
+            <div className={`md:w-5/12 bg-gradient-to-br ${part.gradientClass} p-6 flex flex-col justify-between relative overflow-hidden shrink-0`}>
+              <div 
+                className="absolute inset-0 opacity-15 pointer-events-none" 
+                style={{
+                  backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px)',
+                  backgroundSize: '24px 24px',
+                }}
+              />
+              <div className="z-10 flex justify-between items-start">
+                <span className="px-2 py-0.5 rounded text-[8px] font-mono font-bold uppercase tracking-wider bg-white text-[#0F172A] shadow-sm border border-[#E4E4E7]">
+                  {part.category}
+                </span>
+                <span className="text-[9px] text-slate-text-primary/70 font-mono font-bold bg-white/40 px-2 py-0.5 rounded backdrop-blur-md border border-white/20">
+                  {part.extendedSpecs.ingressProtection}
+                </span>
+              </div>
+              <div className="z-10 flex flex-col items-center justify-center py-6 text-center space-y-3">
+                <CategoryIcon className="w-16 h-16 text-slate-text-primary/20 animate-pulse" />
+                <div>
+                  <span className="block font-mono text-[9px] text-slate-text-primary/60 tracking-wider font-bold">CAD SOLID LAYER</span>
+                  <span className="block text-[10px] text-slate-text-primary/80 font-bold font-mono border-t border-slate-text-primary/20 pt-1 mt-0.5">{part.cadFile}</span>
+                </div>
+              </div>
+              <div className="z-10 space-y-1.5">
+                <div className="text-[9px] uppercase tracking-wider text-slate-text-primary/60 font-bold font-mono">Lifespan &amp; Thermal</div>
+                <div className="grid grid-cols-2 gap-2 text-slate-text-primary text-[10px] font-bold font-mono">
+                  <div className="bg-white/45 p-2 rounded backdrop-blur-md border border-white/10">
+                    <span className="block text-[7px] text-slate-text-primary/60 uppercase font-bold">MTBF</span>
+                    {part.extendedSpecs.mtbf}
+                  </div>
+                  <div className="bg-white/45 p-2 rounded backdrop-blur-md border border-white/10">
+                    <span className="block text-[7px] text-slate-text-primary/60 uppercase font-bold">Oper Temp</span>
+                    {part.extendedSpecs.temperatureRange}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Right — tabs + actions */}
         <div className="md:w-7/12 flex flex-col justify-between bg-white">

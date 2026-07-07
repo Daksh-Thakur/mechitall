@@ -11,7 +11,7 @@ import Footer from '@/components/Footer';
 import { 
   User, ShoppingBag, Gift, Heart, Settings, MapPin, MessageSquare, 
   ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus, 
-  Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play,
+  Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play, Upload,
   Send, Paperclip, FileText, ExternalLink, CircleDollarSign, IndianRupee, LayoutDashboard, ArrowRight,
   Package, X
 } from 'lucide-react';
@@ -54,9 +54,85 @@ export default function ProfilePage() {
   const [togglingSeller, setTogglingSeller] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [showAddListingModal, setShowAddListingModal] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [listingType, setListingType] = useState<'Product' | 'Service'>('Product');
+  const [selectedCategory, setSelectedCategory] = useState<string>('Actuators');
+  const [selectedProcessType, setSelectedProcessType] = useState<string>('CNC Machining');
+  const [customSpecs, setCustomSpecs] = useState<{ id: string; key: string; value: string }[]>([]);
+  const [enableBulkPricing, setEnableBulkPricing] = useState(false);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageFileNames, setImageFileNames] = useState<string[]>([]);
+  const [datasheetFile, setDatasheetFile] = useState<{ name: string; size: string; dataUrl: string } | null>(null);
+  const [cadFile, setCadFile] = useState<{ name: string; size: string; dataUrl: string } | null>(null);
+
+  const [dragActiveImage, setDragActiveImage] = useState(false);
+  const [dragActiveDatasheet, setDragActiveDatasheet] = useState(false);
+  const [dragActiveCad, setDragActiveCad] = useState(false);
+
+  const handleDrag = (e: React.DragEvent, type: 'image' | 'datasheet' | 'cad') => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      if (type === 'image') setDragActiveImage(true);
+      if (type === 'datasheet') setDragActiveDatasheet(true);
+      if (type === 'cad') setDragActiveCad(true);
+    } else if (e.type === "dragleave") {
+      if (type === 'image') setDragActiveImage(false);
+      if (type === 'datasheet') setDragActiveDatasheet(false);
+      if (type === 'cad') setDragActiveCad(false);
+    }
+  };
+
+  const processFile = (file: File, type: 'image' | 'datasheet' | 'cad') => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const sizeStr = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+      if (type === 'image') {
+        setImagePreviews(prev => [...prev, reader.result as string]);
+        setImageFileNames(prev => [...prev, file.name]);
+      } else if (type === 'datasheet') {
+        setDatasheetFile({ name: file.name, size: sizeStr, dataUrl: reader.result as string });
+      } else if (type === 'cad') {
+        setCadFile({ name: file.name, size: sizeStr, dataUrl: reader.result as string });
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent, type: 'image' | 'datasheet' | 'cad') => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (type === 'image') setDragActiveImage(false);
+    if (type === 'datasheet') setDragActiveDatasheet(false);
+    if (type === 'cad') setDragActiveCad(false);
+
+    if (e.dataTransfer.files) {
+      if (type === 'image') {
+        Array.from(e.dataTransfer.files).forEach(file => {
+          if (file.type.startsWith('image/')) {
+            processFile(file, type);
+          }
+        });
+      } else if (e.dataTransfer.files[0]) {
+        processFile(e.dataTransfer.files[0], type);
+      }
+    }
+  };
+
   const [localProducts, setLocalProducts] = useState<any[]>([]);
   const [localServices, setLocalServices] = useState<any[]>([]);
+
+  const openAddListingModal = () => {
+    setListingType('Product');
+    setSelectedCategory('Actuators');
+    setSelectedProcessType('CNC Machining');
+    setEnableBulkPricing(false);
+    setImagePreviews([]);
+    setImageFileNames([]);
+    setDatasheetFile(null);
+    setCadFile(null);
+    setCustomSpecs([]);
+    setShowAddListingModal(true);
+  };
 
   // Load custom listed products & services from localStorage on mount
   useEffect(() => {
@@ -88,16 +164,7 @@ export default function ProfilePage() {
     }
   }, []);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+
   const [sellerData, setSellerData] = useState<{
     openRfqs: any[];
     myQuotes: any[];
@@ -298,19 +365,81 @@ export default function ProfilePage() {
     <div className="flex flex-col min-h-screen bg-slate-bg font-sans">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl mx-auto px-6 py-10 w-full flex flex-col md:flex-row gap-8">
+      {/* Buyer Mobile Top Navigation Menu */}
+      {!profile.is_seller && (
+        <div className="md:hidden sticky top-14 left-0 right-0 bg-[#0B1528]/95 backdrop-blur-md border-b border-slate-850 flex justify-around py-2.5 z-40 shadow-md px-2">
+          {[
+            { tab: 'orders', label: 'Orders', icon: ShoppingBag },
+            { tab: 'rewards', label: 'Rewards', icon: Gift },
+            { tab: 'wishlist', label: 'Wishlist', icon: Heart },
+            { tab: 'chats', label: 'Chats', icon: MessageSquare },
+            { tab: 'settings', label: 'Settings', icon: Settings },
+          ].map(({ tab, label, icon: Icon }) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className="flex flex-col items-center gap-0.5 py-1 flex-1 cursor-pointer transition-colors"
+              >
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`} />
+                <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`}>
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Seller Mobile Top Navigation Menu */}
+      {profile.is_seller && (
+        <div className="md:hidden sticky top-14 left-0 right-0 bg-[#0B1528]/95 backdrop-blur-md border-b border-slate-850 flex justify-around py-2.5 z-40 shadow-md px-2">
+          {[
+            { tab: 'seller_rfqs', label: 'Dashboard', icon: LayoutDashboard },
+            { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
+            { tab: 'seller_listings', label: 'Listings', icon: Package },
+            { tab: 'seller_capabilities', label: 'Capabilities', icon: Cpu },
+            { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
+            { tab: 'chats', label: 'Chats', icon: MessageSquare },
+          ].map(({ tab, label, icon: Icon }) => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className="flex flex-col items-center gap-0.5 py-1 flex-1 cursor-pointer transition-colors"
+              >
+                <Icon className={`w-4 h-4 ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`} />
+                <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`}>
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <main className="flex-1 max-w-7xl mx-auto px-6 pt-3 pb-8 md:py-10 w-full flex flex-col md:flex-row gap-3 md:gap-8">
         {/* Sidebar Nav */}
           {profile.is_seller ? (
             /* Seller Sidebar Nav */
-            <aside className="hidden md:flex md:w-3/12 flex-col justify-between bg-white text-slate-800 rounded border border-[#E4E4E7] p-6 shadow-sm h-[600px] shrink-0">
-              <div className="space-y-6">
+            <aside className="w-full md:w-3/12 flex flex-col justify-between bg-transparent md:bg-white text-slate-800 rounded-none md:rounded border-0 md:border border-transparent md:border-[#E4E4E7] p-0 md:p-6 shadow-none md:shadow-sm h-fit md:h-[600px] shrink-0">
+              <div className="space-y-6 hidden md:block">
                 {/* Header Seller Hub Card */}
                 <div className="pb-4 border-b border-[#E4E4E7]">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2 font-mono">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#06B6D4] animate-pulse"></span>
-                    Seller Hub
-                  </h3>
-                  <span className="block text-[8px] font-bold text-[#76777d] mt-1 uppercase tracking-widest font-mono">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2 font-mono">
+                      <span className="w-2.5 h-2.5 rounded-full bg-[#06B6D4] animate-pulse"></span>
+                      Seller Hub
+                    </h3>
+                    {profile.is_verified_seller && (
+                      <span className="inline-flex items-center gap-1 text-[8px] font-mono uppercase tracking-wider font-bold bg-emerald/10 text-emerald border border-emerald-500/20 px-2 py-0.5 rounded" title="Verified Seller">
+                        <ShieldCheck className="w-2.5 h-2.5" /> Verified
+                      </span>
+                    )}
+                  </div>
+                  <span className="block text-[8px] font-bold text-[#76777d] mt-2 uppercase tracking-widest font-mono">
                     Precision Partner
                   </span>
                 </div>
@@ -342,7 +471,7 @@ export default function ProfilePage() {
 
                 {/* Quick Action Button: New Listing */}
                 <button 
-                  onClick={() => setShowAddListingModal(true)}
+                  onClick={openAddListingModal}
                   className="w-full bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all shadow"
                 >
                   <Plus className="w-4 h-4 shrink-0 stroke-[3]" />
@@ -351,11 +480,11 @@ export default function ProfilePage() {
               </div>
 
               {/* Exit/Deactivate Seller Mode */}
-              <div className="pt-4 border-t border-[#E4E4E7]">
+              <div className="pt-0 md:pt-4 md:border-t border-[#E4E4E7]">
                 <button
                   disabled={togglingSeller}
                   onClick={handleToggleSellerMode}
-                  className="w-full py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer border border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d] hover:text-[#0f172a] transition-all"
+                  className="w-full py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer border border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d] hover:text-[#0f172a] transition-all bg-[#F8FAFC]/50"
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0" />
                   <span>Switch to Customer Mode</span>
@@ -364,8 +493,8 @@ export default function ProfilePage() {
             </aside>
           ) : (
             /* Sidebar Nav */
-            <aside className="md:w-3/12 flex flex-col justify-between bg-white border border-[#E4E4E7] rounded p-6 shadow-sm h-fit">
-              <div className="space-y-6">
+            <aside className="w-full md:w-3/12 flex flex-col justify-between bg-transparent md:bg-white rounded-none md:rounded border-0 md:border border-transparent md:border-[#E4E4E7] p-0 md:p-6 shadow-none md:shadow-sm h-fit">
+              <div className="space-y-6 hidden md:block">
                 {/* Header User Card */}
                 <div className="text-center space-y-3 pb-6 border-b border-[#E4E4E7]">
                   <div className="relative inline-flex items-center justify-center w-16 h-16 rounded bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow font-mono">
@@ -480,8 +609,8 @@ export default function ProfilePage() {
               </div>
 
               {/* Switch/Activate Seller Mode */}
-              <div className="pt-6 border-t border-[#E4E4E7] mt-8 space-y-2">
-                <div className="flex justify-between items-center text-[10px] font-bold text-[#76777d] font-mono uppercase tracking-wider">
+              <div className="pt-0 md:pt-6 md:border-t border-[#E4E4E7] md:mt-8 space-y-2">
+                <div className="hidden md:flex justify-between items-center text-[10px] font-bold text-[#76777d] font-mono uppercase tracking-wider">
                   <span>Seller Account</span>
                   <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${
                     profile.seller_kyc_completed 
@@ -494,10 +623,10 @@ export default function ProfilePage() {
                 <button
                   disabled={togglingSeller}
                   onClick={handleToggleSellerMode}
-                  className={`w-full transition-all py-3 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`w-full transition-all py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${
                     profile.is_seller
                       ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
-                      : 'border border-[#E4E4E7] text-[#45464d] hover:text-[#0f172a] hover:border-[#0f172a] bg-[#F8FAFC]/50'
+                      : 'border border-[#E4E4E7] text-[#45464d] hover:text-[#0f172a] hover:border-[#0f172a] bg-[#F8FAFC]'
                   }`}
                 >
                   <ArrowLeftRight className="w-4 h-4 shrink-0" />
@@ -514,7 +643,7 @@ export default function ProfilePage() {
           )}
 
         {/* Main Content Area */}
-        <section className="md:w-9/12 space-y-6">
+        <section className="w-full md:w-9/12 space-y-6">
           {/* ======================================================== */}
           {/* SELLER HUB TAB: ACTIVE RFQS FOR REVIEW */}
           {profile.is_seller && activeTab === 'seller_rfqs' && (
@@ -867,7 +996,7 @@ export default function ProfilePage() {
                   </p>
                 </div>
                 <button 
-                  onClick={() => setShowAddListingModal(true)}
+                  onClick={openAddListingModal}
                   className="bg-[#0f172a] hover:bg-[#06b6d4] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-colors shadow flex items-center gap-1.5 cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Listing
@@ -923,12 +1052,23 @@ export default function ProfilePage() {
 
                   <div className="space-y-3">
                     {localServices.map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center p-3 border border-[#E4E4E7] bg-[#F8FAFC]/50 rounded text-xs font-medium">
-                        <div className="space-y-0.5">
-                          <span className="block font-semibold text-[#0f172a]">{item.title}</span>
-                          <span className="block text-[8px] font-mono text-[#76777d] uppercase tracking-wider">{item.lead_time || item.time || '3-5 Days Lead'}</span>
+                      <div key={idx} className="flex justify-between items-center p-3 border border-[#E4E4E7] bg-[#F8FAFC]/50 rounded text-xs font-medium gap-3">
+                        <div className="flex items-center gap-3">
+                          {item.image_data ? (
+                            <div className="w-10 h-10 rounded border border-[#E4E4E7] overflow-hidden bg-white shrink-0">
+                              <img src={item.image_data} alt={item.title} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 rounded border border-[#E4E4E7] bg-white text-[#76777d] flex items-center justify-center shrink-0">
+                              <Settings className="w-4 h-4 text-zinc-400" />
+                            </div>
+                          )}
+                          <div className="space-y-0.5">
+                            <span className="block font-semibold text-[#0f172a]">{item.title}</span>
+                            <span className="block text-[8px] font-mono text-[#76777d] uppercase tracking-wider">{item.lead_time || item.time || '3-5 Days Lead'}</span>
+                          </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-right shrink-0">
                           <span className="block font-bold text-[#06B6D4]">₹{Number(item.base_price || item.rate || 0).toLocaleString('en-IN')}/hr</span>
                           <span className="block text-[8px] font-mono font-bold text-[#76777d] uppercase">Active</span>
                         </div>
@@ -1001,41 +1141,58 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {/* Loyalty Vault Card */}
-              <div className="bg-zinc-950 border border-zinc-900 rounded-2xl p-6 shadow-xl relative overflow-hidden text-zinc-100 flex flex-col md:flex-row justify-between gap-6">
-                <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1.4px)] [background-size:16px_16px] opacity-15 pointer-events-none"></div>
+              {/* Bolts Wallet Card */}
+              <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm relative overflow-hidden text-[#0F172A] flex flex-col md:flex-row justify-between gap-6">
+                <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] opacity-60 pointer-events-none"></div>
                 
                 <div className="space-y-4 z-10 flex-1">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/35 flex items-center justify-center text-amber-500">
-                      <Gift className="w-5 h-5 animate-pulse" />
+                    <div className="w-10 h-10 rounded bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-500">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-5 h-5 text-amber-500 animate-pulse"
+                      >
+                        <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
+                        <line x1="10" y1="3" x2="10" y2="11" />
+                        <line x1="14" y1="3" x2="14" y2="11" />
+                        <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
+                        <line x1="9" y1="13.5" x2="15" y2="12" />
+                        <line x1="9" y1="16" x2="15" y2="14.5" />
+                        <line x1="9" y1="18.5" x2="15" y2="17" />
+                      </svg>
                     </div>
                     <div>
-                      <h3 className="text-sm font-black tracking-tight text-zinc-100">LOYALTY VAULT</h3>
-                      <span className="block text-[10px] text-zinc-400 font-bold">Nuts &amp; Bolts Reward Program</span>
+                      <h3 className="text-xs font-mono font-extrabold tracking-wider text-[#0F172A]">BOLTS WALLET</h3>
+                      <span className="block text-[8px] text-[#76777d] font-bold font-mono uppercase tracking-wider">Nuts &amp; Bolts Reward Program</span>
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">Current Balance</span>
+                    <span className="text-[10px] text-[#76777d] font-bold uppercase tracking-wider block font-mono">Current Balance</span>
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-2xl font-mono font-black text-amber-500">{profile.wallet_balance}</span>
-                      <span className="text-[10px] text-zinc-400 font-extrabold uppercase tracking-wider">BOLTS</span>
+                      <span className="text-3xl font-mono font-black text-amber-600">{profile.wallet_balance}</span>
+                      <span className="text-[10px] text-amber-600 font-extrabold uppercase tracking-wider font-mono">BOLTS</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Progress bar + Action */}
-                <div className="z-10 md:w-5/12 flex flex-col justify-between text-xs space-y-3">
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between font-bold text-[10px] uppercase text-zinc-400">
+                <div className="z-10 md:w-5/12 flex flex-col justify-between text-xs space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between font-bold text-[9px] uppercase text-[#76777d] font-mono tracking-wider">
                       <span>Redemption Limit</span>
                       <span>100 Bolts / Order</span>
                     </div>
-                    <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden border border-zinc-700/50">
-                      <div className="bg-amber-500 h-full rounded-full" style={{ width: `${boltsProgressPercent}%` }}></div>
+                    <div className="w-full bg-[#F8FAFC] h-2 rounded border border-[#E4E4E7] overflow-hidden">
+                      <div className="bg-gradient-to-r from-amber-500 to-amber-600 h-full rounded" style={{ width: `${boltsProgressPercent}%` }}></div>
                     </div>
-                    <span className="block text-[9px] text-zinc-500 font-bold">
+                    <span className="block text-[8px] text-[#76777d] font-bold font-mono uppercase tracking-wide">
                       *10 Bolts = ₹1.00 store credit. 45-day window applies.
                     </span>
                   </div>
@@ -1044,7 +1201,7 @@ export default function ProfilePage() {
                     onClick={() => {
                       showToast('Bolt balance applied automatically in the Cart drawer!', 'success');
                     }}
-                    className="btn-cobalt text-xs font-bold py-2.5 rounded-lg text-center cursor-pointer shadow-lg w-full"
+                    className="w-full bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all shadow-sm"
                   >
                     Redeem Now
                   </button>
@@ -1520,33 +1677,7 @@ export default function ProfilePage() {
 
       </main>
 
-      {/* Seller Mobile Bottom Navigation Menu */}
-      {profile.is_seller && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0B1528]/95 backdrop-blur-md border-t border-slate-850 flex justify-around py-2.5 z-40 shadow-xl px-2">
-          {[
-            { tab: 'seller_rfqs', label: 'Dashboard', icon: LayoutDashboard },
-            { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
-            { tab: 'seller_listings', label: 'Listings', icon: Package },
-            { tab: 'seller_capabilities', label: 'Capabilities', icon: Cpu },
-            { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
-            { tab: 'chats', label: 'Chats', icon: MessageSquare },
-          ].map(({ tab, label, icon: Icon }) => {
-            const isActive = activeTab === tab;
-            return (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab as any)}
-                className="flex flex-col items-center gap-0.5 py-1 flex-1 cursor-pointer transition-colors"
-              >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`} />
-                <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`}>
-                  {label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
+
 
       <Footer />
 
@@ -1570,14 +1701,15 @@ export default function ProfilePage() {
               const target = e.target as any;
               const title = target.title.value.trim();
               const type = target.type.value;
-              const sku = target.sku.value.trim();
-              const category = target.category.value.trim();
               const price = Number(target.price.value) || 0;
-              const stock = Number(target.stock.value) || 0;
               const desc = target.description.value.trim();
-              const gradient = imagePreview ? 'custom-image' : target.gradientClass.value;
+              const gradient = imagePreviews.length > 0 ? 'custom-image' : 'from-cobalt/20 to-cobalt/5 border-cobalt/20';
               
               if (type === 'Product') {
+                const sku = target.sku.value.trim();
+                const category = selectedCategory === 'Other' ? target.customCategory.value.trim() : selectedCategory;
+                const stock = Number(target.stock.value) || 0;
+
                 const newProduct = {
                   id: crypto.randomUUID ? crypto.randomUUID() : 'prod-' + Math.random().toString(36).substr(2, 9),
                   part_number: sku,
@@ -1587,18 +1719,20 @@ export default function ProfilePage() {
                   stock: stock,
                   description: desc,
                   gradient_class: gradient,
-                  image_data: imagePreview || undefined,
-                  specs: {
-                    [target.specKey1.value]: target.specVal1.value,
-                    [target.specKey2.value]: target.specVal2.value,
-                    [target.specKey3.value]: target.specVal3.value,
-                  },
-                  bulk_pricing: [
-                    { minQty: 10, pricePerUnit: Number(target.tierPrice1.value) || price },
-                    { minQty: 50, pricePerUnit: Number(target.tierPrice2.value) || price }
-                  ],
-                  datasheet_url: target.datasheet.value.trim(),
-                  cad_file: target.cadFile.value.trim(),
+                  image_data: imagePreviews[0] || undefined,
+                  images_data: imagePreviews || [],
+                  specs: customSpecs.reduce((acc, curr) => {
+                    if (curr.key.trim()) {
+                      acc[curr.key.trim()] = curr.value.trim();
+                    }
+                    return acc;
+                  }, {} as Record<string, string>),
+                  bulk_pricing: enableBulkPricing ? [
+                    { minQty: 10, pricePerUnit: Number(target.tierPrice1?.value) || price },
+                    { minQty: 50, pricePerUnit: Number(target.tierPrice2?.value) || price }
+                  ] : [],
+                  datasheet_url: datasheetFile ? datasheetFile.name : '',
+                  cad_file: cadFile ? cadFile.name : '',
                   extended_specs: {
                     ingressProtection: target.ipRating.value.trim(),
                     mtbf: target.mtbf.value.trim(),
@@ -1615,30 +1749,63 @@ export default function ProfilePage() {
                 } catch (err) {
                   console.warn('Supabase DB write blocked by RLS, persisted locally:', err);
                 }
+
+                showToast(`Technical Product "${title}" (${sku}) published successfully!`, 'success');
               } else {
+                const processType = selectedProcessType === 'Other'
+                  ? target.customProcessType.value.trim()
+                  : selectedProcessType;
+                const leadTime = target.leadTime.value.trim();
+                const materials = target.materials.value.trim();
+                const finishes = target.finishes.value.trim();
+
                 const newService = {
                   id: crypto.randomUUID ? crypto.randomUUID() : 'serv-' + Math.random().toString(36).substr(2, 9),
                   title: title,
-                  category: category,
+                  category: processType,
                   base_price: price,
-                  lead_time: '3-5 Days Lead',
-                  features: [],
-                  gradient_class: 'from-sky-500/20 to-sky-500/5'
+                  lead_time: `${leadTime} Lead`,
+                  features: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
+                  gradient_class: gradient,
+                  image_data: imagePreviews[0] || undefined,
+                  images_data: imagePreviews || []
                 };
                 
                 const updatedServs = [...localServices, newService];
                 setLocalServices(updatedServs);
                 localStorage.setItem('local_listed_services', JSON.stringify(updatedServs));
                 
+                // 1. Insert into general services table
                 try {
                   await supabase.from('services').insert([newService]);
                 } catch (err) {
                   console.warn('Supabase DB write blocked by RLS, persisted locally:', err);
                 }
+
+                // 2. Insert into custom machining_services table
+                const newMachiningService = {
+                  id: newService.id,
+                  seller_profile_id: profile.id,
+                  title: title,
+                  process_type: processType,
+                  description: desc,
+                  base_price: price,
+                  lead_time: leadTime,
+                  material_capabilities: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
+                  finish_options: finishes.split(',').map((s: string) => s.trim()).filter(Boolean),
+                };
+                
+                try {
+                  await supabase.from('machining_services').insert([newMachiningService]);
+                } catch (err) {
+                  console.warn('Supabase DB write blocked by RLS for machining_services, persisted locally:', err);
+                }
+
+                showToast(`Technical Service "${title}" (${processType}) published successfully!`, 'success');
               }
 
-              showToast(`Technical ${type} listing "${title}" (${sku}) published successfully!`, 'success');
-              setImagePreview(null);
+              setImagePreviews([]);
+              setImageFileNames([]);
               setShowAddListingModal(false);
             }} className="space-y-4">
               
@@ -1648,119 +1815,396 @@ export default function ProfilePage() {
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <label className="block text-[10px] font-bold text-[#76777d] uppercase">Listing Type</label>
-                    <select name="type" className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none focus:border-[#06b6d4]">
+                    <select 
+                      name="type" 
+                      value={listingType}
+                      onChange={(e) => setListingType(e.target.value as any)}
+                      className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none focus:border-[#06b6d4]"
+                    >
                       <option value="Product">Catalog Product</option>
                       <option value="Service">Custom Machining Service</option>
                     </select>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Part Number / SKU *</label>
-                    <input required type="text" name="sku" placeholder="e.g. ACT-NEMA34-CL" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Title / Name *</label>
-                    <input required type="text" name="title" placeholder="e.g. NEMA 34 Stepper Motor" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-[#76777d] uppercase">Category *</label>
-                      <input required type="text" name="category" placeholder="e.g. Actuators" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-[#76777d] uppercase">Stock Qty *</label>
-                      <input required type="number" name="stock" defaultValue={10} min={0} className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Unit Price (INR) *</label>
-                    <input required type="number" name="price" placeholder="e.g. 24500" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
-                  </div>
-
-                  {/* Technical Specifications */}
-                  <div className="space-y-1.5 pt-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Tech Specifications (Key-Value)</label>
-                    <div className="space-y-2">
-                      <div className="flex gap-2">
-                        <input type="text" name="specKey1" defaultValue="Holding Torque" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
-                        <input type="text" name="specVal1" placeholder="e.g. 4.5 N.m" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                  {listingType === 'Product' ? (
+                    <>
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Part Number / SKU *</label>
+                        <input required type="text" name="sku" placeholder="e.g. ACT-NEMA34-CL" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
                       </div>
-                      <div className="flex gap-2">
-                        <input type="text" name="specKey2" defaultValue="Voltage" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
-                        <input type="text" name="specVal2" placeholder="e.g. 48 VDC" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Title / Name *</label>
+                        <input required type="text" name="title" placeholder="e.g. NEMA 34 Stepper Motor" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
                       </div>
-                      <div className="flex gap-2">
-                        <input type="text" name="specKey3" defaultValue="Frame Size" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
-                        <input type="text" name="specVal3" placeholder="e.g. NEMA 34 (86mm)" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Category *</label>
+                          <select 
+                            name="category"
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none focus:border-[#06b6d4] rounded"
+                          >
+                            <option value="Actuators">Actuators</option>
+                            <option value="Sensors">Sensors</option>
+                            <option value="Controllers">Controllers</option>
+                            <option value="Mechanical">Mechanical</option>
+                            <option value="Power Supplies">Power Supplies</option>
+                            <option value="Optics">Optics</option>
+                            <option value="Other">Other (Custom)</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Stock Qty *</label>
+                          <input required type="number" name="stock" placeholder="e.g. 10" min={0} className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        </div>
                       </div>
-                    </div>
-                  </div>
+
+                      {selectedCategory === 'Other' && (
+                        <div className="space-y-1 animate-slide-in">
+                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Enter Custom Category *</label>
+                          <input required type="text" name="customCategory" placeholder="e.g. Pneumatics" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        </div>
+                      )}
+
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Unit Price (INR) *</label>
+                        <input required type="number" name="price" placeholder="e.g. 24500" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                      </div>
+
+                      {/* Technical Specifications */}
+                      <div className="space-y-1.5 pt-1">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Tech Specifications (Key-Value)</label>
+                          <button 
+                            type="button" 
+                            onClick={() => setCustomSpecs([...customSpecs, { id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(), key: '', value: '' }])}
+                            className="text-[#06b6d4] hover:text-[#0b9cb5] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus className="w-3 h-3" /> Add Spec
+                          </button>
+                        </div>
+                        <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 no-scrollbar">
+                          {customSpecs.map((spec) => (
+                            <div key={spec.id} className="flex gap-2 items-center">
+                              <input 
+                                type="text" 
+                                placeholder="Key (e.g. Weight)" 
+                                value={spec.key}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setCustomSpecs(prev => prev.map(s => s.id === spec.id ? { ...s, key: val } : s));
+                                }}
+                                className="w-[45%] text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" 
+                              />
+                              <input 
+                                type="text" 
+                                placeholder="Value (e.g. 2.4 kg)" 
+                                value={spec.value}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setCustomSpecs(prev => prev.map(s => s.id === spec.id ? { ...s, value: val } : s));
+                                }}
+                                className="w-[45%] text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" 
+                              />
+                              <button 
+                                type="button" 
+                                onClick={() => setCustomSpecs(prev => prev.filter(s => s.id !== spec.id))}
+                                className="p-1 rounded hover:bg-[#F8FAFC] border border-[#E4E4E7] text-red-500 cursor-pointer"
+                                title="Remove Specification"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Service Title *</label>
+                        <input required type="text" name="title" placeholder="e.g. 5-Axis CNC Machining" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Process Type *</label>
+                        <select 
+                          name="processType" 
+                          value={selectedProcessType}
+                          onChange={(e) => setSelectedProcessType(e.target.value)}
+                          className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none focus:border-[#06b6d4] rounded"
+                        >
+                          <option value="CNC Machining">CNC Machining</option>
+                          <option value="3D Printing">3D Printing</option>
+                          <option value="Sheet Metal">Sheet Metal</option>
+                          <option value="Laser Cutting">Laser Cutting</option>
+                          <option value="Other">Other (Custom)</option>
+                        </select>
+                      </div>
+
+                      {selectedProcessType === 'Other' && (
+                        <div className="space-y-1 animate-slide-in">
+                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Enter Custom Process Type *</label>
+                          <input required type="text" name="customProcessType" placeholder="e.g. Waterjet Cutting" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        </div>
+                      )}
+
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Base Cost / Setup Fee (INR) *</label>
+                        <input required type="number" name="price" placeholder="e.g. 7500" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Estimated Lead Time *</label>
+                        <input required type="text" name="leadTime" placeholder="e.g. 3-5 Days" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* RIGHT COLUMN: Assets, Documents & Tiers */}
                 <div className="space-y-3">
-                  <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Upload Product Image (.jpg, .png, .svg) *</label>
-                    <input type="file" accept=".jpg,.jpeg,.png,.svg" onChange={handleImageChange} className="w-full text-xs p-1 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
-                    {imagePreview && (
-                      <div className="mt-2 w-16 h-16 border border-[#E4E4E7] overflow-hidden rounded">
-                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  {listingType === 'Product' ? (
+                    <>
+                      {/* Image Upload Area */}
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Product Images (.jpg, .png, .svg) *</label>
+                        <div 
+                          onDragEnter={(e) => handleDrag(e, 'image')}
+                          onDragOver={(e) => handleDrag(e, 'image')}
+                          onDragLeave={(e) => handleDrag(e, 'image')}
+                          onDrop={(e) => handleDrop(e, 'image')}
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
+                            dragActiveImage ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                          }`}
+                        >
+                          <input 
+                            type="file" 
+                            accept=".jpg,.jpeg,.png,.svg" 
+                            multiple
+                            onChange={(e) => {
+                              if (e.target.files) {
+                                Array.from(e.target.files).forEach(file => processFile(file, 'image'));
+                              }
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+                          />
+                          <Upload className="w-5 h-5 text-[#76777d]" />
+                          <span className="text-[10px] text-[#45464d] font-bold leading-tight">
+                            {imagePreviews.length > 0 ? `Selected ${imagePreviews.length} Image(s)` : 'Drag & Drop or Click to Upload Images (Multiple)'}
+                          </span>
+                        </div>
+                        {imagePreviews.length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-2">
+                            {imagePreviews.map((src, index) => (
+                              <div key={index} className="relative w-10 h-10 border border-[#E4E4E7] overflow-hidden rounded group">
+                                <img src={src} alt="Preview" className="w-full h-full object-cover" />
+                                <button 
+                                  type="button" 
+                                  onClick={() => {
+                                    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+                                    setImageFileNames(prev => prev.filter((_, i) => i !== index));
+                                  }}
+                                  className="absolute top-0.5 right-0.5 bg-red-500 hover:bg-red-700 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] font-black cursor-pointer shadow-sm"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
 
-                  <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Or Select Image Color Theme</label>
-                    <select name="gradientClass" className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none">
-                      <option value="from-cobalt/20 to-cobalt/5 border-cobalt/20">Blue/Cobalt Tech Accent</option>
-                      <option value="from-emerald/20 to-emerald/5 border-emerald/20">Green/Emerald Sensor Accent</option>
-                      <option value="from-amber-500/20 to-amber-500/5 border-amber-500/20">Amber/Yellow Control Accent</option>
-                      <option value="from-coral/20 to-coral/5 border-coral/20">Coral/Red Mechanical Accent</option>
-                    </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Datasheet Link (PDF URL)</label>
-                    <input type="text" name="datasheet" placeholder="e.g. https://datasheet.mechitall.io/NEMA34.pdf" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">3D CAD Model Link (STEP File Name)</label>
-                    <input type="text" name="cadFile" placeholder="e.g. ACT-NEMA34-CL.step" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-[#76777d] uppercase">Ingress Rating</label>
-                      <input type="text" name="ipRating" defaultValue="IP65" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="block text-[10px] font-bold text-[#76777d] uppercase">MTBF Lifespan</label>
-                      <input type="text" name="mtbf" defaultValue="50,000 Hours" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
-                    </div>
-                  </div>
-
-                  {/* Volume Pricing Tiers */}
-                  <div className="space-y-1.5 pt-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Bulk Price Matrix Tiers</label>
-                    <div className="space-y-2">
-                      <div className="flex gap-2 items-center">
-                        <span className="text-[10px] text-[#76777d] font-bold font-mono w-[60px]">10+ Qty:</span>
-                        <input type="number" name="tierPrice1" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                      {/* Datasheet Upload Area */}
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Technical Datasheet (PDF)</label>
+                        <div 
+                          onDragEnter={(e) => handleDrag(e, 'datasheet')}
+                          onDragOver={(e) => handleDrag(e, 'datasheet')}
+                          onDragLeave={(e) => handleDrag(e, 'datasheet')}
+                          onDrop={(e) => handleDrop(e, 'datasheet')}
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
+                            dragActiveDatasheet ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                          }`}
+                        >
+                          <input 
+                            type="file" 
+                            accept=".pdf" 
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                processFile(e.target.files[0], 'datasheet');
+                              }
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+                          />
+                          <FileText className="w-4 h-4 text-[#76777d]" />
+                          <span className="text-[10px] text-[#45464d] font-bold leading-tight">
+                            {datasheetFile ? `Uploaded: ${datasheetFile.name}` : 'Drag & Drop or Click to Upload PDF'}
+                          </span>
+                        </div>
+                        {datasheetFile && (
+                          <div className="flex justify-between items-center text-[9px] font-bold uppercase mt-1">
+                            <span className="text-emerald">{datasheetFile.size}</span>
+                            <button 
+                              type="button" 
+                              onClick={() => setDatasheetFile(null)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              Remove PDF
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex gap-2 items-center">
-                        <span className="text-[10px] text-[#76777d] font-bold font-mono w-[60px]">50+ Qty:</span>
-                        <input type="number" name="tierPrice2" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+
+                      {/* CAD Model Upload Area */}
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">3D CAD Model (STEP, STP, IGES)</label>
+                        <div 
+                          onDragEnter={(e) => handleDrag(e, 'cad')}
+                          onDragOver={(e) => handleDrag(e, 'cad')}
+                          onDragLeave={(e) => handleDrag(e, 'cad')}
+                          onDrop={(e) => handleDrop(e, 'cad')}
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
+                            dragActiveCad ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                          }`}
+                        >
+                          <input 
+                            type="file" 
+                            accept=".step,.stp,.iges,.igs" 
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                processFile(e.target.files[0], 'cad');
+                              }
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+                          />
+                          <Settings className="w-4 h-4 text-[#76777d]" />
+                          <span className="text-[10px] text-[#45464d] font-bold leading-tight">
+                            {cadFile ? `Uploaded: ${cadFile.name}` : 'Drag & Drop or Click to Upload CAD'}
+                          </span>
+                        </div>
+                        {cadFile && (
+                          <div className="flex justify-between items-center text-[9px] font-bold uppercase mt-1">
+                            <span className="text-emerald">{cadFile.size}</span>
+                            <button 
+                              type="button" 
+                              onClick={() => setCadFile(null)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              Remove CAD
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Ingress Rating</label>
+                          <input type="text" name="ipRating" placeholder="e.g. IP65" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">MTBF Lifespan</label>
+                          <input type="text" name="mtbf" placeholder="e.g. 50,000 Hours" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        </div>
+                      </div>
+
+                      {/* Volume Pricing Tiers */}
+                      <div className="space-y-2 pt-1">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Enable Bulk Pricing</label>
+                          <label className="relative inline-flex items-center cursor-pointer select-none">
+                            <input 
+                              type="checkbox" 
+                              checked={enableBulkPricing}
+                              onChange={(e) => setEnableBulkPricing(e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-8 h-4 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#06b6d4]"></div>
+                          </label>
+                        </div>
+                        {enableBulkPricing && (
+                          <div className="space-y-2 border border-[#E4E4E7] p-2.5 rounded bg-[#F8FAFC] animate-slide-in">
+                            <div className="flex gap-2 items-center">
+                              <span className="text-[10px] text-[#76777d] font-bold font-mono w-[60px]">10+ Qty:</span>
+                              <input required type="number" name="tierPrice1" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                            </div>
+                            <div className="flex gap-2 items-center">
+                              <span className="text-[10px] text-[#76777d] font-bold font-mono w-[60px]">50+ Qty:</span>
+                              <input required type="number" name="tierPrice2" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Material Capabilities (Comma-separated) *</label>
+                        <input required type="text" name="materials" placeholder="e.g. Aluminum 6061, Brass, Steel 1018, Delrin" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Finishing Options (Comma-separated) *</label>
+                        <input required type="text" name="finishes" placeholder="e.g. Anodized (Black/Clear), Bead Blasted, Raw" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                      </div>
+
+                      {/* Image Upload Area for Service */}
+                      <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Service Images (.jpg, .png, .svg)</label>
+                        <div 
+                          onDragEnter={(e) => handleDrag(e, 'image')}
+                          onDragOver={(e) => handleDrag(e, 'image')}
+                          onDragLeave={(e) => handleDrag(e, 'image')}
+                          onDrop={(e) => handleDrop(e, 'image')}
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
+                            dragActiveImage ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                          }`}
+                        >
+                          <input 
+                            type="file" 
+                            accept=".jpg,.jpeg,.png,.svg" 
+                            multiple
+                            onChange={(e) => {
+                              if (e.target.files) {
+                                Array.from(e.target.files).forEach(file => processFile(file, 'image'));
+                              }
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+                          />
+                          <Upload className="w-5 h-5 text-[#76777d]" />
+                          <span className="text-[10px] text-[#45464d] font-bold leading-tight">
+                            {imagePreviews.length > 0 ? `Selected ${imagePreviews.length} Image(s)` : 'Drag & Drop or Click to Upload Images (Multiple)'}
+                          </span>
+                        </div>
+                        {imagePreviews.length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-2">
+                            {imagePreviews.map((src, index) => (
+                              <div key={index} className="relative w-10 h-10 border border-[#E4E4E7] overflow-hidden rounded group">
+                                <img src={src} alt="Preview" className="w-full h-full object-cover" />
+                                <button 
+                                  type="button" 
+                                  onClick={() => {
+                                    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+                                    setImageFileNames(prev => prev.filter((_, i) => i !== index));
+                                  }}
+                                  className="absolute top-0.5 right-0.5 bg-red-500 hover:bg-red-700 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] font-black cursor-pointer shadow-sm"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
 
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Description</label>
-                    <textarea rows={2} name="description" placeholder="Specify technical specs, materials, tolerances..." className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4] resize-none" />
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Description / Scope of Service</label>
+                    <textarea rows={listingType === 'Service' ? 5 : 2} name="description" placeholder="Specify technical details, machine tools, dimensional limits..." className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4] resize-none" />
                   </div>
                 </div>
 
@@ -1768,7 +2212,7 @@ export default function ProfilePage() {
 
               <div className="flex gap-3 pt-3 border-t border-[#E4E4E7]">
                 <button type="submit" className="flex-1 bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer text-center">
-                  Publish Technical Listing
+                  Publish
                 </button>
                 <button type="button" onClick={() => setShowAddListingModal(false)} className="flex-1 border border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#76777d] py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center">
                   Cancel

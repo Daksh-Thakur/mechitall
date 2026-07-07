@@ -162,10 +162,17 @@ export default function CartDrawer() {
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         className="w-3.5 h-3.5 text-amber-500 animate-pulse"
                       >
-                        <circle cx="12" cy="6" r="4" />
-                        <rect x="10" y="10" width="4" height="10" rx="1" />
+                        <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
+                        <line x1="10" y1="3" x2="10" y2="11" />
+                        <line x1="14" y1="3" x2="14" y2="11" />
+                        <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
+                        <line x1="9" y1="13.5" x2="15" y2="12" />
+                        <line x1="9" y1="16" x2="15" y2="14.5" />
+                        <line x1="9" y1="18.5" x2="15" y2="17" />
                       </svg>
                       Apply Bolts (₹{(profile.wallet_balance / 10).toFixed(2)})
                     </span>

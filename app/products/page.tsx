@@ -41,6 +41,8 @@ export default function ProductsPage() {
           datasheetUrl: p.datasheet_url || '',
           cadFile: p.cad_file || '',
           extendedSpecs: p.extended_specs || { dimensions: '', temperatureRange: '', mtbf: '', ingressProtection: '' },
+          imageData: p.image_data || undefined,
+          imagesData: p.images_data || []
         }));
         // Append custom listed products from localStorage if any
         let localParts: Part[] = [];
@@ -64,7 +66,8 @@ export default function ProductsPage() {
               datasheetUrl: p.datasheet_url || '',
               cadFile: p.cad_file || '',
               extendedSpecs: p.extended_specs || { dimensions: '', temperatureRange: '', mtbf: '', ingressProtection: '' },
-              imageData: p.image_data || undefined
+              imageData: p.image_data || undefined,
+              imagesData: p.images_data || []
             }));
           }
         }

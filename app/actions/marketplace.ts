@@ -299,6 +299,7 @@ export async function acceptQuoteOffer(quoteId: string) {
         items_count: quote.quantity,
         status: 'Processing',
         rewards_claimed: false,
+        seller_id: quote.machining_services?.seller_profile_id,
       },
     ]);
 

@@ -161,11 +161,28 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[#E4E4E7] pb-6">
           <div>
             <div className="flex items-center gap-2 text-amber-600 font-mono font-bold text-[10px] uppercase tracking-wider">
-              <Award className="w-3.5 h-3.5 text-amber-500" />
+               <svg
+                 xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 strokeWidth="2.5"
+                 strokeLinecap="round"
+                 strokeLinejoin="round"
+                 className="w-3.5 h-3.5 text-amber-500"
+               >
+                 <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
+                 <line x1="10" y1="3" x2="10" y2="11" />
+                 <line x1="14" y1="3" x2="14" y2="11" />
+                 <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
+                 <line x1="9" y1="13.5" x2="15" y2="12" />
+                 <line x1="9" y1="16" x2="15" y2="14.5" />
+                 <line x1="9" y1="18.5" x2="15" y2="17" />
+               </svg>
               <span>MechItAll Loyalty Rewards Program</span>
             </div>
             <h1 className="font-['Space_Grotesk'] text-2xl font-bold text-[#0F172A] uppercase tracking-tight mt-1">
-              Builder Dashboard &amp; Vault
+              Builder Dashboard &amp; Wallet
             </h1>
             <p className="font-['Inter'] text-xs text-[#45464d] mt-1.5 opacity-80">
               Confirm mechatronic parts deliveries, release escrow funds, and build your reputation.
@@ -240,7 +257,24 @@ export default function Dashboard() {
                 : 'border-transparent text-[#76777d] hover:text-[#0f172a]'
             }`}
           >
-            <History className="w-4 h-4" /> Nuts &amp; Bolts Vault
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4"
+            >
+              <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
+              <line x1="10" y1="3" x2="10" y2="11" />
+              <line x1="14" y1="3" x2="14" y2="11" />
+              <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
+              <line x1="9" y1="13.5" x2="15" y2="12" />
+              <line x1="9" y1="16" x2="15" y2="14.5" />
+              <line x1="9" y1="18.5" x2="15" y2="17" />
+            </svg> Nuts &amp; Bolts Wallet
           </button>
           <button
             onClick={() => setActiveTab('orders')}
@@ -256,13 +290,30 @@ export default function Dashboard() {
 
         {/* Tab Body */}
         {activeTab === 'rewards' ? (
-          /* LOYALTY HUB VAULT TAB */
+          /* LOYALTY HUB WALLET TAB */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Ledger Transactions */}
             <div className="lg:col-span-2 bg-white border border-[#E4E4E7] rounded shadow-sm overflow-hidden">
               <div className="px-5 py-4 border-b border-[#E4E4E7] flex items-center justify-between">
                 <h3 className="font-['Space_Grotesk'] text-sm font-bold text-[#0F172A] uppercase tracking-tight flex items-center gap-2">
-                  <Coins className="w-4 h-4 text-amber-500" />
+                   <svg
+                     xmlns="http://www.w3.org/2000/svg"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="2.5"
+                     strokeLinecap="round"
+                     strokeLinejoin="round"
+                     className="w-4 h-4 text-amber-500"
+                   >
+                     <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
+                     <line x1="10" y1="3" x2="10" y2="11" />
+                     <line x1="14" y1="3" x2="14" y2="11" />
+                     <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
+                     <line x1="9" y1="13.5" x2="15" y2="12" />
+                     <line x1="9" y1="16" x2="15" y2="14.5" />
+                     <line x1="9" y1="18.5" x2="15" y2="17" />
+                   </svg>
                   Transaction Ledger History
                 </h3>
                 <button 
@@ -277,7 +328,7 @@ export default function Dashboard() {
               {isLoading ? (
                 <div className="py-20 flex flex-col items-center justify-center space-y-3 text-[#76777d]">
                   <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
-                  <span className="text-xs font-bold uppercase tracking-wider font-mono">Loading vault balances...</span>
+                  <span className="text-xs font-bold uppercase tracking-wider font-mono">Loading wallet balances...</span>
                 </div>
               ) : transactions.length > 0 ? (
                 <div className="overflow-x-auto">
@@ -354,7 +405,24 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="py-16 text-center space-y-3">
-                  <Coins className="w-10 h-10 text-[#76777d]/30 mx-auto" />
+                   <svg
+                     xmlns="http://www.w3.org/2000/svg"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="2"
+                     strokeLinecap="round"
+                     strokeLinejoin="round"
+                     className="w-10 h-10 text-[#76777d]/30 mx-auto"
+                   >
+                     <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
+                     <line x1="10" y1="3" x2="10" y2="11" />
+                     <line x1="14" y1="3" x2="14" y2="11" />
+                     <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
+                     <line x1="9" y1="13.5" x2="15" y2="12" />
+                     <line x1="9" y1="16" x2="15" y2="14.5" />
+                     <line x1="9" y1="18.5" x2="15" y2="17" />
+                   </svg>
                   <p className="text-xs font-bold text-[#0F172A] uppercase font-mono">No loyalty transactions yet</p>
                   <p className="text-[10px] text-[#76777d] max-w-xs mx-auto leading-relaxed">
                     Confirm order deliveries or upload unboxing proof to accumulate digital Bolts.
@@ -367,7 +435,7 @@ export default function Dashboard() {
             <div className="space-y-6">
               <div className="bg-white border border-[#E4E4E7] p-5 rounded shadow-sm space-y-4">
                 <h4 className="font-['Space_Grotesk'] text-xs font-bold text-[#0f172a] uppercase tracking-tight border-b border-[#E4E4E7] pb-2.5">
-                  Rules of the Vault
+                  Rules of the Wallet
                 </h4>
                 <div className="space-y-3.5 text-[11px] leading-relaxed text-[#45464d]">
                   <div className="flex gap-2">

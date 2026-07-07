@@ -16,6 +16,8 @@ interface ServiceModalProps {
     lead_time: string;
     features: any;
     gradient_class?: string;
+    image_data?: string;
+    images_data?: string[];
   };
   onClose: () => void;
 }
@@ -44,6 +46,7 @@ function StarRating({ rating, interactive = false, onChange }: { rating: number;
 export default function ServiceModal({ service, onClose }: ServiceModalProps) {
   const { profile, showToast } = useCart();
   const [activeTab, setActiveTab] = useState<'details' | 'reviews'>('details');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
@@ -115,38 +118,118 @@ export default function ServiceModal({ service, onClose }: ServiceModalProps) {
       <div className="bg-white border border-slate-border rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl relative z-10 flex flex-col md:flex-row h-[520px]">
         
         {/* Left pane - Gradient visual */}
-        <div className={`md:w-5/12 bg-gradient-to-br ${service.gradient_class || 'from-cobalt/20 to-cobalt/5'} p-6 flex flex-col justify-between relative`}>
-          <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px] pointer-events-none" />
-          <div className="z-10 flex justify-between items-start">
-            <span className="px-2.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-white/90 text-slate-text-primary shadow-sm border border-slate-border/50">
-              {service.category}
-            </span>
-          </div>
-          
-          <div className="z-10 flex flex-col items-center justify-center py-6 text-center space-y-3">
-            <div className="w-14 h-14 rounded-full bg-white/40 flex items-center justify-center backdrop-blur-md border border-white/40">
-              <Wrench className="w-7 h-7 text-slate-text-primary/80 animate-pulse" />
-            </div>
-            <div>
-              <span className="block font-mono text-[9px] text-slate-text-primary/60 tracking-wider font-extrabold">MANUFACTURING FLOW</span>
-              <span className="block text-[10px] text-slate-text-primary/80 font-bold font-mono border-t border-slate-text-primary/20 pt-1">
-                {service.lead_time}
-              </span>
-            </div>
-            {avgRating !== null && (
-              <div className="flex flex-col items-center gap-1 bg-white/40 rounded-xl px-4 py-2 backdrop-blur-md">
-                <span className="text-lg font-extrabold text-slate-text-primary">{avgRating.toFixed(1)}</span>
-                <StarRating rating={Math.round(avgRating)} />
-                <span className="text-[9px] text-slate-text-primary/60 font-bold">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</span>
+        {/* Left pane - Carousel or Gradient visual */}
+        {(() => {
+          const images = service.images_data && service.images_data.length > 0 
+            ? service.images_data 
+            : (service.image_data ? [service.image_data] : []);
+
+          return images.length > 0 ? (
+            <div className="md:w-5/12 bg-slate-900 relative flex flex-col justify-between overflow-hidden group p-6 shrink-0 text-left">
+              {/* Background Image Carousel */}
+              <div className="absolute inset-0 w-full h-full">
+                <img 
+                  src={images[currentImageIndex]} 
+                  alt={service.title} 
+                  className="w-full h-full object-cover transition-all duration-300"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent animate-fade-in" />
               </div>
-            )}
-          </div>
-          
-          <div className="z-10 bg-white/40 border border-white/20 p-3 rounded-lg backdrop-blur-md text-[10px] font-bold text-slate-text-primary flex items-start gap-2">
-            <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-600" />
-            <span>ISO 9001:2015 &amp; AS9100D manufacturing facilities verified.</span>
-          </div>
-        </div>
+
+              {/* Carousel navigation arrows */}
+              {images.length > 1 && (
+                <>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+                    }}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#06B6D4] transition-all text-xs font-bold z-20 cursor-pointer border-none outline-none"
+                  >
+                    &larr;
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+                    }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#06B6D4] transition-all text-xs font-bold z-20 cursor-pointer border-none outline-none"
+                  >
+                    &rarr;
+                  </button>
+                </>
+              )}
+
+              {/* Category overlay */}
+              <div className="z-10 flex justify-between items-start">
+                <span className="px-2.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-white/95 text-slate-text-primary shadow-sm border border-slate-border/50">
+                  {service.category}
+                </span>
+              </div>
+
+              {/* Bottom info Overlay & Dots */}
+              <div className="z-10 space-y-3 text-left">
+                {images.length > 1 && (
+                  <div className="flex justify-center gap-1.5">
+                    {images.map((_, idx) => (
+                      <button 
+                        key={idx}
+                        onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
+                        className={`w-1.5 h-1.5 rounded-full transition-all border-none outline-none cursor-pointer ${idx === currentImageIndex ? 'bg-[#06B6D4] w-3' : 'bg-white/40 hover:bg-white/70'}`}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {avgRating !== null && (
+                  <div className="flex items-center gap-2 bg-black/60 border border-white/10 rounded-xl px-3 py-1.5 backdrop-blur-md w-fit">
+                    <span className="text-sm font-extrabold text-white">{avgRating.toFixed(1)}</span>
+                    <StarRating rating={Math.round(avgRating)} />
+                    <span className="text-[8px] text-slate-300 font-bold">({reviews.length})</span>
+                  </div>
+                )}
+
+                <div className="bg-black/60 border border-white/10 p-3 rounded-lg backdrop-blur-md text-[10px] font-bold text-white flex items-start gap-2">
+                  <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-500" />
+                  <span>ISO 9001:2015 &amp; AS9100D manufacturing facilities verified.</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className={`md:w-5/12 bg-gradient-to-br ${service.gradient_class || 'from-cobalt/20 to-cobalt/5'} p-6 flex flex-col justify-between relative shrink-0`}>
+              <div className="absolute inset-0 bg-white/5 backdrop-blur-[2px] pointer-events-none" />
+              <div className="z-10 flex justify-between items-start">
+                <span className="px-2.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-white/90 text-slate-text-primary shadow-sm border border-slate-border/50">
+                  {service.category}
+                </span>
+              </div>
+              
+              <div className="z-10 flex flex-col items-center justify-center py-6 text-center space-y-3">
+                <div className="w-14 h-14 rounded-full bg-white/40 flex items-center justify-center backdrop-blur-md border border-white/40">
+                  <Wrench className="w-7 h-7 text-slate-text-primary/80 animate-pulse" />
+                </div>
+                <div>
+                  <span className="block font-mono text-[9px] text-slate-text-primary/60 tracking-wider font-extrabold">MANUFACTURING FLOW</span>
+                  <span className="block text-[10px] text-slate-text-primary/80 font-bold font-mono border-t border-slate-text-primary/20 pt-1">
+                    {service.lead_time}
+                  </span>
+                </div>
+                {avgRating !== null && (
+                  <div className="flex flex-col items-center gap-1 bg-white/40 rounded-xl px-4 py-2 backdrop-blur-md">
+                    <span className="text-lg font-extrabold text-slate-text-primary">{avgRating.toFixed(1)}</span>
+                    <StarRating rating={Math.round(avgRating)} />
+                    <span className="text-[9px] text-slate-text-primary/60 font-bold">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="z-10 bg-white/40 border border-white/20 p-3 rounded-lg backdrop-blur-md text-[10px] font-bold text-slate-text-primary flex items-start gap-2">
+                <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-600" />
+                <span>ISO 9001:2015 &amp; AS9100D manufacturing facilities verified.</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Right pane */}
         <div className="md:w-7/12 flex flex-col justify-between bg-white">
