@@ -335,8 +335,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       {/* Floating Toast Notification */}
       {toast && (
-        <div className="fixed top-20 right-6 z-50 animate-slide-in max-w-sm w-full font-sans">
-          <div className={`p-4 rounded-xl border backdrop-blur-md shadow-2xl flex items-start gap-3 transition-all duration-300 ${
+        <div className="fixed top-20 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-[9999] animate-slide-in font-sans">
+          <div className={`p-4 rounded border backdrop-blur-md shadow-xl flex items-start gap-3 transition-all duration-300 ${
             toast.type === 'success'
               ? 'bg-emerald-950/75 border-emerald-500/40 text-emerald-400 shadow-emerald-950/30'
               : 'bg-rose-950/75 border-rose-500/40 text-rose-400 shadow-rose-950/30'
@@ -354,7 +354,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               </svg>
             )}
             <div className="space-y-1 flex-1">
-              <span className={`block text-[10px] font-black uppercase tracking-wider ${
+              <span className={`block text-[9px] font-bold font-mono uppercase tracking-wider ${
                 toast.type === 'success' ? 'text-emerald-400' : 'text-rose-400'
               }`}>
                 {toast.type === 'success' ? 'Success' : 'Error'}
@@ -365,7 +365,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             </div>
             <button 
               onClick={() => setToast(null)}
-              className="text-slate-text-muted hover:text-slate-text-primary p-0.5 rounded cursor-pointer"
+              className="text-slate-text-muted hover:text-slate-text-primary p-0.5 rounded cursor-pointer border border-transparent hover:border-[#E4E4E7]/20 hover:bg-white/5 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
                 <line x1="18" y1="6" x2="6" y2="18" />

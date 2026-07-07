@@ -1,93 +1,139 @@
 'use client';
-
+ 
 import React from 'react';
-import { Cpu, Download, Plus, Heart, ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingCart, Eye, Cpu, Zap, Settings, Package } from 'lucide-react';
 import { Part } from './mockData';
 import { useCart } from './CartProvider';
-
+ 
 interface ProductCardProps {
   part: Part;
   onViewDetails: (part: Part) => void;
 }
-
+ 
+function StockBadge({ stock }: { stock: number }) {
+  if (stock <= 0) return (
+    <span className="bg-red-500 text-white text-[8px] font-mono px-1 py-0.5 uppercase tracking-wider font-bold">
+      OUT
+    </span>
+  );
+  if (stock < 10) return (
+    <span className="bg-amber-400 text-amber-900 text-[8px] font-mono px-1 py-0.5 uppercase tracking-wider font-bold">
+      LOW
+    </span>
+  );
+  return (
+    <span className="bg-[#10B981] text-white text-[8px] font-mono px-1 py-0.5 uppercase tracking-wider font-bold">
+      STOCK
+    </span>
+  );
+}
+ 
 export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
   const { addToCart, toggleWishlist, isWishlisted } = useCart();
   const saved = isWishlisted(part.id);
-
+ 
+  // Determine category-specific icon
+  const getCategoryIcon = () => {
+    const cat = part.category.toLowerCase();
+    if (cat.includes('actuator') || cat.includes('motor') || cat.includes('drive')) {
+      return Settings;
+    }
+    if (cat.includes('sensor') || cat.includes('imu')) {
+      return Zap;
+    }
+    if (cat.includes('controller') || cat.includes('board') || cat.includes('esp')) {
+      return Cpu;
+    }
+    return Package;
+  };
+ 
+  const CategoryIcon = getCategoryIcon();
+ 
   return (
     <div
       onClick={() => onViewDetails(part)}
-      className="group bg-white rounded-xl border border-slate-border p-2 sm:p-5 flex flex-col justify-between card-hover glow-cobalt cursor-pointer min-w-0 w-full"
+      className="flex flex-col bg-white border border-[#E4E4E7] overflow-hidden cursor-pointer group transition-all duration-200 hover:border-[#06B6D4]"
+      style={{
+        boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)',
+        transition: 'transform 0.2s ease, border-color 0.2s ease'
+      }}
+      onMouseEnter={e => {
+        if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+        }
+      }}
+      onMouseLeave={e => {
+        if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+          e.currentTarget.style.transform = 'translateY(0)';
+        }
+      }}
     >
-      <div className="space-y-1.5 sm:space-y-4">
-        {/* Image placeholder */}
-        <div
-          className={`h-20 sm:h-40 w-full rounded-lg bg-gradient-to-br ${part.gradientClass} relative overflow-hidden flex items-center justify-center`}
-        >
-          <Cpu className="w-6 h-6 sm:w-10 sm:h-10 text-slate-text-muted/30 group-hover:scale-110 transition-transform duration-300" />
-          <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="hidden sm:block absolute top-2 left-2 px-2 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-widest bg-white/90 text-slate-text-primary shadow-sm">
-            {part.category}
+      {/* Image / Icon container */}
+      <div className="h-32 md:h-36 bg-[#F8FAFC] overflow-hidden relative border-b border-[#E4E4E7]/60 flex items-center justify-center shrink-0">
+        {part.imageData ? (
+          <img src={part.imageData} alt={part.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className={`w-full h-full bg-gradient-to-br ${part.gradientClass} flex items-center justify-center`}>
+            <CategoryIcon className="w-8 h-8 text-[#0F172A] opacity-20 group-hover:rotate-12 group-hover:scale-105 transition-all duration-500" />
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              addToCart(part, 1);
-            }}
-            className="sm:hidden absolute top-2 left-2 p-1.5 rounded-lg bg-white/95 backdrop-blur-sm text-slate-text-secondary hover:text-cobalt shadow-sm transition-colors cursor-pointer z-10 scale-90"
-            aria-label="Quick Add to Cart"
-          >
-            <ShoppingCart className="w-3 h-3 text-cobalt" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleWishlist(part.id);
-            }}
-            className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/95 backdrop-blur-sm text-slate-text-secondary hover:text-rose-500 shadow-sm transition-colors cursor-pointer z-10 scale-90 sm:scale-100"
-            aria-label={saved ? "Remove from Wishlist" : "Add to Wishlist"}
-          >
-            <Heart className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${saved ? 'fill-rose-500 text-rose-500' : ''}`} />
-          </button>
-          <div className="hidden sm:flex absolute bottom-2 right-2 text-[9px] font-bold text-slate-text-muted items-center gap-1 bg-white/70 backdrop-blur-sm px-1.5 py-0.5 rounded">
-            <Download className="w-2.5 h-2.5" /> CAD Available
-          </div>
-        </div>
-
-        {/* Details */}
-        <div className="space-y-1">
-          <span className="hidden sm:block font-mono text-[10px] text-slate-text-muted uppercase tracking-wider leading-tight">
-            {part.partNumber}
+        )}
+        {/* Category Badge */}
+        <div className="absolute top-1.5 left-1.5">
+          <span className="bg-[#0F172A] text-white text-[7px] md:text-[8px] font-mono px-1 py-0.5 uppercase tracking-wider font-bold">
+            {part.category.slice(0, 12)}
           </span>
-          <h3
-            className="text-[10px] sm:text-sm font-extrabold text-slate-text-primary leading-tight group-hover:text-cobalt transition-colors duration-200 line-clamp-1"
-          >
+        </div>
+        {/* Stock badge */}
+        <div className="absolute top-1.5 right-1.5">
+          <StockBadge stock={part.stock} />
+        </div>
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-[#0F172A]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <span className="bg-white text-[#0F172A] text-[8px] font-mono font-bold uppercase tracking-wider py-1 px-2 shadow border border-[#E4E4E7] flex items-center gap-1">
+            <Eye className="w-3 h-3" /> View Details
+          </span>
+        </div>
+      </div>
+ 
+      {/* Body */}
+      <div className="p-3 flex flex-col flex-1">
+        <div className="flex justify-between items-start mb-1 gap-1">
+          <h3 className="font-['Space_Grotesk'] text-[11px] md:text-xs font-semibold text-[#0F172A] leading-tight group-hover:text-[#06B6D4] transition-colors line-clamp-2 flex-1">
             {part.title}
           </h3>
-          <p className="hidden sm:block text-xs text-slate-text-muted line-clamp-2 leading-relaxed">{part.description}</p>
         </div>
-
-
-      </div>
-
-      {/* Price + Add */}
-      <div className="pt-1.5 sm:pt-4 flex items-center justify-between gap-1.5 mt-1.5 sm:mt-4">
-        <div>
-          <span className="hidden sm:block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold">Unit Price</span>
-          <div className="flex items-baseline gap-0.5">
-            <span className="text-xs sm:text-base font-extrabold text-coral">₹{part.price.toFixed(2)}</span>
-            <span className="text-[8px] sm:text-[10px] text-slate-text-muted font-bold">INR</span>
+        <div className="flex items-center gap-1 mb-2.5">
+          <span className="font-['JetBrains_Mono'] text-[7px] text-[#76777d] uppercase tracking-wider font-bold">SKU:</span>
+          <span className="font-['JetBrains_Mono'] text-[8px] font-bold text-[#06B6D4] truncate max-w-[120px]">
+            {part.partNumber}
+          </span>
+        </div>
+ 
+        {/* Price + CTA */}
+        <div className="flex items-center justify-between pt-2 border-t border-[#E4E4E7] mt-auto">
+          <div>
+            <p className="text-[7px] font-['Inter'] text-[#76777d] uppercase tracking-wider mb-0.5">Price</p>
+            <p className="font-['Space_Grotesk'] text-xs md:text-sm font-bold text-[#0F172A]">
+              ₹{part.price.toLocaleString('en-IN')}
+            </p>
+          </div>
+          <div className="flex gap-1 shrink-0">
+            <button
+              onClick={e => { e.stopPropagation(); toggleWishlist(part.id); }}
+              className="p-1.5 border border-[#E4E4E7] bg-white hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+              title={saved ? 'Remove from Wishlist' : 'Add to Wishlist'}
+            >
+              <Heart className={`w-3 h-3 ${saved ? 'fill-rose-500 text-rose-500' : 'text-[#45464d]'}`} />
+            </button>
+            <button
+              onClick={e => { e.stopPropagation(); addToCart(part, 1); }}
+              className="p-1.5 bg-[#0F172A] text-white hover:bg-[#06B6D4] transition-colors flex items-center justify-center cursor-pointer"
+              title="Add to Cart"
+            >
+              <ShoppingCart className="w-3 h-3" />
+            </button>
           </div>
         </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            addToCart(part, 1);
-          }}
-          className="hidden sm:flex btn-cobalt text-xs font-bold px-3 py-2 rounded-lg cursor-pointer items-center gap-1.5"
-        >
-          <Plus className="w-3.5 h-3.5" /> Add
-        </button>
       </div>
     </div>
   );

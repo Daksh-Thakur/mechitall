@@ -13,9 +13,9 @@ import {
 } from '@/app/actions/marketplace';
 import { 
   Cpu, FileUp, Settings, Plus, Sparkles, CheckCircle2, Clock, 
-  HelpCircle, ShieldCheck, ShoppingBag, Send, AlertTriangle, Layers, 
+  ShieldCheck, ShoppingBag, Send, Layers, 
   ChevronRight, Info, X, Upload, File, Trash2, Eye, ArrowRight, 
-  Zap, Tag, RotateCcw, Package, Search
+  Zap, RotateCcw, Package, Search, SlidersHorizontal, SlidersVertical
 } from 'lucide-react';
 
 const MOCK_DEMO_SERVICES: MachiningService[] = [
@@ -113,6 +113,13 @@ export default function MachiningMarketplacePage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
+  // New state variables to match products page layout
+  const [sortBy, setSortBy] = useState<string>('featured');
+  const [showFilterDrawer, setShowFilterDrawer] = useState(false);
+  const [buyerTab, setBuyerTab] = useState<'browse' | 'quotes'>('browse');
+  const [sellerTab, setSellerTab] = useState<'listings' | 'incoming'>('listings');
+  const [hasSetInitialView, setHasSetInitialView] = useState(false);
+
   // Handle click outside for auto-complete dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -135,7 +142,6 @@ export default function MachiningMarketplacePage() {
       s.material_capabilities.some(m => m.toLowerCase().includes(q))
     ).slice(0, 5);
   }, [services, searchQuery]);
-
 
   // Buyer: Get Quote modal state
   const [selectedService, setSelectedService] = useState<MachiningService | null>(null);
@@ -163,7 +169,7 @@ export default function MachiningMarketplacePage() {
   const [sellerNotes, setSellerNotes] = useState('');
   const [submittingOffer, setSubmittingOffer] = useState(false);
 
-  // Filtered services (buyer search + process filter)
+  // Filtered and sorted services (buyer search + process filter + sort by base price)
   const filteredServices = useMemo(() => {
     let result = [...services];
     if (searchQuery.trim()) {
@@ -179,8 +185,13 @@ export default function MachiningMarketplacePage() {
     if (selectedProcess !== 'All') {
       result = result.filter(s => s.process_type === selectedProcess);
     }
+    if (sortBy === 'price-asc') {
+      result.sort((a, b) => a.base_price - b.base_price);
+    } else if (sortBy === 'price-desc') {
+      result.sort((a, b) => b.base_price - a.base_price);
+    }
     return result;
-  }, [services, searchQuery, selectedProcess]);
+  }, [services, searchQuery, selectedProcess, sortBy]);
 
   // Load services
   useEffect(() => {
@@ -203,14 +214,13 @@ export default function MachiningMarketplacePage() {
     loadData();
   }, []);
 
-  // Automatically determine buyer/seller active view based on profile setting
+  // Automatically determine buyer/seller active view based on profile setting initially
   useEffect(() => {
-    if (profile) {
+    if (profile && !hasSetInitialView) {
       setActiveView(profile.is_seller ? 'seller' : 'buyer');
-    } else {
-      setActiveView('buyer');
+      setHasSetInitialView(true);
     }
-  }, [profile]);
+  }, [profile, hasSetInitialView]);
 
   // Load my seller services and quotes
   useEffect(() => {
@@ -272,6 +282,7 @@ export default function MachiningMarketplacePage() {
       showToast(`"${uploadedFile.name}" shared with seller! Awaiting custom quote.`, 'success');
       setSelectedService(null);
       setUploadedFile(null);
+      setBuyerTab('quotes'); // Switch to quotes view tab to track immediately
 
       const quotes = await getSubmittedQuotes(profile.id);
       setBuyerQuotes(quotes);
@@ -383,389 +394,562 @@ export default function MachiningMarketplacePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-bg font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#1b1b1d] font-sans flex flex-col overflow-x-clip">
       <Navbar />
 
-      <main className="flex-1 max-w-7xl mx-auto px-6 py-10 w-full space-y-10">
+      {/* ─── MOBILE TOP BAR ─── */}
+      <div className="md:hidden sticky top-0 z-40 bg-white border-b border-[#E4E4E7] flex items-center justify-between px-4 h-14">
+        <h1 className="font-['Space_Grotesk'] text-base font-bold text-[#0F172A]">Machining Marketplace</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowFilterDrawer(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E4E4E7] text-[11px] font-mono font-bold uppercase tracking-wider hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+          >
+            <SlidersVertical className="w-3.5 h-3.5" />
+            Filter
+          </button>
+        </div>
+      </div>
 
-        {/* Marketplace Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-slate-border">
-          <div className="space-y-1.5">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-cobalt bg-cobalt/5 border border-cobalt/20 px-3 py-1 rounded-full">
-              <Sparkles className="w-3.5 h-3.5" /> Machining Marketplace
-            </span>
-            <h1 className="text-3xl font-black text-slate-text-primary tracking-tight">On-Demand Manufacturing Hub</h1>
-            <p className="text-xs text-slate-text-muted font-semibold max-w-2xl leading-relaxed">
-              Connect directly with verified local fabrication facilities. Browse machining services, upload your CAD files, and receive custom quotes.
-            </p>
+      <div className="flex flex-1 w-full max-w-[1280px] mx-auto">
+        {/* ─── DESKTOP LEFT SIDEBAR ─── */}
+        <aside className="hidden lg:flex w-64 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-[#E4E4E7] bg-[#F8FAFC] flex-col p-6 gap-4 overflow-y-auto">
+          {/* Mode Switcher */}
+          <div className="pb-4 border-b border-[#E4E4E7] flex flex-col gap-2">
+            <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-[#45464d]">Marketplace Role</label>
+            {profile ? (
+              profile.is_seller ? (
+                <div className="grid grid-cols-2 gap-1 bg-[#E4E4E7]/60 p-1 rounded">
+                  <button
+                    onClick={() => setActiveView('buyer')}
+                    className={`py-1.5 text-xs font-bold text-center transition-all cursor-pointer ${
+                      activeView === 'buyer'
+                        ? 'bg-[#0F172A] text-white'
+                        : 'text-[#45464d] hover:text-[#0F172A]'
+                    }`}
+                  >
+                    Buyer Hub
+                  </button>
+                  <button
+                    onClick={() => setActiveView('seller')}
+                    className={`py-1.5 text-xs font-bold text-center transition-all cursor-pointer ${
+                      activeView === 'seller'
+                        ? 'bg-[#0F172A] text-white'
+                        : 'text-[#45464d] hover:text-[#0F172A]'
+                    }`}
+                  >
+                    Seller Hub
+                  </button>
+                </div>
+              ) : (
+                <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded flex flex-col gap-1.5">
+                  <p className="text-[10px] text-amber-800 leading-normal font-semibold">
+                    Want to list your machining capabilities?
+                  </p>
+                  <button
+                    onClick={() => router.push('/profile')}
+                    className="text-[9px] font-bold text-left text-amber-700 hover:text-amber-900 underline flex items-center gap-0.5"
+                  >
+                    Activate Seller Mode <ArrowRight className="w-2.5 h-2.5" />
+                  </button>
+                </div>
+              )
+            ) : (
+              <div className="p-3 bg-blue-500/5 border border-blue-500/10 rounded flex flex-col gap-1.5">
+                <p className="text-[10px] text-slate-text-muted leading-normal font-semibold">
+                  Sign in to view your quotes or list services.
+                </p>
+                <button
+                  onClick={() => router.push('/login')}
+                  className="text-[9px] font-bold text-left text-cobalt hover:text-blue-700 underline flex items-center gap-0.5"
+                >
+                  Sign In <ArrowRight className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            )}
           </div>
 
-          {activeView === 'seller' && (
-            <button
-              onClick={() => setShowListingModal(true)}
-              className="btn-cobalt px-5 py-3 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md whitespace-nowrap cursor-pointer"
+          {/* Process Navigation */}
+          <div className="pb-2">
+            <h2 className="font-['Space_Grotesk'] text-base font-bold text-[#0F172A]">Filter Specs</h2>
+            <p className="font-['Inter'] text-xs text-[#45464d] mt-0.5 opacity-70">Machining Processes</p>
+          </div>
+
+          <nav className="flex flex-col gap-0.5">
+            {(['All', 'CNC Machining', '3D Printing', 'Sheet Metal', 'Laser Cutting'] as const).map(proc => (
+              <button
+                key={proc}
+                onClick={() => setSelectedProcess(proc)}
+                className={`flex items-center gap-3 px-3 py-2.5 text-sm font-['Inter'] text-left transition-all cursor-pointer ${
+                  selectedProcess === proc
+                    ? 'bg-[#0F172A] text-white font-bold'
+                    : 'text-[#45464d] hover:bg-[#E4E4E7]'
+                }`}
+              >
+                <span className="text-base">
+                  {proc === 'All' ? '⊞' : proc === 'CNC Machining' ? '⚙️' : proc === '3D Printing' ? '🖨️' : proc === 'Sheet Metal' ? '📐' : '⚡'}
+                </span>
+                {proc === 'All' ? 'All Processes' : proc}
+              </button>
+            ))}
+          </nav>
+
+          {/* Sort By */}
+          <div className="pt-4 border-t border-[#E4E4E7] flex flex-col gap-3">
+            <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-[#45464d]">Sort By</label>
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value)}
+              className="bg-white border border-[#E4E4E7] px-3 py-2 text-xs font-['Inter'] text-[#45464d] focus:outline-none focus:border-[#06B6D4] transition-colors cursor-pointer font-semibold"
             >
-              <Plus className="w-4 h-4" /> List New Service
-            </button>
-          )}
-        </div>
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: Low → High</option>
+              <option value="price-desc">Price: High → Low</option>
+            </select>
+          </div>
 
-        {/* ==========================================
-            BUYER VIEW
-            ========================================== */}
-        {activeView === 'buyer' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* Reset Filters */}
+          <button
+            onClick={() => { setSelectedProcess('All'); setSearchQuery(''); setSortBy('featured'); }}
+            className="mt-auto py-2 px-4 border border-[#0F172A] text-[#0F172A] font-bold text-xs font-['Inter'] hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer"
+          >
+            Reset Filters
+          </button>
+        </aside>
 
-            {/* Services Grid */}
-            <div className="lg:col-span-2 space-y-5">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">Available Services</h2>
-                <span className="text-[10px] font-bold text-slate-text-muted">{filteredServices.length} of {services.length} services</span>
+        {/* ─── MAIN CONTENT ─── */}
+        <main className="flex-1 min-w-0 px-3 md:px-6 lg:px-8 py-4 md:py-8">
+
+          {/* Desktop Blueprint Header Banner */}
+          <div
+            className="hidden md:block mb-4 border-l-4 border-[#06B6D4] px-4 py-3 bg-white/60"
+            style={{
+              backgroundImage: 'linear-gradient(to right, rgba(6,182,212,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(6,182,212,0.05) 1px, transparent 1px)',
+              backgroundSize: '24px 24px',
+            }}
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="font-['Space_Grotesk'] text-lg font-bold text-[#0F172A]">On-Demand Manufacturing</h1>
+                <p className="font-['Inter'] text-xs text-[#45464d] mt-0.5">
+                  Connect with verified fabrication facilities, upload CAD files, and receive custom quotes.
+                </p>
               </div>
+              <div className="flex items-center gap-2">
+                {activeView === 'seller' && (
+                  <button
+                    onClick={() => setShowListingModal(true)}
+                    className="bg-[#0f172a] text-white hover:bg-[#06b6d4] text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider py-1.5 px-3 transition-colors font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" /> List Service
+                  </button>
+                )}
+                <span className="px-2 py-1 bg-[#0F172A] text-white text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider flex items-center gap-1 select-none">
+                  ✓ Verified Fabricators
+                </span>
+              </div>
+            </div>
+          </div>
 
-              {/* Search & Filter Bar */}
-              <div className="flex flex-col sm:flex-row gap-3 p-4 bg-white rounded-xl border border-slate-border shadow-sm">
-                {/* Search input */}
-                <div ref={searchRef} className={`relative flex-1 ${showSuggestions && suggestions.length > 0 ? 'z-30' : 'z-10'}`}>
-                  <input
-                    type="text"
-                    placeholder="Search by service, material, seller..."
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setShowSuggestions(true);
-                    }}
-                    onFocus={() => setShowSuggestions(true)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.currentTarget.blur();
-                        setShowSuggestions(false);
-                      }
-                    }}
-                    className="w-full text-xs bg-slate-bg border border-slate-border text-slate-text-primary px-3 py-2.5 pl-9 rounded-lg focus:outline-none focus:border-cobalt focus:ring-1 focus:ring-cobalt/20 transition-all placeholder-slate-text-muted font-medium"
-                  />
-                  <Search className="w-3.5 h-3.5 text-slate-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+          {/* View Sub-Tabs switcher */}
+          <div className="flex border-b border-[#E4E4E7] mb-6">
+            {activeView === 'buyer' ? (
+              <>
+                <button
+                  onClick={() => setBuyerTab('browse')}
+                  className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+                    buyerTab === 'browse'
+                      ? 'border-[#06B6D4] text-[#06B6D4] font-bold'
+                      : 'border-transparent text-[#76777d] hover:text-[#0F172A]'
+                  }`}
+                >
+                  Browse services
+                </button>
+                <button
+                  onClick={() => setBuyerTab('quotes')}
+                  className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+                    buyerTab === 'quotes'
+                      ? 'border-[#06B6D4] text-[#06B6D4] font-bold'
+                      : 'border-transparent text-[#76777d] hover:text-[#0F172A]'
+                  }`}
+                >
+                  My Quote Requests
+                  {buyerQuotes.length > 0 && (
+                    <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">
+                      {buyerQuotes.length}
+                    </span>
+                  )}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setSellerTab('listings')}
+                  className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+                    sellerTab === 'listings'
+                      ? 'border-[#06B6D4] text-[#06B6D4] font-bold'
+                      : 'border-transparent text-[#76777d] hover:text-[#0F172A]'
+                  }`}
+                >
+                  My Listed Capabilities
+                </button>
+                <button
+                  onClick={() => setSellerTab('incoming')}
+                  className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
+                    sellerTab === 'incoming'
+                      ? 'border-[#06B6D4] text-[#06B6D4] font-bold'
+                      : 'border-transparent text-[#76777d] hover:text-[#0F172A]'
+                  }`}
+                >
+                  Incoming Quote Requests
+                  {sellerQuotes.filter(q => q.status === 'Pending').length > 0 && (
+                    <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold animate-pulse">
+                      {sellerQuotes.filter(q => q.status === 'Pending').length}
+                    </span>
+                  )}
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* ==========================================
+              BUYER SUB-VIEWS
+              ========================================== */}
+          {activeView === 'buyer' && buyerTab === 'browse' && (
+            <div className="space-y-4">
+              {/* Search Bar */}
+              <div ref={searchRef} className={`mb-4 relative ${showSuggestions && suggestions.length > 0 ? 'z-30' : 'z-10'}`}>
+                <input
+                  type="text"
+                  placeholder="Search custom machining services, material, capability..."
+                  value={searchQuery}
+                  onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
+                  onFocus={() => setShowSuggestions(true)}
+                  onKeyDown={e => { if (e.key === 'Enter') { e.currentTarget.blur(); setShowSuggestions(false); } }}
+                  className="w-full bg-white border border-[#E4E4E7] px-10 py-3 pr-28 text-sm font-['Inter'] focus:ring-2 focus:ring-[#06B6D4]/20 focus:border-[#06B6D4] outline-none transition-all placeholder:text-[#76777d]"
+                />
+                <Search className="w-4 h-4 text-[#45464d] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                   {searchQuery && (
-                    <button
-                      onClick={() => {
-                        setSearchQuery('');
-                        setShowSuggestions(false);
-                      }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-text-muted hover:text-coral cursor-pointer transition-colors"
-                    >
-                      <X className="w-3.5 h-3.5" />
+                    <button onClick={() => { setSearchQuery(''); setShowSuggestions(false); }} className="cursor-pointer">
+                      <X className="w-3.5 h-3.5 text-[#76777d] hover:text-red-500 transition-colors" />
                     </button>
                   )}
+                  <span className="text-[10px] font-mono bg-[#F8FAFC] px-1.5 py-0.5 border border-[#E4E4E7] text-[#45464d] select-none" title="Matching items">
+                    {filteredServices.length}/{services.length}
+                  </span>
+                  <span className="hidden md:block text-[10px] font-mono bg-[#F8FAFC] px-1.5 py-0.5 border border-[#E4E4E7] text-[#45464d]">Search</span>
+                </div>
 
-                  {/* Auto-complete suggestions dropdown */}
-                  {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-slate-border rounded-xl shadow-lg overflow-hidden py-1 max-h-72 overflow-y-auto divide-y divide-slate-border/50 animate-fade-in-down">
-                      {suggestions.map((service) => (
-                        <div
-                          key={service.id}
-                          onClick={() => {
-                            setSearchQuery(service.title);
-                            setShowSuggestions(false);
-                          }}
-                          className="p-3 hover:bg-slate-bg flex items-center justify-between gap-3 cursor-pointer group transition-colors"
-                        >
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs font-black text-slate-text-primary truncate block">
-                                {service.title}
-                              </span>
-                              <span className={`px-2 py-0.5 rounded border text-[8px] font-black uppercase tracking-wider ${PROCESS_COLORS[service.process_type] || 'bg-cobalt/5 text-cobalt border-cobalt/10'} select-none`}>
-                                {service.process_type}
-                              </span>
-                            </div>
-                            <span className="text-[10px] text-slate-text-muted mt-0.5 block font-semibold">
-                              by {service.seller_name} · <span className="font-mono text-slate-text-muted">{service.lead_time}</span>
+                {/* Autocomplete Suggestions */}
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-[#E4E4E7] shadow-lg overflow-hidden py-1 max-h-72 overflow-y-auto divide-y divide-[#E4E4E7]/50">
+                    {suggestions.map(s => (
+                      <div
+                        key={s.id}
+                        onClick={() => { setSearchQuery(s.title); setShowSuggestions(false); }}
+                        className="p-3 hover:bg-[#F8FAFC] flex items-center justify-between gap-3 cursor-pointer transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-semibold text-[#0F172A] truncate">{s.title}</span>
+                            <span className={`text-[8px] uppercase tracking-wider font-bold px-1.5 py-0.5 bg-[#F8FAFC] border border-[#E4E4E7] text-[#45464d] select-none shrink-0`}>
+                              {s.process_type}
                             </span>
                           </div>
-
-                          <div className="flex items-center gap-2.5 shrink-0">
-                            <div className="text-right">
-                              <span className="block text-xs font-black text-coral">
-                                ₹{Number(service.base_price).toLocaleString('en-IN')}
-                              </span>
-                              <span className="block text-[8px] text-slate-text-muted font-semibold">
-                                Base Price
-                              </span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedService(service);
-                                setShowSuggestions(false);
-                              }}
-                              className="btn-cobalt text-[9px] font-black px-2.5 py-1.5 rounded-lg flex items-center gap-1 cursor-pointer"
-                            >
-                              Get Quote <ArrowRight className="w-2.5 h-2.5" />
-                            </button>
-                          </div>
+                          <span className="text-[10px] text-[#76777d] block mt-0.5">by {s.seller_name}</span>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Process type filter tabs */}
-                <div className="bg-slate-bg border border-slate-border p-1 rounded-lg flex items-center gap-1 flex-wrap">
-                  {(['All', 'CNC Machining', '3D Printing', 'Sheet Metal', 'Laser Cutting'] as const).map((proc) => (
-                    <button
-                      key={proc}
-                      onClick={() => setSelectedProcess(proc)}
-                      className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap ${
-                        selectedProcess === proc
-                          ? 'bg-white text-cobalt shadow-sm border border-slate-border/50'
-                          : 'text-slate-text-secondary hover:text-slate-text-primary'
-                      }`}
-                    >
-                      {proc}
-                    </button>
-                  ))}
-                </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="text-right">
+                            <span className="block text-xs font-bold text-[#0F172A]">₹{Number(s.base_price).toLocaleString('en-IN')}</span>
+                            <span className="block text-[8px] text-[#76777d]">setup fee</span>
+                          </div>
+                          <button
+                            onClick={e => { e.stopPropagation(); setSelectedService(s); setShowSuggestions(false); }}
+                            className="p-1.5 border border-[#E4E4E7] bg-white hover:border-[#06B6D4] transition-all cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-[#45464d]" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
+              {/* Mobile process pills */}
+              <div className="md:hidden flex gap-1.5 overflow-x-auto no-scrollbar">
+                {(['All', 'CNC Machining', '3D Printing', 'Sheet Metal', 'Laser Cutting'] as const).map(proc => (
+                  <button
+                    key={proc}
+                    onClick={() => setSelectedProcess(proc)}
+                    className={`shrink-0 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border transition-all cursor-pointer ${
+                      selectedProcess === proc
+                        ? 'bg-[#0F172A] text-white border-[#0F172A]'
+                        : 'bg-white text-[#45464d] border-[#E4E4E7] hover:border-[#0F172A]'
+                    }`}
+                  >
+                    {proc}
+                  </button>
+                ))}
+              </div>
+
+
+
+              {/* Grid layout */}
               {loadingServices ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-pulse">
-                  {[1, 2, 3, 4].map((n) => (
-                    <div key={n} className="h-52 bg-white border border-slate-border rounded-2xl" />
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
+                  {[1, 2, 3, 4, 5, 6].map(n => (
+                    <div key={n} className="bg-white border border-[#E4E4E7] h-80">
+                      <div className="h-40 bg-[#F8FAFC]" />
+                      <div className="p-5 space-y-3">
+                        <div className="h-3 bg-[#E4E4E7] w-3/4" />
+                        <div className="h-2 bg-[#E4E4E7] w-1/2" />
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : filteredServices.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {filteredServices.map((service) => (
-                    <div
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {filteredServices.map(service => (
+                    <ServiceCard
                       key={service.id}
-                      className="bg-white border border-slate-border rounded-2xl p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between group relative overflow-hidden"
-                    >
-                      {/* Top accent line */}
-                      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cobalt/60 to-violet-500/60 opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-start gap-2">
-                          <span className={`px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-wider ${PROCESS_COLORS[service.process_type] || 'bg-cobalt/5 text-cobalt border-cobalt/10'}`}>
-                            {service.process_type}
-                          </span>
-                          <span className="text-[9px] font-bold text-slate-text-muted flex items-center gap-1 shrink-0">
-                            <Clock className="w-3 h-3" /> {service.lead_time}
-                          </span>
-                        </div>
-
-                        <div>
-                          <h3 className="text-sm font-black text-slate-text-primary leading-tight group-hover:text-cobalt transition-colors">
-                            {service.title}
-                          </h3>
-                          <p className="text-[11px] text-slate-text-muted font-semibold mt-0.5">by {service.seller_name}</p>
-                        </div>
-                        <p className="text-xs text-slate-text-secondary leading-relaxed line-clamp-2">{service.description}</p>
-
-                        {/* Material chips */}
-                        <div className="flex flex-wrap gap-1">
-                          {service.material_capabilities.slice(0, 3).map((m) => (
-                            <span key={m} className="text-[9px] font-bold px-1.5 py-0.5 bg-slate-bg/80 border border-slate-border rounded text-slate-text-secondary">
-                              {m}
-                            </span>
-                          ))}
-                          {service.material_capabilities.length > 3 && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 bg-slate-bg/80 border border-slate-border rounded text-slate-text-muted">
-                              +{service.material_capabilities.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="pt-3.5 border-t border-slate-border/40 flex items-center justify-between mt-3">
-                        <div>
-                          <span className="block text-[8px] uppercase tracking-widest text-slate-text-muted font-bold">Base setup fee</span>
-                          <span className="text-base font-black text-coral">₹{Number(service.base_price).toLocaleString('en-IN')}</span>
-                        </div>
-                        <button
-                          onClick={() => setSelectedService(service)}
-                          className="btn-cobalt text-[10px] font-black px-3.5 py-2 rounded-lg flex items-center gap-1.5 cursor-pointer"
-                        >
-                          Get Quote <ArrowRight className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
+                      service={service}
+                      onGetQuote={setSelectedService}
+                    />
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-16 border border-dashed border-slate-border rounded-2xl bg-white">
-                  <Cpu className="w-12 h-12 text-slate-text-muted/20 mx-auto mb-3" />
-                  {searchQuery || selectedProcess !== 'All' ? (
-                    <>
-                      <p className="text-sm font-bold text-slate-text-primary">No services match your search.</p>
-                      <button
-                        onClick={() => { setSearchQuery(''); setSelectedProcess('All'); }}
-                        className="mt-3 text-xs font-bold text-cobalt hover:underline cursor-pointer"
-                      >
-                        Clear filters
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-sm font-bold text-slate-text-primary">No machining services yet.</p>
-                      <p className="text-xs text-slate-text-muted mt-1">Sellers can list their capabilities from their profile.</p>
-                    </>
-                  )}
+                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
+                  <div className="text-4xl opacity-20">⚙️</div>
+                  <p className="text-sm font-bold text-[#0F172A]">No machining services found</p>
+                  <p className="text-xs text-[#45464d]">Try different search terms or clear the process filter.</p>
+                  <button
+                    onClick={() => { setSearchQuery(''); setSelectedProcess('All'); setSortBy('featured'); }}
+                    className="mt-2 py-2 px-5 border border-[#0F172A] text-[#0F172A] font-bold text-xs hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer"
+                  >
+                    Clear Filters
+                  </button>
                 </div>
               )}
             </div>
+          )}
 
-            {/* My Quotes Sidebar */}
-            <div className="space-y-5">
-              <h2 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">My Quote Requests</h2>
-
+          {activeView === 'buyer' && buyerTab === 'quotes' && (
+            <div className="space-y-4">
               {!profile ? (
-                <div className="bg-white border border-slate-border rounded-2xl p-5 text-center space-y-3">
-                  <ShieldCheck className="w-8 h-8 text-slate-text-muted/30 mx-auto" />
-                  <p className="text-xs font-bold text-slate-text-primary">Sign in to track quotes</p>
-                  <button onClick={() => router.push('/login')} className="btn-cobalt text-xs font-bold px-4 py-2 rounded-lg cursor-pointer">
+                <div className="bg-white border border-[#E4E4E7] rounded-2xl p-8 text-center space-y-4 max-w-md mx-auto">
+                  <ShieldCheck className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
+                  <h3 className="text-sm font-bold text-[#0F172A]">Sign in to track quotes</h3>
+                  <p className="text-xs text-[#76777d]">Track requests, communicate with fabrication facilities, and approve pricing offers.</p>
+                  <button onClick={() => router.push('/login')} className="bg-[#0f172a] text-white hover:bg-[#06b6d4] text-xs font-bold px-6 py-2.5 rounded-lg cursor-pointer">
                     Sign In
                   </button>
                 </div>
               ) : loadingQuotes ? (
-                <div className="h-40 bg-white border border-slate-border rounded-2xl animate-pulse" />
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
+                  {[1, 2, 3].map(n => <div key={n} className="h-44 bg-white border border-[#E4E4E7]" />)}
+                </div>
               ) : buyerQuotes.length > 0 ? (
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {buyerQuotes.map((quote) => (
-                    <div key={quote.id} className="bg-white border border-slate-border rounded-2xl p-4 shadow-sm space-y-3">
-                      <div className="flex justify-between items-start gap-2">
-                        <span className="font-mono text-[10px] font-black text-slate-text-primary truncate flex items-center gap-1">
-                          <File className="w-3 h-3 shrink-0" /> {quote.cad_file_name}
-                        </span>
-                        <span className={`shrink-0 px-2 py-0.5 rounded-full text-[8px] font-black uppercase border ${
-                          quote.status === 'Accepted' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                          : quote.status === 'Offered' ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
-                          : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                        }`}>
-                          {quote.status}
-                        </span>
+                    <div key={quote.id} className="bg-white border border-[#E4E4E7] p-5 flex flex-col justify-between space-y-4 hover:border-[#0f172a] transition-all relative">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start gap-2">
+                          <span className={`text-[9px] font-mono px-1.5 py-0.5 uppercase border font-semibold ${
+                            quote.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-750 border-blue-500/20'
+                            : quote.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-750 border-violet-500/20'
+                            : quote.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-750 border-amber-500/20'
+                            : 'bg-red-500/10 text-red-750 border-red-500/20'
+                          }`}>
+                            {quote.process_type}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-mono uppercase border font-bold ${
+                            quote.status === 'Accepted' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                            : quote.status === 'Offered' ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
+                            : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                          }`}>
+                            {quote.status}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] leading-tight">
+                            {quote.service_title}
+                          </h4>
+                          <p className="font-mono text-[10px] text-slate-text-muted mt-1.5 flex items-center gap-1 truncate font-semibold">
+                            <File className="w-3.5 h-3.5 text-[#76777d] shrink-0" /> {quote.cad_file_name}
+                          </p>
+                        </div>
+
+                        {quote.status === 'Offered' && quote.offer_price && (
+                          <div className="bg-[#F8FAFC] border border-[#E4E4E7] p-3 rounded space-y-2 mt-2">
+                            <div className="flex justify-between items-baseline">
+                              <span className="text-[10px] text-[#45464d] font-mono">Total Price Offered</span>
+                              <span className="text-base font-bold text-coral">₹{Number(quote.offer_price).toLocaleString('en-IN')}</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-1 text-[10px] text-[#76777d] font-semibold">
+                              <div>Material: <span className="text-[#1b1b1d] font-bold">{quote.selected_material}</span></div>
+                              <div>Finish: <span className="text-[#1b1b1d] font-bold">{quote.selected_finish}</span></div>
+                              <div>Quantity: <span className="text-[#1b1b1d] font-bold">{quote.quantity} Units</span></div>
+                            </div>
+                            {quote.seller_notes && (
+                              <p className="text-[10px] text-[#76777d] italic border-t border-[#E4E4E7]/60 pt-1.5 mt-1.5">
+                                "{quote.seller_notes}"
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
 
-                      <p className="text-[11px] font-bold text-slate-text-secondary">{quote.service_title}</p>
-
-                      {quote.status === 'Offered' && quote.offer_price && (
-                        <div className="bg-slate-bg/60 border border-slate-border p-3 rounded-xl space-y-2">
-                          <div className="flex justify-between items-baseline">
-                            <span className="text-[10px] text-slate-text-muted font-bold">Seller's Offer</span>
-                            <span className="text-sm font-black text-coral">₹{Number(quote.offer_price).toLocaleString('en-IN')}</span>
-                          </div>
-                          {quote.seller_notes && (
-                            <p className="text-[10px] text-slate-text-secondary italic">"{quote.seller_notes}"</p>
-                          )}
-                          <button
-                            onClick={() => handleAcceptOffer(quote.id)}
-                            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2 rounded-lg text-xs font-bold transition-colors cursor-pointer"
-                          >
-                            Accept & Order
-                          </button>
-                        </div>
+                      {quote.status === 'Offered' && (
+                        <button
+                          onClick={() => handleAcceptOffer(quote.id)}
+                          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded font-bold text-xs transition-colors cursor-pointer"
+                        >
+                          Accept & Order
+                        </button>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-10 border border-dashed border-slate-border bg-white rounded-2xl">
-                  <FileUp className="w-8 h-8 text-slate-text-muted/20 mx-auto mb-2" />
-                  <p className="text-xs font-bold text-slate-text-primary">No requests yet</p>
-                  <p className="text-[10px] text-slate-text-muted mt-1">Click "Get Quote" on a service</p>
+                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
+                  <FileUp className="w-12 h-12 text-[#76777d]/20 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-[#0F172A]">No requests found</p>
+                  <p className="text-xs text-[#45464d]">Click "Get Quote" on any machining capability to submit your first CAD request.</p>
+                  <button
+                    onClick={() => setBuyerTab('browse')}
+                    className="mt-2 py-2 px-5 border border-[#0F172A] text-[#0F172A] font-bold text-xs hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer"
+                  >
+                    Browse Services
+                  </button>
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* ==========================================
-            SELLER VIEW
-            ========================================== */}
-        {activeView === 'seller' && (
-          <div className="space-y-10">
-
-            {/* My Listed Services */}
-            <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">My Listed Services</h2>
-                <span className="text-[10px] font-bold text-slate-text-muted">{myServices.length} active listing{myServices.length !== 1 ? 's' : ''}</span>
-              </div>
-
+          {/* ==========================================
+              SELLER SUB-VIEWS
+              ========================================== */}
+          {activeView === 'seller' && sellerTab === 'listings' && (
+            <div className="space-y-4">
               {loadingQuotes ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-pulse">
-                  {[1, 2, 3].map(n => <div key={n} className="h-44 bg-white border border-slate-border rounded-2xl" />)}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
+                  {[1, 2, 3].map(n => <div key={n} className="h-44 bg-white border border-[#E4E4E7]" />)}
                 </div>
               ) : myServices.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {myServices.map((service) => (
-                    <div key={service.id} className="bg-white border border-slate-border rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:shadow-md transition-all">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-start">
-                          <span className={`px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-wider ${PROCESS_COLORS[service.process_type] || 'bg-cobalt/5 text-cobalt border-cobalt/10'}`}>
-                            {service.process_type}
-                          </span>
-                          <span className="text-[9px] text-slate-text-muted font-bold flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> {service.lead_time}
+                    <div key={service.id} className="bg-white border border-[#E4E4E7] overflow-hidden flex flex-col justify-between hover:border-[#0F172A] transition-all relative">
+                      <div className="h-28 bg-[#F8FAFC] border-b border-[#E4E4E7]/60 flex items-center justify-center relative">
+                        <div className={`w-full h-full bg-gradient-to-br ${
+                          service.process_type === 'CNC Machining' ? 'from-blue-600/10 to-indigo-600/5'
+                          : service.process_type === '3D Printing' ? 'from-violet-500/10 to-purple-500/5'
+                          : service.process_type === 'Sheet Metal' ? 'from-amber-500/10 to-orange-500/5'
+                          : 'from-red-500/10 to-pink-500/5'
+                        } flex items-center justify-center`}>
+                          <Settings className="w-8 h-8 text-[#0F172A] opacity-25" />
+                        </div>
+                        <div className="absolute top-2 right-2">
+                          <span className="bg-[#0F172A] text-white text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider font-semibold">
+                            {service.lead_time}
                           </span>
                         </div>
-                        <h3 className="text-sm font-black text-slate-text-primary leading-tight">{service.title}</h3>
-                        <p className="text-[11px] text-slate-text-secondary leading-relaxed line-clamp-2">{service.description}</p>
+                        <div className="absolute top-2 left-2">
+                          <span className={`text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider border font-semibold ${
+                            service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-750 border-blue-500/20'
+                            : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-750 border-violet-500/20'
+                            : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-750 border-amber-500/20'
+                            : 'bg-red-500/10 text-red-750 border-red-500/20'
+                          }`}>
+                            {service.process_type}
+                          </span>
+                        </div>
                       </div>
-                      <div className="pt-3 border-t border-slate-border/40 flex items-center justify-between">
-                        <span className="text-sm font-black text-coral">₹{Number(service.base_price).toLocaleString('en-IN')}</span>
-                        <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/8 border border-emerald-500/15 px-2 py-1 rounded-full uppercase tracking-wide">
-                          Active
-                        </span>
+                      <div className="p-5 flex flex-col flex-1">
+                        <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] leading-tight mb-2">
+                          {service.title}
+                        </h4>
+                        <p className="text-xs text-[#45464d] line-clamp-2 mb-4 leading-relaxed">{service.description}</p>
+                        <div className="flex items-center justify-between pt-4 border-t border-[#E4E4E7] mt-auto">
+                          <span className="font-['Space_Grotesk'] text-sm font-bold text-coral">
+                            ₹{Number(service.base_price).toLocaleString('en-IN')}
+                          </span>
+                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/8 border border-emerald-500/15 px-2 py-0.5 rounded uppercase tracking-wide">
+                            Active
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-14 border border-dashed border-slate-border rounded-2xl bg-white space-y-3">
-                  <Package className="w-10 h-10 text-slate-text-muted/20 mx-auto" />
-                  <div>
-                    <p className="text-sm font-bold text-slate-text-primary">No services listed yet</p>
-                    <p className="text-xs text-slate-text-muted mt-1">Click "List New Service" above to publish your first machining capability.</p>
-                  </div>
-                  <button onClick={() => setShowListingModal(true)} className="btn-cobalt text-xs font-bold px-4 py-2.5 rounded-lg inline-flex items-center gap-1.5 cursor-pointer">
-                    <Plus className="w-3.5 h-3.5" /> List First Service
+                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
+                  <Package className="w-12 h-12 text-[#76777d]/20 mx-auto" />
+                  <h3 className="text-sm font-bold text-[#0F172A]">No capabilities listed yet</h3>
+                  <p className="text-xs text-[#45464d]">List your manufacturing services so buyers can submit CAD files for quoting.</p>
+                  <button onClick={() => setShowListingModal(true)} className="mt-2 py-2.5 px-5 border border-[#0F172A] text-[#0F172A] font-bold text-xs hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer inline-flex items-center gap-1.5 bg-[#0f172a] text-white">
+                    <Plus className="w-3.5 h-3.5" /> List Service Capability
                   </button>
                 </div>
               )}
             </div>
+          )}
 
-            {/* Incoming RFQs */}
-            <div className="space-y-5">
-              <h2 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">Incoming Quote Requests</h2>
-
+          {activeView === 'seller' && sellerTab === 'incoming' && (
+            <div className="space-y-4">
               {loadingQuotes ? (
-                <div className="h-40 bg-white border border-slate-border rounded-2xl animate-pulse" />
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
+                  {[1, 2, 3].map(n => <div key={n} className="h-44 bg-white border border-[#E4E4E7]" />)}
+                </div>
               ) : sellerQuotes.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {sellerQuotes.map((quote) => (
-                    <div key={quote.id} className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-4 hover:shadow-md transition-all">
-                      <div className="flex justify-between items-start gap-2 pb-3 border-b border-slate-border/40">
-                        <div className="min-w-0">
-                          <span className={`inline-block px-2 py-0.5 rounded border text-[8px] font-black uppercase ${PROCESS_COLORS[quote.process_type || ''] || 'bg-cobalt/5 text-cobalt border-cobalt/10'}`}>
+                    <div key={quote.id} className="bg-white border border-[#E4E4E7] p-5 flex flex-col justify-between space-y-4 hover:border-[#0F172A] transition-all relative">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start gap-2">
+                          <span className={`text-[9px] font-mono px-1.5 py-0.5 uppercase border font-semibold ${
+                            quote.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-750 border-blue-500/20'
+                            : quote.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-750 border-violet-500/20'
+                            : quote.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-750 border-amber-500/20'
+                            : 'bg-red-500/10 text-red-750 border-red-500/20'
+                          }`}>
                             {quote.process_type}
                           </span>
-                          <p className="font-mono text-[10px] font-black text-slate-text-primary mt-1.5 truncate flex items-center gap-1">
-                            <File className="w-3 h-3 shrink-0" /> {quote.cad_file_name}
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-mono uppercase border font-bold ${
+                            quote.status === 'Accepted' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+                            : quote.status === 'Offered' ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
+                            : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                          }`}>
+                            {quote.status}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] leading-tight">
+                            {quote.service_title}
+                          </h4>
+                          <p className="font-mono text-[10px] text-slate-text-muted mt-1.5 flex items-center gap-1 truncate font-semibold">
+                            <File className="w-3.5 h-3.5 text-[#76777d] shrink-0" /> {quote.cad_file_name}
                           </p>
                         </div>
-                        <span className={`shrink-0 px-2 py-0.5 rounded-full text-[8px] font-black uppercase border ${
-                          quote.status === 'Accepted' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                          : quote.status === 'Offered' ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
-                          : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                        }`}>
-                          {quote.status}
-                        </span>
-                      </div>
 
-                      <div className="space-y-1.5 text-[11px] text-slate-text-secondary">
-                        <div>Buyer: <span className="font-bold text-slate-text-primary">{quote.buyer_name}</span></div>
-                        <div>Service: <span className="font-semibold">{quote.service_title}</span></div>
+                        <div className="space-y-1 text-[11px] text-[#45464d] font-semibold border-t border-[#E4E4E7]/60 pt-2">
+                          <div>Buyer: <span className="font-bold text-[#0F172A]">{quote.buyer_name}</span></div>
+                        </div>
+
+                        {quote.status === 'Offered' && quote.offer_price && (
+                          <div className="bg-[#F8FAFC] border border-[#E4E4E7] p-2.5 rounded text-[10px] font-semibold text-[#45464d]">
+                            Offer sent: <span className="font-bold text-coral">₹{Number(quote.offer_price).toLocaleString('en-IN')}</span>
+                          </div>
+                        )}
+
+                        {quote.status === 'Accepted' && (
+                          <div className="bg-emerald-500/8 border border-emerald-500/15 p-2.5 rounded text-[10px] text-emerald-600 font-bold flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5" /> Accepted by Buyer
+                          </div>
+                        )}
                       </div>
 
                       {quote.status === 'Pending' && (
@@ -777,64 +961,142 @@ export default function MachiningMarketplacePage() {
                             setOfferMaterial(service?.material_capabilities[0] || 'Aluminium 6061');
                             setOfferFinish(service?.finish_options[0] || 'As-Machined');
                           }}
-                          className="btn-cobalt text-xs font-bold py-2.5 w-full rounded-xl text-center cursor-pointer flex items-center justify-center gap-1.5"
+                          className="w-full bg-[#0F172A] hover:bg-[#06B6D4] text-white py-2.5 rounded font-bold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                         >
                           <Send className="w-3.5 h-3.5" /> Send Price Quote
                         </button>
-                      )}
-
-                      {quote.status === 'Offered' && quote.offer_price && (
-                        <div className="bg-slate-bg/50 border border-slate-border p-2.5 rounded-xl text-[10px] text-slate-text-secondary font-semibold">
-                          Offer sent: <span className="text-xs font-bold text-coral">₹{Number(quote.offer_price).toLocaleString('en-IN')}</span>
-                        </div>
-                      )}
-
-                      {quote.status === 'Accepted' && (
-                        <div className="bg-emerald-500/8 border border-emerald-500/15 p-2.5 rounded-xl text-[10px] text-emerald-600 font-bold flex items-center gap-1.5">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Offer accepted by buyer
-                        </div>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-14 border border-dashed border-slate-border rounded-2xl bg-white">
-                  <ShoppingBag className="w-10 h-10 text-slate-text-muted/20 mx-auto mb-3" />
-                  <p className="text-sm font-bold text-slate-text-primary">No incoming requests yet</p>
-                  <p className="text-xs text-slate-text-muted mt-1">Buyers will appear here once they upload files to your services.</p>
+                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
+                  <ShoppingBag className="w-12 h-12 text-[#76777d]/20 mx-auto" />
+                  <p className="text-sm font-bold text-[#0F172A]">No incoming requests yet</p>
+                  <p className="text-xs text-[#45464d]">Buyers will appear here once they upload design files to your capabilities.</p>
                 </div>
               )}
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </main>
+      </div>
+
+      <Footer />
+
+      {/* ─── MOBILE FILTER DRAWER ─── */}
+      {/* Backdrop */}
+      <div
+        onClick={() => setShowFilterDrawer(false)}
+        className={`md:hidden fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm z-50 transition-opacity duration-300 ${showFilterDrawer ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+      />
+      {/* Drawer panel */}
+      <aside
+        className={`md:hidden fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white shadow-2xl z-[60] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${showFilterDrawer ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        {/* Drawer header */}
+        <div className="p-5 border-b border-[#E4E4E7] flex justify-between items-center bg-[#F8FAFC]">
+          <h2 className="font-['Space_Grotesk'] text-base font-semibold text-[#0F172A] flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4" />
+            Marketplace Filters
+          </h2>
+          <button onClick={() => setShowFilterDrawer(false)} className="p-1.5 hover:bg-[#E4E4E7] transition-colors cursor-pointer">
+            <X className="w-4 h-4 text-[#45464d]" />
+          </button>
+        </div>
+
+        {/* Drawer body */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          {/* Mode Selector for sellers */}
+          {profile?.is_seller && (
+            <section>
+              <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">View Mode</h3>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => { setActiveView('buyer'); setShowFilterDrawer(false); }}
+                  className={`px-3 py-2.5 border text-xs font-bold transition-all cursor-pointer text-center ${
+                    activeView === 'buyer'
+                      ? 'bg-[#0F172A] text-white border-[#0F172A]'
+                      : 'border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d]'
+                  }`}
+                >
+                  Buyer Hub
+                </button>
+                <button
+                  onClick={() => { setActiveView('seller'); setShowFilterDrawer(false); }}
+                  className={`px-3 py-2.5 border text-xs font-bold transition-all cursor-pointer text-center ${
+                    activeView === 'seller'
+                      ? 'bg-[#0F172A] text-white border-[#0F172A]'
+                      : 'border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d]'
+                  }`}
+                >
+                  Seller Hub
+                </button>
+              </div>
+            </section>
+          )}
+
+          {/* Process Category */}
+          <section>
+            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">Process</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {(['All', 'CNC Machining', '3D Printing', 'Sheet Metal', 'Laser Cutting'] as const).map(proc => (
+                <button
+                  key={proc}
+                  onClick={() => { setSelectedProcess(proc); setShowFilterDrawer(false); }}
+                  className={`px-3 py-2.5 border text-xs font-['JetBrains_Mono'] text-left transition-colors cursor-pointer ${
+                    selectedProcess === proc
+                      ? 'bg-[#0F172A] text-white border-[#0F172A]'
+                      : 'border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d]'
+                  }`}
+                >
+                  {proc}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* Sort By */}
+          <section>
+            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">Sort By</h3>
+            <select
+              value={sortBy}
+              onChange={e => { setSortBy(e.target.value); setShowFilterDrawer(false); }}
+              className="w-full bg-white border border-[#E4E4E7] px-3 py-2.5 text-xs font-['Inter'] text-[#45464d] focus:outline-none focus:border-[#06B6D4] transition-colors cursor-pointer font-semibold"
+            >
+              <option value="featured">Featured</option>
+              <option value="price-asc">Price: Low → High</option>
+              <option value="price-desc">Price: High → Low</option>
+            </select>
+          </section>
+        </div>
+      </aside>
 
       {/* ==========================================
           MODAL 1: BUYER GET QUOTE (File Upload)
           ========================================== */}
       {selectedService && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-border rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-5 animate-slide-in">
-            <div className="flex justify-between items-start">
+          <div className="bg-white border border-[#E4E4E7] rounded w-full max-w-lg shadow-xl p-5 space-y-4 animate-slide-in">
+            <div className="flex justify-between items-start border-b border-[#E4E4E7] pb-3">
               <div>
-                <span className={`inline-block px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${PROCESS_COLORS[selectedService.process_type] || ''}`}>
+                <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase tracking-wider ${PROCESS_COLORS[selectedService.process_type] || ''}`}>
                   {selectedService.process_type}
                 </span>
-                <h3 className="text-base font-black text-slate-text-primary tracking-tight mt-1">{selectedService.title}</h3>
-                <p className="text-xs text-slate-text-muted font-semibold">by {selectedService.seller_name}</p>
+                <h3 className="text-base font-bold text-[#0F172A] uppercase font-['Space_Grotesk'] tracking-tight mt-1">{selectedService.title}</h3>
+                <p className="text-[10px] text-[#76777d] uppercase font-bold font-mono">by {selectedService.seller_name}</p>
               </div>
               <button
                 onClick={() => { setSelectedService(null); setUploadedFile(null); }}
-                className="text-slate-text-muted hover:text-slate-text-primary cursor-pointer p-1 rounded-lg hover:bg-slate-bg transition-colors"
+                className="text-[#76777d] hover:text-[#0F172A] cursor-pointer p-1.5 rounded border border-[#E4E4E7] hover:bg-[#F8FAFC] transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
-
+ 
             <form onSubmit={handleQuoteSubmit} className="space-y-4">
               {/* Drop Zone */}
               <div>
-                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase mb-2">
+                <label className="block text-[10px] font-bold text-[#76777d] uppercase mb-1.5 font-mono">
                   Upload Design File (STEP, STL, IGES, DXF)
                 </label>
                 {!uploadedFile ? (
@@ -843,36 +1105,36 @@ export default function MachiningMarketplacePage() {
                     onDragLeave={() => setIsDragging(false)}
                     onDrop={handleFileDrop}
                     onClick={() => fileInputRef.current?.click()}
-                    className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
+                    className={`border border-dashed rounded p-6 text-center cursor-pointer transition-all ${
                       isDragging 
-                        ? 'border-cobalt bg-cobalt/5' 
-                        : 'border-slate-border bg-slate-bg/30 hover:border-cobalt/50 hover:bg-cobalt/3'
+                        ? 'border-[#06b6d4] bg-[#06b6d4]/5' 
+                        : 'border-[#E4E4E7] bg-[#F8FAFC]/50 hover:border-[#06b6d4] hover:bg-[#F8FAFC]'
                     }`}
                   >
-                    <Upload className={`w-8 h-8 mx-auto mb-2.5 transition-colors ${isDragging ? 'text-cobalt' : 'text-slate-text-muted/40'}`} />
-                    <p className="text-xs font-bold text-slate-text-primary">
+                    <Upload className={`w-6 h-6 mx-auto mb-2 transition-colors ${isDragging ? 'text-[#06b6d4]' : 'text-[#76777d]/60'}`} />
+                    <p className="text-xs font-bold text-[#0F172A]">
                       {isDragging ? 'Drop to upload' : 'Drag & drop your design file'}
                     </p>
-                    <p className="text-[10px] text-slate-text-muted mt-1">or <span className="text-cobalt font-bold">browse from your computer</span></p>
-                    <p className="text-[9px] text-slate-text-muted/70 mt-2 font-semibold">STEP · STL · IGES · DXF · OBJ · PDF</p>
+                    <p className="text-[10px] text-[#76777d] mt-0.5">or <span className="text-[#06b6d4] font-bold">browse files</span></p>
+                    <p className="text-[8px] text-[#76777d]/75 mt-1.5 font-mono uppercase tracking-wider">STEP · STL · IGES · DXF · OBJ · PDF</p>
                   </div>
                 ) : (
-                  <div className="border border-slate-border rounded-xl p-4 bg-white flex items-center justify-between gap-3">
+                  <div className="border border-[#E4E4E7] rounded p-3 bg-white flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-lg bg-cobalt/8 border border-cobalt/15 flex items-center justify-center shrink-0">
-                        <File className="w-5 h-5 text-cobalt" />
+                      <div className="w-8 h-8 rounded bg-[#06b6d4]/8 border border-[#06b6d4]/20 flex items-center justify-center shrink-0">
+                        <File className="w-4 h-4 text-[#06b6d4]" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-black text-slate-text-primary truncate">{uploadedFile.name}</p>
-                        <p className="text-[10px] text-slate-text-muted font-semibold">{formatFileSize(uploadedFile.size)}</p>
+                        <p className="text-xs font-bold text-[#0F172A] truncate">{uploadedFile.name}</p>
+                        <p className="text-[10px] text-[#76777d] font-mono">{formatFileSize(uploadedFile.size)}</p>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => setUploadedFile(null)}
-                      className="text-slate-text-muted hover:text-red-500 cursor-pointer shrink-0 transition-colors"
+                      className="text-[#76777d] hover:text-red-500 cursor-pointer shrink-0 transition-colors p-1"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 )}
@@ -884,23 +1146,23 @@ export default function MachiningMarketplacePage() {
                   onChange={handleFileSelect}
                 />
               </div>
-
-              <div className="bg-blue-500/4 border border-blue-500/12 p-3.5 rounded-xl text-[10px] text-slate-text-secondary font-semibold leading-relaxed">
-                <div className="text-cobalt flex items-center gap-1.5 mb-1.5 font-black">
-                  <Info className="w-3.5 h-3.5" /> How it works
+ 
+              <div className="bg-[#F8FAFC] border border-[#E4E4E7] p-3.5 rounded text-[10px] text-[#45464d] leading-relaxed">
+                <div className="text-[#06b6d4] flex items-center gap-1.5 mb-1 font-bold font-mono uppercase tracking-wider">
+                  <Info className="w-3.5 h-3.5" /> Request Process
                 </div>
-                Your file is shared with the seller. They review your design geometry, recommend optimal material & finish, and send a custom price quote. You then choose to accept or not.
+                Your design model will be shared securely with this manufacturer. They will analyze geometric tolerances, recommend optimal materials, and send you a mechatronic RFQ quote.
               </div>
-
+ 
               <button
                 type="submit"
                 disabled={submittingQuote || !uploadedFile}
-                className="w-full btn-cobalt py-3.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 disabled:opacity-50"
               >
                 {submittingQuote ? (
-                  <><RotateCcw className="w-4 h-4 animate-spin" /> Submitting...</>
+                  <><RotateCcw className="w-3.5 h-3.5 animate-spin" /> Submitting Request...</>
                 ) : (
-                  <><Send className="w-4 h-4" /> Send Design & Request Quote</>
+                  <><Send className="w-3.5 h-3.5" /> Send Design & Request Quote</>
                 )}
               </button>
             </form>
@@ -913,7 +1175,7 @@ export default function MachiningMarketplacePage() {
           ========================================== */}
       {showListingModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-border rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-5 animate-slide-in max-h-[90vh] overflow-y-auto">
+          <div className="bg-white border border-[#E4E4E7] rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-5 animate-slide-in max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-base font-black text-slate-text-primary">List New Machining Service</h3>
@@ -936,7 +1198,7 @@ export default function MachiningMarketplacePage() {
                   placeholder="e.g. 5-Axis Precision Aluminum Milling"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-cobalt/40 transition-colors"
+                  className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40 transition-colors"
                 />
               </div>
 
@@ -963,7 +1225,7 @@ export default function MachiningMarketplacePage() {
                     min={1}
                     value={newBasePrice}
                     onChange={(e) => setNewBasePrice(Number(e.target.value))}
-                    className="w-full p-3 border border-slate-border rounded-xl bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-cobalt/40"
+                    className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40"
                   />
                 </div>
               </div>
@@ -976,7 +1238,7 @@ export default function MachiningMarketplacePage() {
                   placeholder="e.g. 4 business days"
                   value={newLeadTime}
                   onChange={(e) => setNewLeadTime(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-cobalt/40"
+                  className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40"
                 />
               </div>
 
@@ -987,7 +1249,7 @@ export default function MachiningMarketplacePage() {
                   placeholder="e.g. Aluminium 6061, Stainless Steel 316, Brass"
                   value={newMaterials}
                   onChange={(e) => setNewMaterials(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-cobalt/40"
+                  className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40"
                 />
               </div>
 
@@ -998,7 +1260,7 @@ export default function MachiningMarketplacePage() {
                   placeholder="e.g. As-Machined, Bead Blasted, Anodized"
                   value={newFinishes}
                   onChange={(e) => setNewFinishes(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-cobalt/40"
+                  className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40"
                 />
               </div>
 
@@ -1010,7 +1272,7 @@ export default function MachiningMarketplacePage() {
                   placeholder="Explain your capabilities, tolerances, equipment, and quality standards..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-slate-bg/30 text-slate-text-primary resize-none focus:outline-none focus:border-cobalt/40"
+                  className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary resize-none focus:outline-none focus:border-cobalt/40"
                 />
               </div>
 
@@ -1035,10 +1297,10 @@ export default function MachiningMarketplacePage() {
           ========================================== */}
       {quotingItem && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-border rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-5 animate-slide-in">
+          <div className="bg-white border border-[#E4E4E7] rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-5 animate-slide-in">
             <div className="flex justify-between items-start">
               <div>
-                <span className="text-[8px] font-black uppercase tracking-widest text-cobalt">Submit Price Quote</span>
+                <span className="text-[8px] font-black uppercase tracking-widest text-[#06B6D4]">Submit Price Quote</span>
                 <h3 className="text-base font-black text-slate-text-primary tracking-tight mt-0.5 flex items-center gap-2">
                   <File className="w-4 h-4 text-slate-text-muted" /> {quotingItem.cad_file_name}
                 </h3>
@@ -1089,7 +1351,7 @@ export default function MachiningMarketplacePage() {
                     min={1}
                     value={offerQuantity}
                     onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
-                    className="w-full p-3 border border-slate-border rounded-xl bg-slate-bg/30 text-slate-text-primary focus:outline-none"
+                    className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none"
                   />
                 </div>
 
@@ -1102,7 +1364,7 @@ export default function MachiningMarketplacePage() {
                     value={offerPrice || ''}
                     placeholder="0"
                     onChange={(e) => setOfferPrice(Number(e.target.value))}
-                    className="w-full p-3 border border-slate-border rounded-xl bg-slate-bg/30 text-slate-text-primary focus:outline-none"
+                    className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none"
                   />
                 </div>
               </div>
@@ -1115,7 +1377,7 @@ export default function MachiningMarketplacePage() {
                   placeholder="Explain tolerance checks, toolpath analysis, or recommend design changes..."
                   value={sellerNotes}
                   onChange={(e) => setSellerNotes(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-slate-bg/30 text-slate-text-primary resize-none focus:outline-none"
+                  className="w-full p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary resize-none focus:outline-none focus:border-cobalt/40"
                 />
               </div>
 
@@ -1134,8 +1396,182 @@ export default function MachiningMarketplacePage() {
           </div>
         </div>
       )}
-
-      <Footer />
     </div>
+  );
+}
+
+interface ServiceCardProps {
+  service: MachiningService;
+  onGetQuote: (service: MachiningService) => void;
+}
+
+function ServiceCard({ service, onGetQuote }: ServiceCardProps) {
+  const gradientClass =
+    service.process_type === 'CNC Machining'
+      ? 'from-blue-600/20 to-indigo-600/5'
+      : service.process_type === '3D Printing'
+      ? 'from-violet-500/20 to-purple-500/5'
+      : service.process_type === 'Sheet Metal'
+      ? 'from-amber-500/20 to-orange-500/5'
+      : 'from-red-500/20 to-pink-500/5';
+
+  const ProcessIcon =
+    service.process_type === 'CNC Machining'
+      ? Settings
+      : service.process_type === '3D Printing'
+      ? Layers
+      : service.process_type === 'Sheet Metal'
+      ? SlidersHorizontal
+      : Zap;
+
+  return (
+    <>
+      {/* ─── DESKTOP CARD (portrait) ─── */}
+      <div
+        onClick={() => onGetQuote(service)}
+        className="hidden md:flex flex-col bg-white border border-[#E4E4E7] overflow-hidden cursor-pointer group
+          transition-all duration-205 hover:border-[#06B6D4] relative"
+        style={{ boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)', transition: 'transform 0.2s ease, border-color 0.2s ease' }}
+        onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-4px)')}
+        onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
+      >
+        {/* Visual representation / icon header */}
+        <div className="h-40 bg-[#F8FAFC] overflow-hidden relative border-b border-[#E4E4E7]/60">
+          <div className={`w-full h-full bg-gradient-to-br ${gradientClass} group-hover:scale-105 transition-transform duration-500 flex items-center justify-center`}>
+            <ProcessIcon className="w-12 h-12 text-[#0F172A] opacity-25 group-hover:rotate-12 transition-transform duration-500" />
+          </div>
+          {/* Lead time badge */}
+          <div className="absolute top-2 right-2">
+            <span className="bg-[#0F172A] text-white text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider flex items-center gap-1 font-bold">
+              <Clock className="w-2.5 h-2.5" /> {service.lead_time}
+            </span>
+          </div>
+          {/* Process type badge */}
+          <div className="absolute top-2 left-2">
+            <span className={`text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider border font-bold ${
+              service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-700 border-blue-500/20'
+              : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-700 border-violet-500/20'
+              : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-700 border-amber-500/20'
+              : 'bg-red-500/10 text-red-700 border-red-500/20'
+            }`}>
+              {service.process_type}
+            </span>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="p-5 flex flex-col flex-1">
+          <div className="mb-3">
+            <h3 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] leading-tight group-hover:text-[#06B6D4] transition-colors line-clamp-1">
+              {service.title}
+            </h3>
+            <p className="text-[10px] text-slate-text-muted mt-0.5 font-semibold">by {service.seller_name}</p>
+          </div>
+
+          <p className="text-xs text-[#45464d] line-clamp-2 leading-relaxed mb-4">{service.description}</p>
+
+          {/* Specs / Capability grid */}
+          <div className="grid grid-cols-2 gap-y-2.5 mb-4 border-t border-[#E4E4E7]/60 pt-3">
+            <div>
+              <p className="font-['JetBrains_Mono'] text-[9px] text-[#76777d] uppercase tracking-wider mb-0.5">Materials</p>
+              <p className="font-['Inter'] text-xs text-[#1b1b1d] truncate pr-2 font-semibold" title={service.material_capabilities.join(', ')}>
+                {service.material_capabilities.slice(0, 2).join(', ')}
+                {service.material_capabilities.length > 2 && '...'}
+              </p>
+            </div>
+            <div>
+              <p className="font-['JetBrains_Mono'] text-[9px] text-[#76777d] uppercase tracking-wider mb-0.5">Finishes</p>
+              <p className="font-['Inter'] text-xs text-[#1b1b1d] truncate pr-2 font-semibold" title={service.finish_options.join(', ')}>
+                {service.finish_options.slice(0, 2).join(', ')}
+                {service.finish_options.length > 2 && '...'}
+              </p>
+            </div>
+          </div>
+
+          {/* Setup Fee + CTA */}
+          <div className="flex items-center justify-between pt-4 border-t border-[#E4E4E7] mt-auto">
+            <div>
+              <p className="text-[9px] font-['Inter'] text-[#45464d] uppercase tracking-wider mb-0.5">Setup Fee</p>
+              <p className="font-['Space_Grotesk'] text-sm font-bold text-[#0F172A]">
+                ₹{Number(service.base_price).toLocaleString('en-IN')}
+              </p>
+            </div>
+            <button
+              onClick={e => { e.stopPropagation(); onGetQuote(service); }}
+              className="px-3.5 py-2 bg-[#0F172A] text-white hover:bg-[#06B6D4] transition-colors flex items-center justify-center gap-1.5 font-bold text-xs font-['Inter'] cursor-pointer"
+            >
+              <span>Get Quote</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── MOBILE CARD (horizontal) ─── */}
+      <div
+        onClick={() => onGetQuote(service)}
+        className="md:hidden flex bg-white border border-[#E4E4E7] overflow-hidden cursor-pointer product-card-mobile active:scale-[0.98] transition-transform w-full"
+      >
+        {/* Left: visual 1/3 */}
+        <div className="w-1/3 relative bg-[#F8FAFC] border-r border-[#E4E4E7] shrink-0">
+          <div className={`w-full h-full min-h-[120px] bg-gradient-to-br ${gradientClass} flex items-center justify-center`}>
+            <ProcessIcon className="w-8 h-8 text-[#0F172A] opacity-20" />
+          </div>
+          {/* Badges */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            <span className="bg-[#0F172A] text-white text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider">
+              {service.process_type.slice(0, 4).toUpperCase()}
+            </span>
+            <span className="bg-[#10B981] text-white text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider">
+              {service.lead_time.split(' ')[0]} DAYS
+            </span>
+          </div>
+        </div>
+
+        {/* Right: details 2/3 */}
+        <div className="w-2/3 p-3 flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-start mb-0.5">
+              <span className="font-['JetBrains_Mono'] text-[9px] text-[#45464d] uppercase tracking-widest truncate max-w-[100px] font-bold">
+                by {service.seller_name}
+              </span>
+              <span className="font-['JetBrains_Mono'] text-[10px] font-semibold text-[#0F172A]">
+                ₹{Number(service.base_price).toLocaleString('en-IN')}
+              </span>
+            </div>
+            <h3 className="font-['Space_Grotesk'] text-xs font-semibold text-[#0F172A] leading-tight mb-2">
+              {service.title}
+            </h3>
+
+            {/* Spec grid */}
+            <div className="grid grid-cols-2 gap-y-1.5 mb-3">
+              <div>
+                <p className="font-['JetBrains_Mono'] text-[8px] text-[#45464d] uppercase">Materials</p>
+                <p className="font-['JetBrains_Mono'] text-[9px] font-semibold text-[#1b1b1d] truncate">
+                  {service.material_capabilities.slice(0, 2).join(', ')}
+                </p>
+              </div>
+              <div>
+                <p className="font-['JetBrains_Mono'] text-[8px] text-[#45464d] uppercase">Finishes</p>
+                <p className="font-['JetBrains_Mono'] text-[9px] font-semibold text-[#1b1b1d] truncate">
+                  {service.finish_options.slice(0, 2).join(', ')}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom: actions */}
+          <div className="flex items-center justify-end pt-2 border-t border-[#E4E4E7]/50">
+            <button
+              onClick={e => { e.stopPropagation(); onGetQuote(service); }}
+              className="bg-[#0F172A] text-white px-2.5 py-1 text-[10px] font-bold flex items-center gap-1 active:scale-95 transition-transform cursor-pointer"
+            >
+              <span>Get Quote</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

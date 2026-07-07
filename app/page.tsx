@@ -26,6 +26,8 @@ import {
   Settings,
   Upload,
   Clock,
+  Layers,
+  Sparkles,
 } from 'lucide-react';
 
 function shuffle<T>(arr: T[]): T[] {
@@ -75,12 +77,12 @@ export default function Home() {
             { icon: Package, color: 'text-emerald', bg: 'bg-emerald/10', label: 'Same-Day Dispatch', desc: 'Orders placed before 2 PM ship today' },
             { icon: CheckCircle2, color: 'text-coral', bg: 'bg-coral/10', label: 'Quality Certified', desc: 'ISO 9001:2015 & RoHS compliant parts' },
           ].map(({ icon: Icon, color, bg, label, desc }) => (
-            <div key={label} className="flex items-center gap-3 p-2 bg-white/40 border border-slate-border/50 rounded-xl">
+            <div key={label} className="flex items-center gap-3 p-2 bg-white/40 border border-[#E4E4E7] rounded-xl">
               <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
                 <Icon className={`w-4 h-4 ${color}`} />
               </div>
               <div className="text-left">
-                <span className="block text-xs font-bold text-slate-text-primary leading-tight">{label}</span>
+                <span className="block text-xs font-bold text-[#0F172A] leading-tight">{label}</span>
                 <span className="block text-[10px] text-slate-text-muted">{desc}</span>
               </div>
             </div>
@@ -101,8 +103,9 @@ export default function Home() {
           </div>
           <div className="space-y-1 px-2">
             <span className="block text-lg font-mono font-black text-amber-500">25 BOLTS SIGN-IN BONUS</span>
-            <p className="text-[11px] text-slate-text-secondary leading-relaxed font-semibold">
+            <p className="text-[11px] text-[#45464d] leading-relaxed font-semibold">
               Create your Shopper Account today. Get 25 Bolts instantly to redeem as discount at checkout!
+              Our points expire in 45 days.
             </p>
           </div>
         </div>
@@ -121,7 +124,7 @@ export default function Home() {
           </div>
           <div className="space-y-1 px-2">
             <span className="block text-xs font-black uppercase text-emerald leading-tight">High-Torque Actuators</span>
-            <p className="text-[11px] text-slate-text-secondary leading-relaxed font-semibold">
+            <p className="text-[11px] text-[#45464d] leading-relaxed font-semibold">
               Closed-loop steppers, NEMA motors, and high-performance servo controllers. Complete stock with detailed specifications!
             </p>
           </div>
@@ -141,7 +144,7 @@ export default function Home() {
           </div>
           <div className="space-y-1 px-2">
             <span className="block text-xs font-black uppercase text-purple-500 leading-tight">Makers &amp; Industrial controllers</span>
-            <p className="text-[11px] text-slate-text-secondary leading-relaxed font-semibold">
+            <p className="text-[11px] text-[#45464d] leading-relaxed font-semibold">
               ESP32 modules, Arduino boards, lidar modules, and visual sensor shields. All items include fully validated datasheets!
             </p>
           </div>
@@ -161,12 +164,12 @@ export default function Home() {
             { icon: Settings, color: 'text-blue-600', bg: 'bg-blue-500/10', label: 'CNC, 3D Print, Laser Cut', desc: 'Multiple processes, one platform' },
             { icon: CheckCircle2, color: 'text-emerald', bg: 'bg-emerald/10', label: 'Seller Sends You a Quote', desc: 'Accept when the price suits you' },
           ].map(({ icon: Icon, color, bg, label, desc }) => (
-            <div key={label} className="flex items-center gap-3 p-2 bg-white/40 border border-slate-border/50 rounded-xl">
+            <div key={label} className="flex items-center gap-3 p-2 bg-white/40 border border-[#E4E4E7] rounded-xl">
               <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
                 <Icon className={`w-4 h-4 ${color}`} />
               </div>
               <div className="text-left">
-                <span className="block text-xs font-bold text-slate-text-primary leading-tight">{label}</span>
+                <span className="block text-xs font-bold text-[#0F172A] leading-tight">{label}</span>
                 <span className="block text-[10px] text-slate-text-muted">{desc}</span>
               </div>
             </div>
@@ -206,8 +209,8 @@ export default function Home() {
 
         setAllParts(mappedParts);
         setAllServices(servicesData || []);
-        setDisplayedParts(shuffle(mappedParts).slice(0, 5));
-        setDisplayedServices(shuffle(servicesData || []).slice(0, 5));
+        setDisplayedParts(shuffle(mappedParts).slice(0, 4));
+        setDisplayedServices(shuffle(servicesData || []).slice(0, 4));
         setDisplayedMachining((machiningData || []).map((s: any) => ({
           ...s,
           seller_name: s.profiles?.full_name || 'Expert Maker'
@@ -222,97 +225,99 @@ export default function Home() {
   }, []);
 
   const handleShuffle = useCallback(() => {
-    setDisplayedParts(shuffle(allParts).slice(0, 5));
-    setDisplayedServices(shuffle(allServices).slice(0, 5));
+    setDisplayedParts(shuffle(allParts).slice(0, 4));
+    setDisplayedServices(shuffle(allServices).slice(0, 4));
     setShuffleKey(k => k + 1);
   }, [allParts, allServices]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans flex flex-col">
+    <div className="min-h-screen bg-[#F8FAFC] text-[#1b1b1d] font-sans flex flex-col overflow-x-clip">
       <Navbar />
 
-      <main className="flex-1">
-        {/* HERO */}
-        <section className="relative overflow-hidden bg-white border-b border-slate-border">
-          {/* Background blobs */}
-          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-cobalt/8 to-emerald/5 rounded-full blur-3xl pointer-events-none -mr-40 -mt-40" />
-          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-emerald/5 to-cobalt/5 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
+      <main className="flex-1 mt-0">
+        {/* HERO WITH BLUEPRINT GRID */}
+        <section 
+          className="relative overflow-hidden bg-white border-b border-[#E4E4E7] min-h-[calc(100vh-3.5rem)] md:h-[calc(100vh-3.5rem)] flex items-center justify-center mt-0"
+          style={{
+            backgroundImage: 'linear-gradient(to right, rgba(6,182,212,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(6,182,212,0.03) 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        >
+          {/* Background blur blobs */}
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-cobalt/5 to-emerald/3 rounded-full blur-3xl pointer-events-none -mr-40 -mt-40" />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-emerald/3 to-cobalt/3 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
-          <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 flex flex-col md:flex-row items-center gap-16 relative z-10" style={{ paddingTop: '20px' }}>
+          <div className="max-w-7xl mx-auto px-6 py-8 md:py-0 w-full flex flex-col md:flex-row items-center gap-8 md:gap-16 relative z-10">
             <div className="flex-1 space-y-8">
-              {/* <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cobalt/5 border border-cobalt/15 text-cobalt text-[11px] font-bold">
-                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cobalt opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-cobalt"></span>
-                </span>
-                ISO 9001:2015 Certified · Free Shipping above ₹5,000
-              </div>*/}
-
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-text-primary leading-[1.02]">
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-[#0F172A] leading-[1.05] font-['Space_Grotesk']">
                 Shop Premium<br />
                 <span className="bg-gradient-to-r from-cobalt via-blue-500 to-emerald bg-clip-text text-transparent">
                   Mechatronic Hardware
                 </span>
               </h1>
 
-              <p className="text-base md:text-lg text-slate-text-secondary max-w-xl font-medium leading-relaxed">
+              <p className="text-sm md:text-base text-[#45464d] max-w-xl font-medium leading-relaxed">
                 Buy actuators, sensors, controllers, and premium components for makers, engineers, and businesses. Same-day dispatch and quality verification on all items.
               </p>
 
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-4 pt-2">
                 <Link
                   href="/products"
-                  className="btn-cobalt px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer shadow-lg"
+                  className="bg-[#0F172A] hover:bg-[#06B6D4] text-white px-7 py-3.5 rounded font-bold text-xs flex items-center gap-2 cursor-pointer transition-colors shadow-lg shadow-slate-900/10 font-['JetBrains_Mono'] uppercase tracking-wider"
                 >
                   <span>Shop All Parts</span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
                 <Link
                   href="/machining"
-                  className="btn-secondary px-7 py-3.5 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer"
+                  className="bg-white border border-[#E4E4E7] hover:border-[#0F172A] text-[#0F172A] px-7 py-3.5 rounded font-bold text-xs flex items-center gap-2 cursor-pointer transition-colors font-['JetBrains_Mono'] uppercase tracking-wider"
                 >
                   <Settings className="w-4 h-4" />
                   <span>Get Custom Parts</span>
                 </Link>
               </div>
 
-              {/* Stats */}
-              <div className="border-t border-slate-border/60 pt-8 grid grid-cols-3 gap-8">
+              {/* Stats Grid */}
+              <div className="border-t border-[#E4E4E7] pt-8 grid grid-cols-3 gap-8">
                 <div>
-                  <span className="block text-2xl md:text-3xl font-extrabold text-cobalt">2 - 4 days</span>
-                  <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold mt-0.5">Avg. Delivery</span>
+                  <span className="block text-2xl md:text-3xl font-bold text-cobalt font-['Space_Grotesk']">2 - 4 Days</span>
+                  <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold font-mono mt-0.5">Avg. Delivery</span>
                 </div>
                 <div>
-                  <span className="block text-2xl md:text-3xl font-extrabold text-emerald">No Min.</span>
-                  <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold mt-0.5">Order 1 or 10,000 units</span>
+                  <span className="block text-2xl md:text-3xl font-bold text-emerald font-['Space_Grotesk']">No Min.</span>
+                  <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold font-mono mt-0.5">Order MOQ</span>
                 </div>
                 <div>
-                  <span className="block text-2xl md:text-3xl font-extrabold text-slate-text-primary">10,000+</span>
-                  <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold mt-0.5">Parts In Stock</span>
+                  <span className="block text-2xl md:text-3xl font-bold text-[#0F172A] font-['Space_Grotesk']">10,000+</span>
+                  <span className="block text-[9px] uppercase tracking-wider text-slate-text-muted font-bold font-mono mt-0.5">Parts in Stock</span>
                 </div>
               </div>
             </div>
 
-            {/* Hero card - Advertisement Carousel Panel */}
+            {/* Carousel Promo Panel */}
             <div className="w-full md:w-[460px] z-10 shrink-0 select-none">
-              <div className={`glassmorphism p-6 rounded-2xl border shadow-lg flex flex-col justify-between h-[360px] transition-all duration-500 bg-gradient-to-br ${adSlides[currentAdSlide].gradient}`}>
-                
+              <div 
+                className={`bg-white border border-[#E4E4E7] p-6 rounded-2xl shadow-lg flex flex-col justify-between h-[360px] transition-all duration-500 bg-gradient-to-br ${adSlides[currentAdSlide].gradient}`}
+                style={{
+                  boxShadow: '0 10px 15px -3px rgba(15,23,42,0.08), 0 4px 6px -4px rgba(15,23,42,0.08)',
+                }}
+              >
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-white/80 text-slate-text-secondary border border-slate-border shadow-sm">
+                  <span className="px-2.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-white border border-[#E4E4E7] text-[#45464d] font-mono shadow-sm">
                     {adSlides[currentAdSlide].badge}
                   </span>
                   <div className="flex items-center gap-1">
                     <button 
                       onClick={() => setCurrentAdSlide((prev) => (prev - 1 + AD_SLIDE_COUNT) % AD_SLIDE_COUNT)}
-                      className="p-1 rounded-md hover:bg-slate-bg/80 text-slate-text-secondary hover:text-slate-text-primary transition-colors cursor-pointer"
+                      className="p-1 rounded hover:bg-white/60 text-[#45464d] hover:text-[#0F172A] transition-colors cursor-pointer"
                       aria-label="Previous Slide"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
                     <button 
                       onClick={() => setCurrentAdSlide((prev) => (prev + 1) % AD_SLIDE_COUNT)}
-                      className="p-1 rounded-md hover:bg-slate-bg/80 text-slate-text-secondary hover:text-slate-text-primary transition-colors cursor-pointer"
+                      className="p-1 rounded hover:bg-white/60 text-[#45464d] hover:text-[#0F172A] transition-colors cursor-pointer"
                       aria-label="Next Slide"
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -322,7 +327,7 @@ export default function Home() {
 
                 {/* Content Area */}
                 <div className="flex-1 py-4 flex flex-col justify-center animate-slide-in">
-                  <h3 className="text-sm font-black text-slate-text-primary uppercase tracking-tight text-center mb-3">
+                  <h3 className="text-xs font-black text-[#0F172A] uppercase tracking-wider text-center mb-3 font-mono">
                     {adSlides[currentAdSlide].title}
                   </h3>
                   {adSlides[currentAdSlide].content}
@@ -333,7 +338,7 @@ export default function Home() {
                   {adSlides[currentAdSlide].link ? (
                     <Link
                       href={adSlides[currentAdSlide].link!}
-                      className="w-full btn-cobalt py-2.5 rounded-xl text-xs font-bold text-center flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                      className="w-full bg-[#0F172A] hover:bg-[#06B6D4] text-white py-2.5 rounded font-bold text-xs text-center flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-md font-['JetBrains_Mono'] uppercase tracking-wider"
                     >
                       <span>{adSlides[currentAdSlide].cta}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -341,7 +346,7 @@ export default function Home() {
                   ) : (
                     <button
                       onClick={adSlides[currentAdSlide].action}
-                      className="w-full btn-cobalt py-2.5 rounded-xl text-xs font-bold text-center flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                      className="w-full bg-[#0F172A] hover:bg-[#06B6D4] text-white py-2.5 rounded font-bold text-xs text-center flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-md font-['JetBrains_Mono'] uppercase tracking-wider"
                     >
                       <span>{adSlides[currentAdSlide].cta}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -356,8 +361,8 @@ export default function Home() {
                         onClick={() => setCurrentAdSlide(idx)}
                         className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                           currentAdSlide === idx
-                            ? 'bg-cobalt w-4'
-                            : 'w-1.5 bg-slate-text-muted/40 hover:bg-slate-text-muted/60'
+                            ? 'bg-[#0F172A] w-4'
+                            : 'w-1.5 bg-[#E4E4E7] hover:bg-slate-300'
                         }`}
                         aria-label={`Go to slide ${idx + 1}`}
                       />
@@ -370,24 +375,26 @@ export default function Home() {
           </div>
         </section>
 
-        {/* DISCOVER PRODUCTS */}
+        {/* FEATURED PRODUCTS SECTION */}
         <section className="max-w-7xl mx-auto px-6 py-16 space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-cobalt">Discover Today</span>
-              <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">Featured Products</h2>
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-cobalt bg-cobalt/5 border border-cobalt/15 px-3 py-1 rounded">
+                E-Commerce Catalog
+              </span>
+              <h2 className="text-3xl font-bold text-[#0F172A] tracking-tight font-['Space_Grotesk'] mt-2">Featured Products</h2>
               <p className="text-xs text-slate-text-muted font-medium">A curated selection of our in-stock mechatronics parts — refreshed every visit.</p>
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={handleShuffle}
-                className="btn-secondary px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer"
+                className="bg-white border border-[#E4E4E7] hover:border-[#0F172A] text-[#0F172A] px-4 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all font-['JetBrains_Mono'] uppercase tracking-wider"
               >
                 <Shuffle className="w-3.5 h-3.5" /> Shuffle
               </button>
               <Link
                 href="/products"
-                className="btn-cobalt px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer"
+                className="bg-[#0F172A] hover:bg-[#06B6D4] text-white px-4 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all font-['JetBrains_Mono'] uppercase tracking-wider"
               >
                 View Full Catalog <ArrowRight className="w-3.5 h-3.5" />
               </Link>
@@ -395,30 +402,36 @@ export default function Home() {
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 animate-pulse">
-              {[1, 2, 3, 4, 5].map(n => (
-                <div key={n} className="bg-slate-bg/30 border border-slate-border/50 rounded-xl p-5 h-72"></div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 animate-pulse">
+              {[1, 2, 3, 4].map(n => (
+                <div key={n} className="bg-white border border-[#E4E4E7] h-64">
+                  <div className="h-32 md:h-36 bg-[#F8FAFC]" />
+                  <div className="p-3 space-y-2">
+                    <div className="h-3 bg-[#E4E4E7] w-3/4" />
+                    <div className="h-2 bg-[#E4E4E7] w-1/2" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : displayedParts.length > 0 ? (
-            <div key={`parts-${shuffleKey}`} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+            <div key={`parts-${shuffleKey}`} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {displayedParts.map(part => (
                 <ProductCard key={part.id} part={part} onViewDetails={setSelectedPart} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 border border-dashed border-slate-border rounded-2xl bg-white">
-              <Cpu className="w-12 h-12 text-slate-text-muted/30 mx-auto mb-3" />
-              <p className="text-sm font-bold text-slate-text-primary">No products yet</p>
-              <p className="text-xs text-slate-text-muted">Products will appear here once added to the catalog.</p>
+            <div className="text-center py-16 border border-dashed border-[#E4E4E7] bg-white">
+              <Cpu className="w-12 h-12 text-[#76777d]/20 mx-auto mb-3" />
+              <p className="text-sm font-bold text-[#0F172A]">No products yet</p>
+              <p className="text-xs text-[#45464d]">Products will appear here once added to the catalog.</p>
             </div>
           )}
 
           {/* CTA strip */}
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center pt-2">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 text-sm font-bold text-cobalt hover:text-cobalt-hover transition-colors group"
+              className="inline-flex items-center gap-2 text-xs font-bold text-cobalt hover:text-cobalt-hover transition-colors group font-['JetBrains_Mono'] uppercase tracking-wider"
             >
               Explore all {allParts.length > 0 ? `${allParts.length}+` : ''} parts in our catalog
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -426,83 +439,139 @@ export default function Home() {
           </div>
         </section>
 
-
-
         {/* CUSTOM MANUFACTURING TEASER */}
-        <section className="max-w-7xl mx-auto px-6 py-16 space-y-8">
+        <section className="max-w-7xl mx-auto px-6 py-16 space-y-8 border-t border-[#E4E4E7]">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-orange-600">On-Demand Manufacturing</span>
-              <h2 className="text-3xl font-extrabold text-slate-text-primary tracking-tight">Custom Machining Hub</h2>
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-orange-600 bg-orange-500/5 border border-orange-500/15 px-3 py-1 rounded">
+                On-Demand Fabrication
+              </span>
+              <h2 className="text-3xl font-bold text-[#0F172A] tracking-tight font-['Space_Grotesk'] mt-2">Custom Machining Hub</h2>
               <p className="text-xs text-slate-text-muted font-medium">Upload your CAD files and get custom parts made by verified local machining services.</p>
             </div>
             <Link
               href="/machining"
-              className="btn-cobalt px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 cursor-pointer shrink-0"
+              className="bg-[#0F172A] hover:bg-[#06B6D4] text-white px-4 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors font-['JetBrains_Mono'] uppercase tracking-wider shrink-0"
             >
               Browse All Services <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* How it works strip */}
+          {/* How it works grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { icon: Upload, color: 'text-orange-600', bg: 'bg-orange-500/8 border-orange-500/15', step: '01', title: 'Upload Design File', desc: 'Share your STEP, STL, IGES, DXF, OBJ or PDF file directly with a seller.' },
-              { icon: Settings, color: 'text-cobalt', bg: 'bg-cobalt/8 border-cobalt/15', step: '02', title: 'Seller Reviews & Quotes', desc: 'The machining expert reviews your geometry and sends back a custom price quote.' },
-              { icon: CheckCircle2, color: 'text-emerald', bg: 'bg-emerald/8 border-emerald/15', step: '03', title: 'Accept & Get Parts Made', desc: 'Accept the offer when satisfied. Track your manufacturing order from your dashboard.' },
+              { icon: Upload, color: 'text-orange-600', bg: 'bg-orange-500/5 border-orange-500/12', step: '01', title: 'Upload Design File', desc: 'Share your STEP, STL, IGES, DXF, OBJ or PDF file directly with a seller.' },
+              { icon: Settings, color: 'text-cobalt', bg: 'bg-cobalt/5 border-cobalt/12', step: '02', title: 'Seller Reviews & Quotes', desc: 'The machining expert reviews your geometry and sends back a custom price quote.' },
+              { icon: CheckCircle2, color: 'text-emerald', bg: 'bg-emerald/5 border-emerald/12', step: '03', title: 'Accept & Get Parts Made', desc: 'Accept the offer when satisfied. Track your manufacturing order from your dashboard.' },
             ].map(({ icon: Icon, color, bg, step, title, desc }) => (
-              <div key={step} className={`bg-white border rounded-2xl p-5 space-y-3 hover:shadow-md transition-all ${bg}`}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${bg} border`}>
+              <div 
+                key={step} 
+                className={`bg-white border rounded p-6 space-y-4 hover:border-[#06B6D4] hover:-translate-y-0.5 transition-all duration-200 border-[#E4E4E7]`}
+                style={{ boxShadow: '0 4px 6px -1px rgba(15,23,42,0.02), 0 2px 4px -2px rgba(15,23,42,0.02)' }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className={`w-10 h-10 rounded flex items-center justify-center ${bg} border`}>
                     <Icon className={`w-5 h-5 ${color}`} />
                   </div>
-                  <span className="text-[10px] font-black text-slate-text-muted uppercase tracking-widest">Step {step}</span>
+                  <span className="text-[10px] font-bold text-[#76777d] font-mono uppercase tracking-widest">Step {step}</span>
                 </div>
-                <h3 className="text-sm font-black text-slate-text-primary">{title}</h3>
-                <p className="text-xs text-slate-text-secondary leading-relaxed">{desc}</p>
+                <div>
+                  <h3 className="text-sm font-semibold text-[#0F172A] font-['Space_Grotesk']">{title}</h3>
+                  <p className="text-xs text-[#45464d] leading-relaxed mt-1 font-semibold opacity-85">{desc}</p>
+                </div>
               </div>
             ))}
           </div>
 
           {/* Featured machining service cards */}
           {displayedMachining.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
               {displayedMachining.slice(0, 3).map((service: any) => {
-                const PROCESS_COLORS: Record<string, string> = {
-                  'CNC Machining': 'bg-blue-500/8 text-blue-600 border-blue-500/15',
-                  '3D Printing': 'bg-violet-500/8 text-violet-600 border-violet-500/15',
-                  'Sheet Metal': 'bg-amber-500/8 text-amber-600 border-amber-500/15',
-                  'Laser Cutting': 'bg-red-500/8 text-red-600 border-red-500/15',
-                };
+                const gradientClass =
+                  service.process_type === 'CNC Machining'
+                    ? 'from-blue-600/20 to-indigo-600/5'
+                    : service.process_type === '3D Printing'
+                    ? 'from-violet-500/20 to-purple-500/5'
+                    : service.process_type === 'Sheet Metal'
+                    ? 'from-amber-500/20 to-orange-500/5'
+                    : 'from-red-500/20 to-pink-500/5';
+
+                const ProcessIcon =
+                  service.process_type === 'CNC Machining'
+                    ? Settings
+                    : service.process_type === '3D Printing'
+                    ? Layers
+                    : service.process_type === 'Sheet Metal'
+                    ? Settings
+                    : Zap;
+
                 return (
-                  <Link href="/machining" key={service.id} className="bg-white border border-slate-border rounded-2xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all block group">
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-start gap-2">
-                        <span className={`px-2.5 py-1 rounded-lg border text-[9px] font-black uppercase tracking-wider ${PROCESS_COLORS[service.process_type] || 'bg-cobalt/5 text-cobalt border-cobalt/10'}`}>
-                          {service.process_type}
-                        </span>
-                        <span className="text-[9px] font-bold text-slate-text-muted flex items-center gap-1 shrink-0">
-                          <Clock className="w-3 h-3" /> {service.lead_time}
+                  <div 
+                    key={service.id} 
+                    onClick={() => setSelectedService(service)}
+                    className="bg-white border border-[#E4E4E7] overflow-hidden flex flex-col justify-between hover:border-[#06B6D4] hover:-translate-y-1 transition-all duration-200 cursor-pointer group relative"
+                    style={{
+                      boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)',
+                      transition: 'transform 0.2s ease, border-color 0.2s ease'
+                    }}
+                  >
+                    <div className="h-40 bg-[#F8FAFC] overflow-hidden relative border-b border-[#E4E4E7]/60">
+                      <div className={`w-full h-full bg-gradient-to-br ${gradientClass} group-hover:scale-105 transition-transform duration-500 flex items-center justify-center`}>
+                        <ProcessIcon className="w-12 h-12 text-[#0F172A] opacity-25 group-hover:rotate-12 transition-transform duration-500" />
+                      </div>
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-[#0F172A] text-white text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider font-bold">
+                          {service.lead_time}
                         </span>
                       </div>
-                      <h3 className="text-sm font-black text-slate-text-primary group-hover:text-cobalt transition-colors">{service.title}</h3>
-                      <p className="text-[11px] text-slate-text-muted">by {service.seller_name}</p>
-                      <p className="text-xs text-slate-text-secondary line-clamp-2 leading-relaxed">{service.description}</p>
+                      <div className="absolute top-2 left-2">
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider border font-bold ${
+                          service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-750 border-blue-500/20'
+                          : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-750 border-violet-500/20'
+                          : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-750 border-amber-500/20'
+                          : 'bg-red-500/10 text-red-750 border-red-500/20'
+                        }`}>
+                          {service.process_type}
+                        </span>
+                      </div>
                     </div>
-                    <div className="pt-3.5 mt-3 border-t border-slate-border/40 flex items-center justify-between">
-                      <span className="text-sm font-black text-coral">₹{Number(service.base_price).toLocaleString('en-IN')}</span>
-                      <span className="text-[10px] font-bold text-cobalt flex items-center gap-1">Get Quote <ArrowRight className="w-3 h-3" /></span>
+                    <div className="p-5 flex flex-col flex-1 justify-between space-y-4">
+                      <div>
+                        <div className="mb-2">
+                          <h3 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] leading-tight group-hover:text-[#06B6D4] transition-colors line-clamp-1">
+                            {service.title}
+                          </h3>
+                          <p className="text-[10px] text-slate-text-muted mt-0.5 font-semibold">by {service.seller_name}</p>
+                        </div>
+                        <p className="text-xs text-[#45464d] line-clamp-2 leading-relaxed font-semibold opacity-85">{service.description}</p>
+                      </div>
+
+                      <div className="pt-4 border-t border-[#E4E4E7] flex items-center justify-between">
+                        <div>
+                          <p className="text-[9px] font-['Inter'] text-[#45464d] uppercase tracking-wider mb-0.5">Setup Fee</p>
+                          <p className="font-['Space_Grotesk'] text-sm font-bold text-[#0F172A]">
+                            ₹{Number(service.base_price).toLocaleString('en-IN')}
+                          </p>
+                        </div>
+                        <button
+                          onClick={e => { e.stopPropagation(); setSelectedService(service); }}
+                          className="px-3.5 py-2 bg-[#0F172A] text-white hover:bg-[#06B6D4] transition-colors flex items-center justify-center gap-1.5 font-bold text-xs font-['Inter'] cursor-pointer"
+                        >
+                          <span>Get Quote</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
           )}
 
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center pt-2">
             <Link
               href="/machining"
-              className="inline-flex items-center gap-2 text-sm font-bold text-cobalt hover:text-cobalt-hover transition-colors group"
+              className="inline-flex items-center gap-2 text-xs font-bold text-cobalt hover:text-cobalt-hover transition-colors group font-['JetBrains_Mono'] uppercase tracking-wider"
             >
               Explore all machining services
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -511,36 +580,43 @@ export default function Home() {
         </section>
 
         {/* COMMUNITY TEASER */}
-        <section className="bg-gradient-to-br from-slate-text-primary to-slate-text-secondary text-white">
-          <div className="max-w-7xl mx-auto px-6 py-16 flex flex-col md:flex-row items-center justify-between gap-8">
+        <section className="bg-[#0F172A] text-white relative overflow-hidden"
+          style={{
+            backgroundImage: 'linear-gradient(to right, rgba(6,182,212,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(6,182,212,0.04) 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+          }}
+        >
+          <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-cobalt/10 to-transparent rounded-full blur-3xl pointer-events-none -ml-40 -mt-45" />
+          
+          <div className="max-w-7xl mx-auto px-6 py-16 flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-[11px] font-bold">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded bg-white/5 border border-white/10 text-[10px] font-bold font-mono uppercase tracking-widest text-[#06B6D4]">
                 <Users className="w-3.5 h-3.5" /> MechItAll Community
               </div>
-              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight leading-[1.1] font-['Space_Grotesk']">
                 Join a community of<br />
-                <span className="text-cobalt">makers &amp; engineers</span>
+                <span className="bg-gradient-to-r from-cobalt to-emerald bg-clip-text text-transparent">makers &amp; engineers</span>
               </h2>
-              <p className="text-sm text-white/70 max-w-md leading-relaxed">
+              <p className="text-sm text-slate-text-muted max-w-md leading-relaxed font-semibold opacity-90">
                 Share your builds, read peer reviews, stay updated with product announcements, and connect with fellow mechatronics enthusiasts.
               </p>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3 pt-2">
                 {[
                   { icon: Star, label: 'Reviews' },
-                  { icon: Zap, label: 'News' },
-                  { icon: Info, label: 'Announcements' },
+                  { icon: Zap, label: 'News Log' },
+                  { icon: Info, label: 'Bulletins' },
                 ].map(({ icon: Icon, label }) => (
-                  <span key={label} className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-white/10 border border-white/20">
-                    <Icon className="w-3 h-3" /> {label}
+                  <span key={label} className="inline-flex items-center gap-1.5 text-[10px] font-bold font-mono uppercase tracking-wider px-3.5 py-1.5 rounded bg-white/5 border border-white/10">
+                    <Icon className="w-3.5 h-3.5 text-[#06B6D4]" /> {label}
                   </span>
                 ))}
               </div>
             </div>
             <Link
               href="/community"
-              className="shrink-0 btn-cobalt px-8 py-4 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer shadow-xl"
+              className="shrink-0 bg-[#06B6D4] hover:bg-[#0891B2] text-[#0F172A] px-8 py-4 rounded font-bold text-xs flex items-center gap-2 cursor-pointer transition-colors shadow-xl shadow-cyan-950/20 font-['JetBrains_Mono'] uppercase tracking-wider"
             >
-              Visit Community <ArrowRight className="w-4 h-4" />
+              Visit Community <ArrowRight className="w-4.5 h-4.5" />
             </Link>
           </div>
         </section>

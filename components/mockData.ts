@@ -28,6 +28,7 @@ export interface Part {
     mtbf: string; // Mean Time Between Failures
     ingressProtection: string; // IP Rating
   };
+  imageData?: string;
 }
 
 // Cleared products catalog as requested

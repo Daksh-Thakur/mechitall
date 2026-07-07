@@ -12,7 +12,8 @@ import {
   User, ShoppingBag, Gift, Heart, Settings, MapPin, MessageSquare, 
   ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus, 
   Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play,
-  Send, Paperclip, FileText, ExternalLink, CircleDollarSign, IndianRupee, LayoutDashboard, ArrowRight
+  Send, Paperclip, FileText, ExternalLink, CircleDollarSign, IndianRupee, LayoutDashboard, ArrowRight,
+  Package, X
 } from 'lucide-react';
 import { 
   getOngoingChats, 
@@ -26,7 +27,7 @@ export default function ProfilePage() {
   const supabase = createClient();
   const { profile, fetchProfile, showToast, addToCart, wishlist, toggleWishlist } = useCart();
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'rewards' | 'wishlist' | 'settings' | 'address' | 'support' | 'chats' | 'seller_orders' | 'seller_rfqs' | 'seller_capabilities' | 'seller_earnings'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'rewards' | 'wishlist' | 'settings' | 'address' | 'support' | 'chats' | 'seller_orders' | 'seller_rfqs' | 'seller_listings' | 'seller_capabilities' | 'seller_earnings'>('orders');
 
   // Switch tabs dynamically when toggling Seller Mode
   useEffect(() => {
@@ -52,6 +53,51 @@ export default function ProfilePage() {
   const [isUpdatingName, startTransition] = useTransition();
   const [togglingSeller, setTogglingSeller] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
+  const [showAddListingModal, setShowAddListingModal] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [localProducts, setLocalProducts] = useState<any[]>([]);
+  const [localServices, setLocalServices] = useState<any[]>([]);
+
+  // Load custom listed products & services from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedProds = localStorage.getItem('local_listed_products');
+      if (storedProds) {
+        setLocalProducts(JSON.parse(storedProds));
+      } else {
+        const defaultProds = [
+          { id: 'ACT-NEMA23-CL', part_number: 'ACT-NEMA23-CL', title: 'NEMA 23 Closed-Loop Stepper Motor', price: 18950, stock: 45, category: 'Actuators', gradient_class: 'from-cobalt/20 to-cobalt/5 border-cobalt/20' },
+          { id: 'SEN-LIDAR-20M', part_number: 'SEN-LIDAR-20M', title: 'LiDAR Distance Sensor (20m)', price: 31000, stock: 18, category: 'Sensors', gradient_class: 'from-emerald/20 to-emerald/5 border-emerald/20' },
+          { id: 'BRD-STM32-M4', part_number: 'BRD-STM32-M4', title: 'STM32 Mechatronics Controller Board', price: 14500, stock: 55, category: 'Control Boards', gradient_class: 'from-amber-500/20 to-amber-500/5 border-amber-500/20' },
+        ];
+        localStorage.setItem('local_listed_products', JSON.stringify(defaultProds));
+        setLocalProducts(defaultProds);
+      }
+
+      const storedServs = localStorage.getItem('local_listed_services');
+      if (storedServs) {
+        setLocalServices(JSON.parse(storedServs));
+      } else {
+        const defaultServs = [
+          { title: '3-Axis & 5-Axis CNC Milling', base_price: 1200, lead_time: '3-5 Days Lead', category: 'Machining' },
+          { title: 'Direct Metal Laser Sintering (DMLS)', base_price: 3500, lead_time: '5-7 Days Lead', category: '3D Printing' },
+        ];
+        localStorage.setItem('local_listed_services', JSON.stringify(defaultServs));
+        setLocalServices(defaultServs);
+      }
+    }
+  }, []);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   const [sellerData, setSellerData] = useState<{
     openRfqs: any[];
     myQuotes: any[];
@@ -253,218 +299,219 @@ export default function ProfilePage() {
       <Navbar />
 
       <main className="flex-1 max-w-7xl mx-auto px-6 py-10 w-full flex flex-col md:flex-row gap-8">
-        
         {/* Sidebar Nav */}
-        {profile.is_seller ? (
-          /* Seller Sidebar Nav */
-          <aside className="hidden md:flex md:w-3/12 flex-col justify-between bg-[#0B1528] text-white rounded-2xl p-6 shadow-xl h-[600px] shrink-0 border border-slate-700/30">
-            <div className="space-y-6">
-              {/* Header Seller Hub Card */}
-              <div className="pb-4 border-b border-slate-700/50">
-                <h3 className="text-base font-black tracking-tight text-white flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#00D0F5] animate-pulse"></span>
-                  Seller Hub
-                </h3>
-                <span className="block text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
-                  Precision Engineering
-                </span>
+          {profile.is_seller ? (
+            /* Seller Sidebar Nav */
+            <aside className="hidden md:flex md:w-3/12 flex-col justify-between bg-white text-slate-800 rounded border border-[#E4E4E7] p-6 shadow-sm h-[600px] shrink-0">
+              <div className="space-y-6">
+                {/* Header Seller Hub Card */}
+                <div className="pb-4 border-b border-[#E4E4E7]">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2 font-mono">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#06B6D4] animate-pulse"></span>
+                    Seller Hub
+                  </h3>
+                  <span className="block text-[8px] font-bold text-[#76777d] mt-1 uppercase tracking-widest font-mono">
+                    Precision Partner
+                  </span>
+                </div>
+
+                {/* Nav Tabs */}
+                <nav className="space-y-1">
+                  {[
+                    { tab: 'seller_rfqs', label: 'Dashboard', icon: LayoutDashboard },
+                    { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
+                    { tab: 'seller_listings', label: 'My Listings', icon: Package },
+                    { tab: 'seller_capabilities', label: 'Capabilities', icon: Cpu },
+                    { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
+                    { tab: 'chats', label: 'Quotation Chats', icon: MessageSquare },
+                  ].map(({ tab, label, icon: Icon }) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab as any)}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
+                        activeTab === tab
+                          ? 'bg-[#0f172a] text-white shadow-md'
+                          : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 shrink-0 ${activeTab === tab ? 'text-[#06B6D4]' : 'text-[#76777d]'}`} />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </nav>
+
+                {/* Quick Action Button: New Listing */}
+                <button 
+                  onClick={() => setShowAddListingModal(true)}
+                  className="w-full bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all shadow"
+                >
+                  <Plus className="w-4 h-4 shrink-0 stroke-[3]" />
+                  <span>New Listing</span>
+                </button>
               </div>
 
-              {/* Nav Tabs */}
-              <nav className="space-y-1">
-                {[
-                  { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
-                  { tab: 'seller_rfqs', label: 'Active RFQs', icon: FileText },
-                  { tab: 'seller_capabilities', label: 'Machine Capabilities', icon: Cpu },
-                  { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
-                ].map(({ tab, label, icon: Icon }) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab as any)}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                      activeTab === tab
-                        ? 'bg-[#007084] text-white shadow-lg shadow-[#007084]/20 border border-[#0092AB]/30'
-                        : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
-                    }`}
-                  >
-                    <Icon className={`w-4 h-4 shrink-0 ${activeTab === tab ? 'text-[#00D0F5]' : 'text-slate-400'}`} />
-                    <span>{label}</span>
-                  </button>
-                ))}
-              </nav>
-
-              {/* Quick Action Button: New Listing */}
-              <button 
-                onClick={() => showToast('Create Listing service is in demonstration mode.', 'success')}
-                className="w-full bg-[#00D0F5] hover:bg-[#00B9DB] text-slate-900 py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md shadow-[#00D0F5]/10 hover:-translate-y-0.5 active:translate-y-0 active:shadow-none"
-              >
-                <Plus className="w-4 h-4 shrink-0 stroke-[3]" />
-                <span>New Listing</span>
-              </button>
-            </div>
-
-            {/* Exit/Deactivate Seller Mode */}
-            <div className="pt-4 border-t border-slate-700/50">
-              <button
-                disabled={togglingSeller}
-                onClick={handleToggleSellerMode}
-                className="w-full py-2.5 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer border border-slate-700 hover:bg-slate-800 text-slate-300 hover:text-white transition-all"
-              >
-                <ArrowLeftRight className="w-4 h-4 shrink-0" />
-                <span>Switch to Customer Mode</span>
-              </button>
-            </div>
-          </aside>
-        ) : (
-          /* Sidebar Nav */
-          <aside className="md:w-3/12 flex flex-col justify-between bg-white border border-slate-border rounded-2xl p-6 shadow-sm h-fit">
-            <div className="space-y-6">
-              {/* Header User Card */}
-              <div className="text-center space-y-3 pb-6 border-b border-slate-border">
-                <div className="relative inline-flex items-center justify-center w-16 h-16 rounded-full bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow-md">
-                  {profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0]}
-                  {profile.is_verified_buyer && (
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald text-white flex items-center justify-center border border-white shadow-sm" title="Verified Buyer">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-slate-text-primary tracking-tight truncate">Hello, {profile.full_name.split(' ')[0]}</h3>
-                  <div className="flex flex-col items-center gap-1 mt-1.5">
-                    <span className="inline-block text-[9px] uppercase tracking-wider font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded-full">
-                      {profile.loyalty_tier}
-                    </span>
+              {/* Exit/Deactivate Seller Mode */}
+              <div className="pt-4 border-t border-[#E4E4E7]">
+                <button
+                  disabled={togglingSeller}
+                  onClick={handleToggleSellerMode}
+                  className="w-full py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer border border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d] hover:text-[#0f172a] transition-all"
+                >
+                  <ArrowLeftRight className="w-4 h-4 shrink-0" />
+                  <span>Switch to Customer Mode</span>
+                </button>
+              </div>
+            </aside>
+          ) : (
+            /* Sidebar Nav */
+            <aside className="md:w-3/12 flex flex-col justify-between bg-white border border-[#E4E4E7] rounded p-6 shadow-sm h-fit">
+              <div className="space-y-6">
+                {/* Header User Card */}
+                <div className="text-center space-y-3 pb-6 border-b border-[#E4E4E7]">
+                  <div className="relative inline-flex items-center justify-center w-16 h-16 rounded bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow font-mono">
+                    {profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0]}
                     {profile.is_verified_buyer && (
-                      <span className="inline-flex items-center gap-1 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
-                        <ShieldCheck className="w-2.5 h-2.5" /> Verified Buyer
-                      </span>
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded bg-emerald text-white flex items-center justify-center border border-white shadow-sm" title="Verified Buyer">
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                      </div>
                     )}
                   </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#0F172A] tracking-tight truncate font-['Space_Grotesk']">Hello, {profile.full_name.split(' ')[0]}</h3>
+                    <div className="flex flex-col items-center gap-1 mt-1.5">
+                      <span className="inline-block text-[8px] font-mono uppercase tracking-wider font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded">
+                        {profile.loyalty_tier}
+                      </span>
+                      {profile.is_verified_buyer && (
+                        <span className="inline-flex items-center gap-1 text-[8px] font-mono uppercase tracking-wider font-bold bg-emerald/10 text-emerald border border-emerald-500/20 px-2 py-0.5 rounded">
+                          <ShieldCheck className="w-2.5 h-2.5" /> Verified Buyer
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
+
+                {/* Nav Tabs */}
+                <nav className="space-y-1">
+                  <button
+                    onClick={() => setActiveTab('orders')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
+                      activeTab === 'orders'
+                        ? 'bg-[#0f172a] text-white shadow'
+                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                  >
+                    <ShoppingBag className="w-4 h-4 shrink-0" />
+                    <span>My Orders</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setActiveTab('rewards')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
+                      activeTab === 'rewards'
+                        ? 'bg-[#0f172a] text-white shadow'
+                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                  >
+                    <Gift className="w-4 h-4 shrink-0" />
+                    <span>Rewards &amp; Offers</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('wishlist')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
+                      activeTab === 'wishlist'
+                        ? 'bg-[#0f172a] text-white shadow'
+                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                  >
+                    <Heart className="w-4 h-4 shrink-0" />
+                    <span>Wishlist</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('settings')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
+                      activeTab === 'settings'
+                        ? 'bg-[#0f172a] text-white shadow'
+                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                  >
+                    <Settings className="w-4 h-4 shrink-0" />
+                    <span>Account Settings</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('address')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
+                      activeTab === 'address'
+                        ? 'bg-[#0f172a] text-white shadow'
+                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                  >
+                    <MapPin className="w-4 h-4 shrink-0" />
+                    <span>Address Book</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('support')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
+                      activeTab === 'support'
+                        ? 'bg-[#0f172a] text-white shadow'
+                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                  >
+                    <MessageSquare className="w-4 h-4 shrink-0" />
+                    <span>Customer Support</span>
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('chats')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
+                      activeTab === 'chats'
+                        ? 'bg-[#0f172a] text-white shadow'
+                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                  >
+                    <MessageSquare className="w-4 h-4 shrink-0" />
+                    <span>Quotation Chats</span>
+                  </button>
+                </nav>
               </div>
 
-              {/* Nav Tabs */}
-              <nav className="space-y-1">
+              {/* Switch/Activate Seller Mode */}
+              <div className="pt-6 border-t border-[#E4E4E7] mt-8 space-y-2">
+                <div className="flex justify-between items-center text-[10px] font-bold text-[#76777d] font-mono uppercase tracking-wider">
+                  <span>Seller Account</span>
+                  <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${
+                    profile.seller_kyc_completed 
+                      ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20' 
+                      : 'bg-[#F8FAFC] text-[#76777d] border border-[#E4E4E7]'
+                  }`}>
+                    {profile.seller_kyc_completed ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
                 <button
-                  onClick={() => setActiveTab('orders')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'orders'
-                      ? 'bg-slate-text-primary text-white shadow-md'
-                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
+                  disabled={togglingSeller}
+                  onClick={handleToggleSellerMode}
+                  className={`w-full transition-all py-3 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${
+                    profile.is_seller
+                      ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
+                      : 'border border-[#E4E4E7] text-[#45464d] hover:text-[#0f172a] hover:border-[#0f172a] bg-[#F8FAFC]/50'
                   }`}
                 >
-                  <ShoppingBag className="w-4 h-4 shrink-0" />
-                  <span>My Orders</span>
+                  <ArrowLeftRight className="w-4 h-4 shrink-0" />
+                  <span>
+                    {profile.is_seller 
+                      ? 'Deactivate Seller Mode' 
+                      : profile.seller_kyc_completed 
+                      ? 'Switch to Seller Mode' 
+                      : 'Activate Seller Mode'}
+                  </span>
                 </button>
-                
-                <button
-                  onClick={() => setActiveTab('rewards')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'rewards'
-                      ? 'bg-slate-text-primary text-white shadow-md'
-                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                  }`}
-                >
-                  <Gift className="w-4 h-4 shrink-0" />
-                  <span>Rewards & Offers</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('wishlist')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'wishlist'
-                      ? 'bg-slate-text-primary text-white shadow-md'
-                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                  }`}
-                >
-                  <Heart className="w-4 h-4 shrink-0" />
-                  <span>Wishlist</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('settings')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'settings'
-                      ? 'bg-slate-text-primary text-white shadow-md'
-                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                  }`}
-                >
-                  <Settings className="w-4 h-4 shrink-0" />
-                  <span>Account Settings</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('address')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'address'
-                      ? 'bg-slate-text-primary text-white shadow-md'
-                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                  }`}
-                >
-                  <MapPin className="w-4 h-4 shrink-0" />
-                  <span>Address Book</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('support')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'support'
-                      ? 'bg-slate-text-primary text-white shadow-md'
-                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                  }`}
-                >
-                  <MessageSquare className="w-4 h-4 shrink-0" />
-                  <span>Customer Support</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('chats')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    activeTab === 'chats'
-                      ? 'bg-slate-text-primary text-white shadow-md'
-                      : 'text-slate-text-secondary hover:bg-slate-bg hover:text-slate-text-primary'
-                  }`}
-                >
-                  <MessageSquare className="w-4 h-4 shrink-0" />
-                  <span>Quotation Chats</span>
-                </button>
-              </nav>
-            </div>
-
-            {/* Switch/Activate Seller Mode */}
-            <div className="pt-6 border-t border-slate-border mt-8 space-y-2">
-              <div className="flex justify-between items-center text-[10px] font-bold text-slate-text-secondary">
-                <span>Seller Account</span>
-                <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
-                  profile.seller_kyc_completed 
-                    ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20' 
-                    : 'bg-slate-bg text-slate-text-muted border'
-                }`}>
-                  {profile.seller_kyc_completed ? 'Active' : 'Inactive'}
-                </span>
               </div>
-              <button
-                disabled={togglingSeller}
-                onClick={handleToggleSellerMode}
-                className={`w-full transition-all py-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer ${
-                  profile.is_seller
-                    ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
-                    : 'border border-slate-border text-slate-text-secondary hover:text-slate-text-primary hover:border-slate-text-primary bg-slate-bg/30'
-                }`}
-              >
-                <ArrowLeftRight className="w-4 h-4 shrink-0" />
-                <span>
-                  {profile.is_seller 
-                    ? 'Deactivate Seller Mode' 
-                    : profile.seller_kyc_completed 
-                    ? 'Switch to Seller Mode' 
-                    : 'Activate Seller Mode'}
-                </span>
-              </button>
-            </div>
-          </aside>
-        )}
+            </aside>
+          )}
 
         {/* Main Content Area */}
         <section className="md:w-9/12 space-y-6">
@@ -800,12 +847,96 @@ export default function ProfilePage() {
 
           {/* OTHER SELLER HUB TABS */}
           {profile.is_seller && activeTab === 'seller_orders' && (
-            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm text-center py-20 space-y-3">
+            <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm text-center py-20 space-y-3">
               <ShoppingBag className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
-              <h4 className="text-sm font-black text-slate-text-primary">Seller Orders Manager</h4>
-              <p className="text-xs text-slate-text-muted max-w-sm mx-auto font-medium">
+              <h4 className="text-sm font-bold text-[#0F172A] font-['Space_Grotesk']">Seller Orders Manager</h4>
+              <p className="text-xs text-[#76777d] max-w-sm mx-auto font-medium">
                 View, track, and complete purchase orders submitted for custom fabrication jobs or catalog parts.
               </p>
+            </div>
+          )}
+
+          {profile.is_seller && activeTab === 'seller_listings' && (
+            <div className="space-y-6 pb-20 md:pb-0">
+              {/* Header */}
+              <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h2 className="text-base font-bold text-[#0F172A] tracking-tight uppercase font-['Space_Grotesk']">My Listed Products &amp; Services</h2>
+                  <p className="text-xs text-[#76777d] mt-1 font-semibold">
+                    Manage your active inventory listings, wholesale pricing tiers, and custom fabrication offerings.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setShowAddListingModal(true)}
+                  className="bg-[#0f172a] hover:bg-[#06b6d4] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-colors shadow flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Listing
+                </button>
+              </div>
+
+              {/* Listings Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Product Listings Card */}
+                <div className="bg-white border border-[#E4E4E7] rounded p-5 shadow-sm space-y-4">
+                  <div className="flex justify-between items-center pb-3 border-b border-[#E4E4E7]">
+                    <div className="flex items-center gap-2">
+                      <Package className="w-4 h-4 text-cobalt" />
+                      <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#0f172a]">Catalog Products ({localProducts.length})</h3>
+                    </div>
+                    <span className="text-[9px] font-mono font-bold text-[#76777d] uppercase">Stock Active</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {localProducts.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center p-3 border border-[#E4E4E7] bg-[#F8FAFC]/50 rounded text-xs font-medium">
+                        <div className="flex gap-3 items-center">
+                          {item.image_data || item.imageData ? (
+                            <img src={item.image_data || item.imageData} alt={item.title} className="w-8 h-8 object-cover rounded border" />
+                          ) : (
+                            <div className="w-8 h-8 bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center rounded border">
+                              <Package className="w-3.5 h-3.5 text-[#76777d]" />
+                            </div>
+                          )}
+                          <div className="space-y-0.5">
+                            <span className="block text-[8px] font-mono text-[#76777d] uppercase tracking-wider">{item.part_number || item.sku}</span>
+                            <span className="block font-semibold text-[#0f172a] truncate max-w-[180px]">{item.title}</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="block font-bold text-coral">₹{Number(item.price).toLocaleString('en-IN')}</span>
+                          <span className="block text-[8px] font-mono font-bold text-[#76777d] uppercase">{item.stock} units</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Service Listings Card */}
+                <div className="bg-white border border-[#E4E4E7] rounded p-5 shadow-sm space-y-4">
+                  <div className="flex justify-between items-center pb-3 border-b border-[#E4E4E7]">
+                    <div className="flex items-center gap-2">
+                      <Settings className="w-4 h-4 text-[#06B6D4]" />
+                      <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#0f172a]">Custom Services ({localServices.length})</h3>
+                    </div>
+                    <span className="text-[9px] font-mono font-bold text-[#76777d] uppercase">Online</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {localServices.map((item, idx) => (
+                      <div key={idx} className="flex justify-between items-center p-3 border border-[#E4E4E7] bg-[#F8FAFC]/50 rounded text-xs font-medium">
+                        <div className="space-y-0.5">
+                          <span className="block font-semibold text-[#0f172a]">{item.title}</span>
+                          <span className="block text-[8px] font-mono text-[#76777d] uppercase tracking-wider">{item.lead_time || item.time || '3-5 Days Lead'}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="block font-bold text-[#06B6D4]">₹{Number(item.base_price || item.rate || 0).toLocaleString('en-IN')}/hr</span>
+                          <span className="block text-[8px] font-mono font-bold text-[#76777d] uppercase">Active</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -1395,8 +1526,10 @@ export default function ProfilePage() {
           {[
             { tab: 'seller_rfqs', label: 'Dashboard', icon: LayoutDashboard },
             { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
-            { tab: 'seller_capabilities', label: 'RFQs', icon: FileText },
+            { tab: 'seller_listings', label: 'Listings', icon: Package },
+            { tab: 'seller_capabilities', label: 'Capabilities', icon: Cpu },
             { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
+            { tab: 'chats', label: 'Chats', icon: MessageSquare },
           ].map(({ tab, label, icon: Icon }) => {
             const isActive = activeTab === tab;
             return (
@@ -1416,6 +1549,235 @@ export default function ProfilePage() {
       )}
 
       <Footer />
+
+      {/* Add Listing Modal */}
+      {showAddListingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm" onClick={() => setShowAddListingModal(false)} />
+          <div className="bg-white border border-[#E4E4E7] rounded-xl p-6 md:p-8 max-w-2xl w-full shadow-2xl relative z-10 animate-slide-in space-y-4 font-mono text-left">
+            <div className="flex justify-between items-start pb-3 border-b border-[#E4E4E7]">
+              <div className="space-y-0.5">
+                <span className="text-[9px] font-bold text-[#76777d] uppercase tracking-wider">Seller Workspace</span>
+                <h3 className="text-base font-bold text-[#0F172A] uppercase font-['Space_Grotesk']">Create Technical Listing</h3>
+              </div>
+              <button onClick={() => setShowAddListingModal(false)} className="p-1.5 rounded hover:bg-[#F8FAFC] border border-[#E4E4E7] text-[#76777d] cursor-pointer">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const target = e.target as any;
+              const title = target.title.value.trim();
+              const type = target.type.value;
+              const sku = target.sku.value.trim();
+              const category = target.category.value.trim();
+              const price = Number(target.price.value) || 0;
+              const stock = Number(target.stock.value) || 0;
+              const desc = target.description.value.trim();
+              const gradient = imagePreview ? 'custom-image' : target.gradientClass.value;
+              
+              if (type === 'Product') {
+                const newProduct = {
+                  id: crypto.randomUUID ? crypto.randomUUID() : 'prod-' + Math.random().toString(36).substr(2, 9),
+                  part_number: sku,
+                  title: title,
+                  category: category,
+                  price: price,
+                  stock: stock,
+                  description: desc,
+                  gradient_class: gradient,
+                  image_data: imagePreview || undefined,
+                  specs: {
+                    [target.specKey1.value]: target.specVal1.value,
+                    [target.specKey2.value]: target.specVal2.value,
+                    [target.specKey3.value]: target.specVal3.value,
+                  },
+                  bulk_pricing: [
+                    { minQty: 10, pricePerUnit: Number(target.tierPrice1.value) || price },
+                    { minQty: 50, pricePerUnit: Number(target.tierPrice2.value) || price }
+                  ],
+                  datasheet_url: target.datasheet.value.trim(),
+                  cad_file: target.cadFile.value.trim(),
+                  extended_specs: {
+                    ingressProtection: target.ipRating.value.trim(),
+                    mtbf: target.mtbf.value.trim(),
+                    dimensions: 'Standard Frame'
+                  }
+                };
+
+                const updatedProds = [...localProducts, newProduct];
+                setLocalProducts(updatedProds);
+                localStorage.setItem('local_listed_products', JSON.stringify(updatedProds));
+                
+                try {
+                  await supabase.from('products').insert([newProduct]);
+                } catch (err) {
+                  console.warn('Supabase DB write blocked by RLS, persisted locally:', err);
+                }
+              } else {
+                const newService = {
+                  id: crypto.randomUUID ? crypto.randomUUID() : 'serv-' + Math.random().toString(36).substr(2, 9),
+                  title: title,
+                  category: category,
+                  base_price: price,
+                  lead_time: '3-5 Days Lead',
+                  features: [],
+                  gradient_class: 'from-sky-500/20 to-sky-500/5'
+                };
+                
+                const updatedServs = [...localServices, newService];
+                setLocalServices(updatedServs);
+                localStorage.setItem('local_listed_services', JSON.stringify(updatedServs));
+                
+                try {
+                  await supabase.from('services').insert([newService]);
+                } catch (err) {
+                  console.warn('Supabase DB write blocked by RLS, persisted locally:', err);
+                }
+              }
+
+              showToast(`Technical ${type} listing "${title}" (${sku}) published successfully!`, 'success');
+              setImagePreview(null);
+              setShowAddListingModal(false);
+            }} className="space-y-4">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+                
+                {/* LEFT COLUMN: Basic Info & Tech Specifications */}
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Listing Type</label>
+                    <select name="type" className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none focus:border-[#06b6d4]">
+                      <option value="Product">Catalog Product</option>
+                      <option value="Service">Custom Machining Service</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Part Number / SKU *</label>
+                    <input required type="text" name="sku" placeholder="e.g. ACT-NEMA34-CL" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Title / Name *</label>
+                    <input required type="text" name="title" placeholder="e.g. NEMA 34 Stepper Motor" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-[#76777d] uppercase">Category *</label>
+                      <input required type="text" name="category" placeholder="e.g. Actuators" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-[#76777d] uppercase">Stock Qty *</label>
+                      <input required type="number" name="stock" defaultValue={10} min={0} className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Unit Price (INR) *</label>
+                    <input required type="number" name="price" placeholder="e.g. 24500" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                  </div>
+
+                  {/* Technical Specifications */}
+                  <div className="space-y-1.5 pt-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Tech Specifications (Key-Value)</label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input type="text" name="specKey1" defaultValue="Holding Torque" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                        <input type="text" name="specVal1" placeholder="e.g. 4.5 N.m" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                      </div>
+                      <div className="flex gap-2">
+                        <input type="text" name="specKey2" defaultValue="Voltage" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                        <input type="text" name="specVal2" placeholder="e.g. 48 VDC" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                      </div>
+                      <div className="flex gap-2">
+                        <input type="text" name="specKey3" defaultValue="Frame Size" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                        <input type="text" name="specVal3" placeholder="e.g. NEMA 34 (86mm)" className="w-1/2 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT COLUMN: Assets, Documents & Tiers */}
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Upload Product Image (.jpg, .png, .svg) *</label>
+                    <input type="file" accept=".jpg,.jpeg,.png,.svg" onChange={handleImageChange} className="w-full text-xs p-1 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                    {imagePreview && (
+                      <div className="mt-2 w-16 h-16 border border-[#E4E4E7] overflow-hidden rounded">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Or Select Image Color Theme</label>
+                    <select name="gradientClass" className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none">
+                      <option value="from-cobalt/20 to-cobalt/5 border-cobalt/20">Blue/Cobalt Tech Accent</option>
+                      <option value="from-emerald/20 to-emerald/5 border-emerald/20">Green/Emerald Sensor Accent</option>
+                      <option value="from-amber-500/20 to-amber-500/5 border-amber-500/20">Amber/Yellow Control Accent</option>
+                      <option value="from-coral/20 to-coral/5 border-coral/20">Coral/Red Mechanical Accent</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Datasheet Link (PDF URL)</label>
+                    <input type="text" name="datasheet" placeholder="e.g. https://datasheet.mechitall.io/NEMA34.pdf" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">3D CAD Model Link (STEP File Name)</label>
+                    <input type="text" name="cadFile" placeholder="e.g. ACT-NEMA34-CL.step" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-[#76777d] uppercase">Ingress Rating</label>
+                      <input type="text" name="ipRating" defaultValue="IP65" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="block text-[10px] font-bold text-[#76777d] uppercase">MTBF Lifespan</label>
+                      <input type="text" name="mtbf" defaultValue="50,000 Hours" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                    </div>
+                  </div>
+
+                  {/* Volume Pricing Tiers */}
+                  <div className="space-y-1.5 pt-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Bulk Price Matrix Tiers</label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2 items-center">
+                        <span className="text-[10px] text-[#76777d] font-bold font-mono w-[60px]">10+ Qty:</span>
+                        <input type="number" name="tierPrice1" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                      </div>
+                      <div className="flex gap-2 items-center">
+                        <span className="text-[10px] text-[#76777d] font-bold font-mono w-[60px]">50+ Qty:</span>
+                        <input type="number" name="tierPrice2" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Description</label>
+                    <textarea rows={2} name="description" placeholder="Specify technical specs, materials, tolerances..." className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4] resize-none" />
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="flex gap-3 pt-3 border-t border-[#E4E4E7]">
+                <button type="submit" className="flex-1 bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer text-center">
+                  Publish Technical Listing
+                </button>
+                <button type="button" onClick={() => setShowAddListingModal(false)} className="flex-1 border border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#76777d] py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Seller KYC Modal */}
       {showKYCModal && (
