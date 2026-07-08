@@ -608,3 +608,92 @@ export async function rejectQuote(
   }
 }
 
+/**
+ * Allows a buyer or seller to cancel the entire RFQ quotation contract.
+ * Updates target quote status to REJECTED, and updates RFQ status to CLOSED.
+ * Sends a message in the chat thread notifying of the cancellation.
+ */
+export async function cancelQuoteNegotiation(
+  quoteId: string, 
+  rfqId: string
+): Promise<ActionResponse<{ success: boolean }>> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+    const profile = await getAuthProfile(supabase);
+
+    // 1. Fetch quote and RFQ details to verify participant relationship
+    const { data: quote, error: quoteErr } = await supabase
+      .from('quotes')
+      .select('*, rfqs:rfq_id(*)')
+      .eq('id', quoteId)
+      .single();
+
+    if (quoteErr || !quote) {
+      return { success: false, error: 'Quote not found' };
+    }
+
+    const rfq = quote.rfqs as any;
+    const buyerId = rfq?.buyer_id;
+    const sellerId = quote.seller_id;
+
+    if (profile.id !== buyerId && profile.id !== sellerId) {
+      return { success: false, error: 'Unauthorized: You are not a participant in this quote negotiation.' };
+    }
+
+    // 2. Update quote status to REJECTED (cancelling the quote)
+    await supabase
+      .from('quotes')
+      .update({ status: 'REJECTED' })
+      .eq('id', quoteId);
+
+    // 3. Update RFQ status to CLOSED
+    await supabase
+      .from('rfqs')
+      .update({ status: 'CLOSED' })
+      .eq('id', rfqId);
+
+    // Update machining_quotes status to Canceled if exists
+    try {
+      const { data: machQuote } = await supabase
+        .from('machining_quotes')
+        .select('id')
+        .eq('buyer_profile_id', buyerId)
+        .eq('cad_file_name', rfq?.cad_file_path)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (machQuote) {
+        await supabase
+          .from('machining_quotes')
+          .update({ status: 'Canceled' })
+          .eq('id', machQuote.id);
+      }
+    } catch (linkErr) {
+      console.warn('Failed to sync cancellation to machining_quotes:', linkErr);
+    }
+
+    // 4. Send automatic message to the chat channel
+    const { error: msgErr } = await supabase
+      .from('chat_messages')
+      .insert([
+        {
+          rfq_id: rfqId,
+          quote_id: quoteId,
+          sender_id: profile.id,
+          sender_name: profile.full_name || 'User',
+          message_text: `⚠️ QUOTATION NEGOTIATION CANCELLED.`,
+        }
+      ]);
+
+    if (msgErr) {
+      console.warn('Failed to send cancellation message:', msgErr.message);
+    }
+
+    return { success: true, data: { success: true } };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An unexpected error occurred' };
+  }
+}
+

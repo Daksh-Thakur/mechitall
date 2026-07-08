@@ -21,7 +21,8 @@ import {
   getChatMessages, 
   sendChatMessage, 
   getChatUploadSignedUrl,
-  rejectQuote 
+  rejectQuote,
+  cancelQuoteNegotiation 
 } from '@/app/actions/machining-workflow';
 import { listMachiningService } from '@/app/actions/marketplace';
 import { ChatThread, ChatMessage } from '@/types/machining';
@@ -2848,6 +2849,7 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [rejectionReasonInput, setRejectionReasonInput] = useState('');
   const [rejecting, setRejecting] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   
   // Load threads
   const loadThreads = async () => {
@@ -2942,6 +2944,25 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
       showToast(res.error || 'Failed to reject quote.', 'error');
     }
     setRejecting(false);
+  };
+
+  const handleCancelQuote = async () => {
+    if (!activeThread) return;
+    if (!confirm('Are you sure you want to cancel this quotation negotiation? This will close the quote request.')) return;
+
+    setCancelling(true);
+    const res = await cancelQuoteNegotiation(activeThread.quoteId, activeThread.rfqId);
+    if (res.success) {
+      showToast('Quotation negotiation cancelled successfully.', 'success');
+      
+      const threadToSelect = { ...activeThread, status: 'REJECTED' as any };
+      setActiveThread(threadToSelect);
+      await selectThread(threadToSelect);
+      await loadThreads();
+    } else {
+      showToast(res.error || 'Failed to cancel quote negotiation.', 'error');
+    }
+    setCancelling(false);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -3106,14 +3127,25 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
                   </button>
                 )}
                 {activeThread.status !== 'REJECTED' && activeThread.status !== 'ACCEPTED' && (
-                  <button
-                    onClick={() => setShowRejectForm(true)}
-                    className="flex items-center gap-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
-                    title="Reject Quotation"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                    <span>Reject</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setShowRejectForm(true)}
+                      className="flex items-center gap-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
+                      title="Reject Quotation"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Reject</span>
+                    </button>
+                    <button
+                      onClick={handleCancelQuote}
+                      disabled={cancelling}
+                      className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0 disabled:opacity-50"
+                      title="Cancel Quotation"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Cancel</span>
+                    </button>
+                  </>
                 )}
                 <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${
                   activeThread.status === 'ACCEPTED' 
