@@ -8,6 +8,7 @@ import { useCart } from '@/components/CartProvider';
 import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, submitSellerKYC, getSellerDashboardData, submitProductListing, Profile, BoltsTransaction } from '@/app/actions/rewards';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import LoginPage from '../login/page';
 import { 
   User, ShoppingBag, Gift, Heart, Settings, MapPin, MessageSquare, 
   ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus, 
@@ -38,6 +39,7 @@ export default function ProfilePage() {
     }
   }, [profile?.is_seller]);
 
+  const [isGuest, setIsGuest] = useState<boolean | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<BoltsTransaction[]>([]);
   const [dbProducts, setDbProducts] = useState<any[]>([]);
@@ -141,11 +143,7 @@ export default function ProfilePage() {
       if (storedProds) {
         setLocalProducts(JSON.parse(storedProds));
       } else {
-        const defaultProds = [
-          { id: 'ACT-NEMA23-CL', part_number: 'ACT-NEMA23-CL', title: 'NEMA 23 Closed-Loop Stepper Motor', price: 18950, stock: 45, category: 'Actuators', gradient_class: 'from-cobalt/20 to-cobalt/5 border-cobalt/20' },
-          { id: 'SEN-LIDAR-20M', part_number: 'SEN-LIDAR-20M', title: 'LiDAR Distance Sensor (20m)', price: 31000, stock: 18, category: 'Sensors', gradient_class: 'from-emerald/20 to-emerald/5 border-emerald/20' },
-          { id: 'BRD-STM32-M4', part_number: 'BRD-STM32-M4', title: 'STM32 Mechatronics Controller Board', price: 14500, stock: 55, category: 'Control Boards', gradient_class: 'from-amber-500/20 to-amber-500/5 border-amber-500/20' },
-        ];
+        const defaultProds: any[] = [];
         localStorage.setItem('local_listed_products', JSON.stringify(defaultProds));
         setLocalProducts(defaultProds);
       }
@@ -154,10 +152,7 @@ export default function ProfilePage() {
       if (storedServs) {
         setLocalServices(JSON.parse(storedServs));
       } else {
-        const defaultServs = [
-          { title: '3-Axis & 5-Axis CNC Milling', base_price: 1200, lead_time: '3-5 Days Lead', category: 'Machining' },
-          { title: 'Direct Metal Laser Sintering (DMLS)', base_price: 3500, lead_time: '5-7 Days Lead', category: '3D Printing' },
-        ];
+        const defaultServs: any[] = [];
         localStorage.setItem('local_listed_services', JSON.stringify(defaultServs));
         setLocalServices(defaultServs);
       }
@@ -257,12 +252,23 @@ export default function ProfilePage() {
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        showToast('Please sign in to access your profile.', 'error');
-        router.push('/login');
+        setIsGuest(true);
+      } else {
+        setIsGuest(false);
       }
     }
     checkAuth();
-  }, [router, showToast, supabase.auth]);
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setIsGuest(true);
+      } else {
+        setIsGuest(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
   // Sync edit name state
   useEffect(() => {
@@ -325,6 +331,10 @@ export default function ProfilePage() {
   };
 
   const activeShipmentsCount = orders.filter(o => o.status === 'Processing' || o.status === 'Shipped').length;
+
+  if (isGuest === true) {
+    return <LoginPage />;
+  }
 
   if (!profile) {
     return (

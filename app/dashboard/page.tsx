@@ -118,32 +118,7 @@ export default function Dashboard() {
     });
   };
 
-  // Seed demo order to try rewards immediately
-  const handleSeedMockOrder = async () => {
-    if (!profile) return;
-    setIsLoading(true);
-    try {
-      const { createClient } = await import('@/utils/supabase/client');
-      const supabase = createClient();
-      
-      const demoOrderId = `PO-2026-${Math.floor(10000 + Math.random() * 90000)}`;
-      await supabase.from('orders').insert([
-        {
-          id: demoOrderId,
-          profile_id: profile.id,
-          total_amount: 145.0,
-          items_count: 1,
-          status: 'Delivered',
-          delivered_at: new Date().toISOString(),
-        }
-      ]);
-      await syncDashboardData();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   // Helper calculations for tier progression
   const walletBalance = profile?.wallet_balance || 0;
@@ -459,22 +434,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Developer Sandbox Controls */}
-              <div className="bg-white border border-dashed border-[#E4E4E7] p-5 rounded space-y-3">
-                <span className="block text-[9px] uppercase font-bold text-[#76777d] tracking-wider font-mono">
-                  Loyalty System Sandbox Testing
-                </span>
-                <p className="text-[10px] text-[#76777d] leading-normal">
-                  No active orders? Use the button below to instantly seed a mock order marked as "Delivered" so you can test the photo uploading and escrow release pipeline immediately.
-                </p>
-                <button
-                  onClick={handleSeedMockOrder}
-                  disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded border border-[#E4E4E7] hover:border-[#0F172A] bg-[#F8FAFC] text-xs font-mono font-bold text-[#0f172a] uppercase tracking-wider cursor-pointer disabled:opacity-50 transition-all"
-                >
-                  <PlusCircle className="w-4 h-4" /> Seed "Delivered" Test Order
-                </button>
-              </div>
+
             </div>
           </div>
         ) : (

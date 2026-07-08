@@ -44,34 +44,8 @@ export default function ProductsPage() {
           imageData: p.image_data || undefined,
           imagesData: p.images_data || []
         }));
-        // Append custom listed products from localStorage if any
-        let localParts: Part[] = [];
-        if (typeof window !== 'undefined') {
-          const localProdsRaw = localStorage.getItem('local_listed_products');
-          if (localProdsRaw) {
-            const parsed = JSON.parse(localProdsRaw);
-            const defaultSkus = ['ACT-NEMA23-CL', 'SEN-LIDAR-20M', 'BRD-STM32-M4'];
-            const customListed = parsed.filter((p: any) => !defaultSkus.includes(p.part_number || p.sku));
-            localParts = customListed.map((p: any) => ({
-              id: p.id || p.part_number,
-              partNumber: p.part_number || p.sku,
-              title: p.title,
-              category: p.category as any,
-              price: Number(p.price),
-              stock: p.stock,
-              description: p.description || '',
-              gradientClass: p.gradient_class || '',
-              specs: p.specs || {},
-              bulkPricing: p.bulk_pricing || [],
-              datasheetUrl: p.datasheet_url || '',
-              cadFile: p.cad_file || '',
-              extendedSpecs: p.extended_specs || { dimensions: '', temperatureRange: '', mtbf: '', ingressProtection: '' },
-              imageData: p.image_data || undefined,
-              imagesData: p.images_data || []
-            }));
-          }
-        }
-        setParts([...mappedParts, ...localParts]);
+
+        setParts(mappedParts);
       } catch (err) {
         console.error('Error loading products:', err);
       } finally {
@@ -80,6 +54,7 @@ export default function ProductsPage() {
     }
     loadData();
   }, []);
+
 
   // Close suggestions on outside click
   useEffect(() => {
