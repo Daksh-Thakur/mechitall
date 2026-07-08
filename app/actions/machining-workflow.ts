@@ -520,3 +520,91 @@ export async function getChatUploadSignedUrl(
   }
 }
 
+/**
+ * Allows a buyer or seller to reject a quote.
+ * Updates target quote status to REJECTED.
+ * Sends a message in the chat thread explaining why it was rejected.
+ */
+export async function rejectQuote(
+  quoteId: string, 
+  rfqId: string, 
+  rejectionReason: string
+): Promise<ActionResponse<{ success: boolean }>> {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+    const profile = await getAuthProfile(supabase);
+
+    // 1. Fetch quote and RFQ details to verify participant relationship
+    const { data: quote, error: quoteErr } = await supabase
+      .from('quotes')
+      .select('*, rfqs:rfq_id(*)')
+      .eq('id', quoteId)
+      .single();
+
+    if (quoteErr || !quote) {
+      return { success: false, error: 'Quote not found' };
+    }
+
+    const rfq = quote.rfqs as any;
+    const buyerId = rfq?.buyer_id;
+    const sellerId = quote.seller_id;
+
+    if (profile.id !== buyerId && profile.id !== sellerId) {
+      return { success: false, error: 'Unauthorized: You are not a participant in this quote negotiation.' };
+    }
+
+    // 2. Update quote status to REJECTED
+    const { error: updateErr } = await supabase
+      .from('quotes')
+      .update({ status: 'REJECTED' })
+      .eq('id', quoteId);
+
+    if (updateErr) {
+      return { success: false, error: `Failed to update quote status: ${updateErr.message}` };
+    }
+
+    // Also update machining_quotes status to Rejected if exists
+    try {
+      const { data: machQuote } = await supabase
+        .from('machining_quotes')
+        .select('id')
+        .eq('buyer_profile_id', buyerId)
+        .eq('cad_file_name', rfq?.cad_file_path)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (machQuote) {
+        await supabase
+          .from('machining_quotes')
+          .update({ status: 'Rejected' })
+          .eq('id', machQuote.id);
+      }
+    } catch (linkErr) {
+      console.warn('Failed to sync rejection to machining_quotes:', linkErr);
+    }
+
+    // 3. Send automatic chat message with the rejection reason
+    const { error: msgErr } = await supabase
+      .from('chat_messages')
+      .insert([
+        {
+          rfq_id: rfqId,
+          quote_id: quoteId,
+          sender_id: profile.id,
+          sender_name: profile.full_name || 'User',
+          message_text: `🔴 QUOTATION REJECTED. Reason: ${rejectionReason}`,
+        }
+      ]);
+
+    if (msgErr) {
+      console.warn('Failed to send rejection chat message:', msgErr.message);
+    }
+
+    return { success: true, data: { success: true } };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'An unexpected error occurred' };
+  }
+}
+

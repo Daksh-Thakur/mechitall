@@ -72,11 +72,41 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
 
   const handleDocumentClick = (e: React.MouseEvent, url: string | undefined, type: string) => {
     e.preventDefault();
-    const isMock = !url || url === '#' || url === '' || url.includes('mechitall.io') || !url.startsWith('http');
-    if (isMock) {
+    if (!url || url === '#' || url === '') {
       showToast(`${type} is not available currently.`, 'error');
-    } else {
+      return;
+    }
+
+    if (url.startsWith('data:')) {
+      // Data URL: download the file directly!
+      try {
+        const link = document.createElement('a');
+        link.href = url;
+        // Try to guess extension from mime type in dataUrl
+        let ext = 'file';
+        const matches = url.match(/data:([^;]+);/);
+        if (matches && matches[1]) {
+          const mime = matches[1];
+          if (mime.includes('pdf')) ext = 'pdf';
+          else if (mime.includes('step') || mime.includes('stp') || mime.includes('octet-stream')) ext = 'step';
+          else if (mime.includes('png')) ext = 'png';
+          else if (mime.includes('jpeg') || mime.includes('jpg')) ext = 'jpg';
+        }
+        link.download = `${part.title.replace(/\s+/g, '_')}_${type.replace(/\s+/g, '_')}.${ext}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast(`${type} downloaded successfully!`, 'success');
+      } catch (err) {
+        console.error('Failed to download document:', err);
+        showToast(`Failed to download ${type}.`, 'error');
+      }
+    } else if (url.startsWith('http') || url.startsWith('/')) {
+      // Direct Link
       window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      // Otherwise, it might be a mock string or missing prefix
+      showToast(`${type} is not available currently.`, 'error');
     }
   };
 

@@ -20,7 +20,8 @@ import {
   getOngoingChats, 
   getChatMessages, 
   sendChatMessage, 
-  getChatUploadSignedUrl 
+  getChatUploadSignedUrl,
+  rejectQuote 
 } from '@/app/actions/machining-workflow';
 import { listMachiningService } from '@/app/actions/marketplace';
 import { ChatThread, ChatMessage } from '@/types/machining';
@@ -2163,8 +2164,8 @@ export default function ProfilePage() {
                       { minQty: 10, pricePerUnit: Number(target.tierPrice1?.value) || price },
                       { minQty: 50, pricePerUnit: Number(target.tierPrice2?.value) || price }
                     ] : [],
-                    datasheet_url: datasheetFile ? datasheetFile.name : '',
-                    cad_file: cadFile ? cadFile.name : '',
+                    datasheet_url: datasheetFile ? datasheetFile.dataUrl : '',
+                    cad_file: cadFile ? cadFile.dataUrl : '',
                     extended_specs: {
                       ingressProtection: target.ipRating.value.trim(),
                       mtbf: target.mtbf.value.trim(),
@@ -2844,6 +2845,9 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showRejectForm, setShowRejectForm] = useState(false);
+  const [rejectionReasonInput, setRejectionReasonInput] = useState('');
+  const [rejecting, setRejecting] = useState(false);
   
   // Load threads
   const loadThreads = async () => {
@@ -2916,6 +2920,28 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
       showToast(res.error || 'Failed to send message', 'error');
     }
     setSending(false);
+  };
+
+  const handleRejectQuote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeThread || !rejectionReasonInput.trim()) return;
+
+    setRejecting(true);
+    const res = await rejectQuote(activeThread.quoteId, activeThread.rfqId, rejectionReasonInput.trim());
+    if (res.success) {
+      showToast('Quotation rejected and status updated.', 'success');
+      setShowRejectForm(false);
+      setRejectionReasonInput('');
+      
+      // Refresh current thread view and messages list
+      const threadToSelect = { ...activeThread, status: 'REJECTED' as any };
+      setActiveThread(threadToSelect);
+      await selectThread(threadToSelect);
+      await loadThreads();
+    } else {
+      showToast(res.error || 'Failed to reject quote.', 'error');
+    }
+    setRejecting(false);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -3079,10 +3105,22 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
                     <span>Open Design</span>
                   </button>
                 )}
+                {activeThread.status !== 'REJECTED' && activeThread.status !== 'ACCEPTED' && (
+                  <button
+                    onClick={() => setShowRejectForm(true)}
+                    className="flex items-center gap-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
+                    title="Reject Quotation"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Reject</span>
+                  </button>
+                )}
                 <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${
                   activeThread.status === 'ACCEPTED' 
                     ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
-                    : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                    : activeThread.status === 'REJECTED'
+                    ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                    : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
                 }`}>
                   {activeThread.status}
                 </span>
@@ -3180,6 +3218,72 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
           </div>
         )}
       </div>
+
+      {showRejectForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={() => setShowRejectForm(false)}
+          ></div>
+          
+          {/* Panel */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-2xl relative z-10 animate-fade-in space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-100">
+              <h3 className="text-sm font-black text-slate-text-primary uppercase tracking-tight font-['Space_Grotesk']">
+                Reject Quotation
+              </h3>
+              <button 
+                onClick={() => setShowRejectForm(false)} 
+                className="p-1 rounded hover:bg-slate-50 text-slate-text-muted cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <p className="text-xs text-slate-text-muted font-semibold leading-relaxed">
+              Please provide a reason for rejecting this quotation. This feedback will be sent directly to <strong>{activeThread?.otherParticipantName}</strong> inside this chat channel.
+            </p>
+            
+            <form onSubmit={handleRejectQuote} className="space-y-4">
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">
+                  Rejection Reason / Feedback *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  value={rejectionReasonInput}
+                  onChange={(e) => setRejectionReasonInput(e.target.value)}
+                  placeholder="e.g. Price is too high, lead times are too long, or specification mismatch..."
+                  className="w-full text-xs font-semibold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-rose-500 resize-none"
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowRejectForm(false)}
+                  className="flex-1 py-2.5 rounded-lg border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={rejecting}
+                  className="flex-1 py-2.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold uppercase tracking-wider cursor-pointer disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  {rejecting ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <span>Submit Rejection</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
