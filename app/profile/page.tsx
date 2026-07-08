@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useCart } from '@/components/CartProvider';
-import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, submitSellerKYC, getSellerDashboardData, Profile, BoltsTransaction } from '@/app/actions/rewards';
+import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, submitSellerKYC, getSellerDashboardData, submitProductListing, Profile, BoltsTransaction } from '@/app/actions/rewards';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
@@ -556,6 +556,15 @@ export default function ProfilePage() {
                   >
                     <Heart className="w-4 h-4 shrink-0" />
                     <span>Wishlist</span>
+                    {wishlist.length > 0 && (
+                      <span className={`ml-auto text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${
+                        activeTab === 'wishlist'
+                          ? 'bg-white/20 text-white'
+                          : 'bg-cobalt/10 text-cobalt border border-cobalt/20'
+                      }`}>
+                        {wishlist.length}
+                      </span>
+                    )}
                   </button>
 
                   <button
@@ -1136,7 +1145,7 @@ export default function ProfilePage() {
                   <div className="border-l border-slate-border h-8"></div>
                   <div>
                     <span className="block text-[8px] uppercase tracking-wider text-slate-text-muted font-bold">Wishlist Items</span>
-                    <span className="text-xl font-mono font-black text-slate-text-primary">3</span>
+                    <span className="text-xl font-mono font-black text-slate-text-primary">{wishlist.length}</span>
                   </div>
                 </div>
               </div>
@@ -1506,29 +1515,32 @@ export default function ProfilePage() {
                 {dbProducts.filter(p => wishlist.includes(p.id)).length > 0 ? (
                   dbProducts.filter(p => wishlist.includes(p.id)).map((item) => (
                     <div key={item.id} className="bg-white border border-slate-border rounded-xl p-5 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow">
-                      <button 
-                        onClick={() => toggleWishlist(item.id)}
-                        className="absolute top-3 right-3 p-1 rounded hover:bg-rose-50 text-slate-text-muted hover:text-rose-500 transition-colors cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
                       <div className="space-y-2">
                         <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-slate-bg text-slate-text-muted w-fit block">{item.category}</span>
                         <h3 className="text-sm font-black text-slate-text-primary leading-tight line-clamp-1">{item.title}</h3>
                         <p className="text-xs text-slate-text-muted line-clamp-2">{item.description}</p>
                       </div>
 
-                      <div className="pt-4 border-t border-slate-border/50 mt-4 flex items-center justify-between">
+                      <div className="pt-4 border-t border-slate-border/50 mt-4 flex items-center justify-between gap-2">
                         <span className="text-sm font-black text-coral">₹{item.price.toFixed(2)}</span>
-                        <button
-                          onClick={() => {
-                            addToCart(item, 1);
-                            showToast(`${item.title} added to cart!`, 'success');
-                          }}
-                          className="btn-cobalt py-2 px-3 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1.5"
-                        >
-                          <ShoppingCart className="w-3.5 h-3.5" /> Add
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => toggleWishlist(item.id)}
+                            className="px-2.5 py-2 border border-rose-200 text-rose-600 hover:bg-rose-50 rounded-lg text-xs font-bold transition-colors cursor-pointer flex items-center gap-1"
+                            title="Remove from Wishlist"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Remove
+                          </button>
+                          <button
+                            onClick={() => {
+                              addToCart(item, 1);
+                              showToast(`${item.title} added to cart!`, 'success');
+                            }}
+                            className="btn-cobalt py-2 px-3 rounded-lg text-xs font-bold cursor-pointer flex items-center gap-1.5"
+                          >
+                            <ShoppingCart className="w-3.5 h-3.5" /> Add
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -1744,13 +1756,33 @@ export default function ProfilePage() {
                 setLocalProducts(updatedProds);
                 localStorage.setItem('local_listed_products', JSON.stringify(updatedProds));
                 
+                // Submit to database via server action (handles auth + seller_profile_id)
                 try {
-                  await supabase.from('products').insert([newProduct]);
-                } catch (err) {
-                  console.warn('Supabase DB write blocked by RLS, persisted locally:', err);
+                  await submitProductListing({
+                    part_number: sku,
+                    title: title,
+                    category: category,
+                    price: price,
+                    stock: stock,
+                    description: desc,
+                    gradient_class: gradient,
+                    image_data: imagePreviews[0] || undefined,
+                    images_data: imagePreviews || [],
+                    specs: newProduct.specs,
+                    bulk_pricing: newProduct.bulk_pricing,
+                    datasheet_url: newProduct.datasheet_url,
+                    cad_file: newProduct.cad_file,
+                    extended_specs: newProduct.extended_specs,
+                  });
+                  // Remove from localStorage once DB confirmed
+                  const withoutNew = updatedProds.filter((p: any) => p.id !== newProduct.id);
+                  setLocalProducts(withoutNew);
+                  localStorage.setItem('local_listed_products', JSON.stringify(withoutNew));
+                  showToast(`Technical Product "${title}" (${sku}) published and live in marketplace!`, 'success');
+                } catch (dbErr: any) {
+                  console.warn('DB insert failed, product saved locally:', dbErr?.message);
+                  showToast(`Product saved locally. DB error: ${dbErr?.message || 'Unknown'}`, 'error');
                 }
-
-                showToast(`Technical Product "${title}" (${sku}) published successfully!`, 'success');
               } else {
                 const processType = selectedProcessType === 'Other'
                   ? target.customProcessType.value.trim()

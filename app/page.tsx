@@ -102,7 +102,7 @@ export default function Home() {
             <Zap className="w-6 h-6 fill-amber-500" />
           </div>
           <div className="space-y-1 px-2">
-            <span className="block text-lg font-mono font-black text-amber-500">25 BOLTS SIGN-IN BONUS</span>
+            <span className="block text-lg font-mono font-black text-amber-500">25 BOLTS WELCOME BONUS</span>
             <p className="text-[11px] text-[#45464d] leading-relaxed font-semibold">
               Create your Shopper Account today. Get 25 Bolts instantly to redeem as discount at checkout!
               Our points expire in 45 days.

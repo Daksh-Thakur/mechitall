@@ -242,7 +242,7 @@ export default function LoginPage() {
             <span>
               {isSignUp
                 ? "You'll receive 25 Bolts instantly on sign-up — redeemable as store credit at checkout!"
-                : 'Your Bolts Wallet balance is restored on every login.'}
+                : 'Welcome back! Keep track of your mechatronics orders, quotes, and reward balances.'}
             </span>
           </div>
 

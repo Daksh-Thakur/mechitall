@@ -67,6 +67,8 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
 
       if (guestProfile && !guestProfile.user_id) {
         // Link the guest profile to this user
+        const isNewSignUp = user.created_at ? (new Date().getTime() - new Date(user.created_at).getTime() < 120000) : false;
+
         const { data: linkedProfile, error: linkError } = await supabase
           .from('profiles')
           .update({
@@ -75,6 +77,7 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
             full_name: guestProfile.full_name === 'Guest Maker' || guestProfile.full_name === 'Guest User'
               ? (user.user_metadata?.full_name || 'Precision Maker')
               : guestProfile.full_name,
+            wallet_balance: isNewSignUp && guestProfile.wallet_balance === 0 ? 25 : guestProfile.wallet_balance,
             updated_at: new Date().toISOString()
           })
           .eq('id', profileId)
@@ -82,12 +85,30 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
           .single();
 
         if (!linkError && linkedProfile) {
+          if (isNewSignUp && guestProfile.wallet_balance === 0) {
+            // Create ledger entry
+            const expirationDate = new Date();
+            expirationDate.setDate(expirationDate.getDate() + 45);
+            await supabase
+              .from('bolts_transactions')
+              .insert([
+                {
+                  profile_id: linkedProfile.id,
+                  amount: 25,
+                  type: 'credit',
+                  description: 'Welcome Reward: 25 Bolts credited',
+                  expires_at: expirationDate.toISOString(),
+                },
+              ]);
+          }
           return linkedProfile as Profile;
         }
       }
     }
 
     // 3. Create a new authenticated profile if none was found or linked
+    const isNewSignUp = user.created_at ? (new Date().getTime() - new Date(user.created_at).getTime() < 120000) : false;
+
     const { data: newProfile, error: createError } = await supabase
       .from('profiles')
       .insert([
@@ -95,7 +116,7 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
           user_id: user.id,
           email: user.email,
           full_name: user.user_metadata?.full_name || 'Precision Maker',
-          wallet_balance: 25, // Initial welcome bolts
+          wallet_balance: isNewSignUp ? 25 : 0, // Welcome bolts only on signup
           loyalty_tier: 'Tinkerer',
         },
       ])
@@ -103,20 +124,22 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
       .single();
 
     if (!createError && newProfile) {
-      // Create ledger entry
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + 45);
-      await supabase
-        .from('bolts_transactions')
-        .insert([
-          {
-            profile_id: newProfile.id,
-            amount: 25,
-            type: 'credit',
-            description: 'Welcome Reward: 25 Bolts credited',
-            expires_at: expirationDate.toISOString(),
-          },
-        ]);
+      if (isNewSignUp) {
+        // Create ledger entry
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() + 45);
+        await supabase
+          .from('bolts_transactions')
+          .insert([
+            {
+              profile_id: newProfile.id,
+              amount: 25,
+              type: 'credit',
+              description: 'Welcome Reward: 25 Bolts credited',
+              expires_at: expirationDate.toISOString(),
+            },
+          ]);
+      }
       return newProfile as Profile;
     }
   }
@@ -398,7 +421,8 @@ export async function createDbOrder(
   profileId: string,
   totalAmount: number,
   itemsCount: number,
-  boltsSpent: number = 0
+  boltsSpent: number = 0,
+  cartItems?: Array<{ product_id: string; quantity: number; unit_price: number }>
 ) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
@@ -422,6 +446,18 @@ export async function createDbOrder(
   if (error) {
     console.error('Database order creation failed:', error.message);
     throw new Error(`Failed to create order: ${error.message}`);
+  }
+
+  // Decrement inventory stock for each product in the cart
+  if (cartItems && cartItems.length > 0) {
+    const { error: stockError } = await supabase.rpc('decrement_product_stock', {
+      p_order_id: orderId,
+      p_items: cartItems,
+    });
+    if (stockError) {
+      // Non-fatal: log the issue but don't fail the order
+      console.error('Stock decrement failed (order still created):', stockError.message);
+    }
   }
 
   // If bolts were spent, log debit transaction and deduct profile balance
@@ -457,6 +493,57 @@ export async function createDbOrder(
   }
 
   return order;
+}
+
+/**
+ * Submits a new product listing from a verified seller.
+ * Inserts the product into the database with the seller's profile ID.
+ */
+export async function submitProductListing(productData: {
+  part_number: string;
+  title: string;
+  category: string;
+  price: number;
+  stock: number;
+  description: string;
+  gradient_class: string;
+  image_data?: string;
+  images_data?: string[];
+  specs: Record<string, string>;
+  bulk_pricing: Array<{ minQty: number; pricePerUnit: number }>;
+  datasheet_url: string;
+  cad_file: string;
+  extended_specs: Record<string, string>;
+}) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  // Must be authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be signed in to submit a listing.');
+
+  // Look up the seller's profile
+  const { data: sellerProfile } = await supabase
+    .from('profiles')
+    .select('id, is_seller')
+    .eq('user_id', user.id)
+    .single();
+
+  if (!sellerProfile) throw new Error('Seller profile not found.');
+  if (!sellerProfile.is_seller) throw new Error('You must be a verified seller to list products.');
+
+  const { data: newProduct, error } = await supabase
+    .from('products')
+    .insert([{ ...productData, seller_profile_id: sellerProfile.id }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Product listing failed:', error.message);
+    throw new Error(`Failed to submit listing: ${error.message}`);
+  }
+
+  return newProduct;
 }
 
 /**

@@ -274,11 +274,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
 
       // 2. Create the order in the database linked to this profile
+      // Build cart items list for stock decrement (only real product items, not custom quotes)
+      const stockItems = cart
+        .filter(item => !item.isCustomQuote && item.part?.id)
+        .map(item => ({
+          product_id: item.part!.id,
+          quantity: item.quantity,
+          unit_price: item.pricePerUnit,
+        }));
+
       const dbOrder = await createDbOrder(
         activeProfile.id,
         cartSummary.total,
         cart.length,
-        cartSummary.boltsToDeduct
+        cartSummary.boltsToDeduct,
+        stockItems
       );
 
       const newOrder: SubmittedOrder = {
