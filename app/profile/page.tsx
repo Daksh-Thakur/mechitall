@@ -832,12 +832,12 @@ export default function ProfilePage() {
                               </div>
                             </div>
 
-                            {/* Submit Button */}
+                            {/* Navigate to Chats to discuss and submit quote */}
                             <button 
-                              onClick={() => router.push('/machining')}
+                              onClick={() => setActiveTab('chats')}
                               className="w-full py-2.5 rounded-xl bg-[#0B1528] hover:bg-slate-900 text-white text-[10px] font-extrabold cursor-pointer transition-colors flex items-center justify-center gap-1.5"
                             >
-                              <span>SUBMIT QUOTE</span>
+                              <span>OPEN IN CHAT</span>
                               <ArrowRight className="w-3.5 h-3.5" />
                             </button>
                           </div>
@@ -3153,25 +3153,32 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
                   <button
                     onClick={async () => {
                       const client = createClient();
-                      const { data } = await client.storage
+                      // Try the stored path directly first
+                      const { data, error } = await client.storage
                         .from('rfq-cad-files')
                         .createSignedUrl(activeThread.cadFilePath!, 60);
                       if (data?.signedUrl) {
                         window.open(data.signedUrl, '_blank');
-                      } else {
-                        // Fallback path check
-                        const { data: data2 } = await client.storage
-                          .from('rfq-cad-files')
-                          .createSignedUrl(`${activeThread.rfqId}/${activeThread.cadFilePath!}`, 60);
-                        if (data2?.signedUrl) {
-                          window.open(data2.signedUrl, '_blank');
-                        } else {
-                          showToast('Could not retrieve design file link.', 'error');
-                        }
+                        return;
                       }
+                      // Fallback: try with rfqId prefix (older uploads stored as rfqId/filename)
+                      const { data: data2 } = await client.storage
+                        .from('rfq-cad-files')
+                        .createSignedUrl(`${activeThread.rfqId}/${activeThread.cadFilePath!}`, 60);
+                      if (data2?.signedUrl) {
+                        window.open(data2.signedUrl, '_blank');
+                        return;
+                      }
+                      // Both failed — storage policy likely not yet applied
+                      showToast(
+                        error?.message?.includes('not found')
+                          ? 'Design file not found in storage. Ask the buyer to re-upload.'
+                          : 'Storage access denied. Please ask your admin to apply the RLS storage policies in the Supabase SQL Editor.',
+                        'error'
+                      );
                     }}
                     className="flex items-center gap-1 bg-[#0f172a] hover:bg-[#06b6d4] text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
-                    title="View Customer Design File"
+                    title="Download Customer Design File"
                   >
                     <FileText className="w-3.5 h-3.5" />
                     <span>Open Design</span>

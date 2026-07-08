@@ -251,6 +251,7 @@ export async function acceptQuote(quoteId: string, rfqId: string): Promise<Actio
 
 /**
  * Fetches all ongoing quote chat threads for the current user (as buyer or seller).
+ * Uses a two-step fetch to bypass RLS join nulls on rfqs for sellers with closed/draft RFQs.
  */
 export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
   try {
@@ -259,20 +260,11 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
 
     const profile = await getAuthProfile(supabase);
 
-    // Fetch quotes that belong to this user (as seller) OR are attached to RFQs this user owns (as buyer)
+    // Step 1: Fetch quotes where this user is seller OR buyer (via rfq)
     const { data: quotesData, error: quotesError } = await supabase
       .from('quotes')
       .select(`
         *,
-        rfqs:rfq_id (
-          id,
-          title,
-          buyer_id,
-          cad_file_path,
-          profiles:buyer_id (
-            full_name
-          )
-        ),
         seller_profile:seller_id (
           full_name
         )
@@ -285,24 +277,36 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
     const threads: ChatThread[] = [];
 
     for (const q of (quotesData || [])) {
-      const rfq = q.rfqs as any;
       const sellerProfile = q.seller_profile as any;
-      if (!rfq) continue;
-
-      const buyerId = rfq.buyer_id;
       const sellerId = q.seller_id;
 
-      // Check if user is either buyer or seller
+      // Step 2: Fetch the RFQ for this quote individually.
+      // This is necessary because nested joins are blocked by RLS for non-buyers on closed RFQs.
+      const { data: rfq } = await supabase
+        .from('rfqs')
+        .select('id, title, buyer_id, cad_file_path, profiles:buyer_id(full_name)')
+        .eq('id', q.rfq_id)
+        .maybeSingle();
+
+      if (!rfq) {
+        // RFQ not accessible or deleted — skip this thread
+        console.warn(`[getOngoingChats] Could not fetch RFQ for quote ${q.id}. Skipping.`);
+        continue;
+      }
+
+      const buyerId = rfq.buyer_id;
+
+      // Only include threads where this user is buyer or seller
       if (profile.id !== buyerId && profile.id !== sellerId) {
         continue;
       }
 
-      // Determine other participant's name
-      const otherParticipantName = profile.id === buyerId 
-        ? (sellerProfile?.full_name || 'Seller') 
-        : (rfq.profiles?.full_name || 'Buyer');
+      // Determine the other participant name
+      const otherParticipantName = profile.id === buyerId
+        ? (sellerProfile?.full_name || 'Seller')
+        : ((rfq.profiles as any)?.full_name || 'Buyer');
 
-      // Fetch latest message for this quote
+      // Fetch latest message preview for thread sidebar
       const { data: latestMsg } = await supabase
         .from('chat_messages')
         .select('message_text, created_at')
@@ -323,7 +327,7 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
       });
     }
 
-    // Sort threads by latest message or creation time
+    // Sort by latest message time descending
     threads.sort((a, b) => {
       const timeA = a.lastMessageTime || '';
       const timeB = b.lastMessageTime || '';
@@ -337,6 +341,8 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
 }
 
 
+
+
 /**
  * Sends a message in the secure negotiation/dispute chat.
  */
@@ -347,28 +353,30 @@ export async function sendChatMessage(data: ChatMessageInput): Promise<ActionRes
 
     const profile = await getAuthProfile(supabase);
 
-    // Verify user participates in this RFQ/Quote
-    const { data: rfq, error: rfqError } = await supabase
-      .from('rfqs')
-      .select('buyer_id')
-      .eq('id', data.rfqId)
-      .single();
+    let isAuthorized = false;
 
-    if (rfqError || !rfq) {
-      return { success: false, error: 'Target RFQ not found' };
-    }
-
-    let isAuthorized = rfq.buyer_id === profile.id;
-
-    if (!isAuthorized && data.quoteId) {
-      // Check if user is the seller of the quote
-      const { data: quote, error: quoteError } = await supabase
+    // Check seller authorization via quote (sellers can always read their own quotes)
+    if (data.quoteId) {
+      const { data: quote } = await supabase
         .from('quotes')
         .select('seller_id')
         .eq('id', data.quoteId)
-        .single();
+        .maybeSingle();
 
-      if (!quoteError && quote && quote.seller_id === profile.id) {
+      if (quote && quote.seller_id === profile.id) {
+        isAuthorized = true;
+      }
+    }
+
+    // Check buyer authorization via RFQ (buyers always have SELECT on their own RFQs)
+    if (!isAuthorized) {
+      const { data: rfq } = await supabase
+        .from('rfqs')
+        .select('buyer_id')
+        .eq('id', data.rfqId)
+        .maybeSingle();
+
+      if (rfq && rfq.buyer_id === profile.id) {
         isAuthorized = true;
       }
     }
@@ -407,6 +415,7 @@ export async function sendChatMessage(data: ChatMessageInput): Promise<ActionRes
   }
 }
 
+
 /**
  * Fetches secure negotiation/dispute message history for a quote/RFQ.
  */
@@ -417,19 +426,27 @@ export async function getChatMessages(quoteId: string): Promise<ActionResponse<C
 
     const profile = await getAuthProfile(supabase);
 
-    // Verify the user owns the parent RFQ or the Quote
+    // Fetch the quote to get seller and rfq_id
     const { data: quote, error: quoteError } = await supabase
       .from('quotes')
-      .select('seller_id, rfq_id, rfqs(buyer_id)')
+      .select('seller_id, rfq_id')
       .eq('id', quoteId)
-      .single();
+      .maybeSingle();
 
     if (quoteError || !quote) {
       return { success: false, error: 'Quote not found' };
     }
 
-    const rfqBuyerId = (quote.rfqs as any)?.buyer_id;
     const sellerId = quote.seller_id;
+
+    // Fetch RFQ separately so buyer_id is accessible even on non-open RFQs
+    const { data: rfq } = await supabase
+      .from('rfqs')
+      .select('buyer_id')
+      .eq('id', quote.rfq_id)
+      .maybeSingle();
+
+    const rfqBuyerId = rfq?.buyer_id;
 
     if (profile.id !== rfqBuyerId && profile.id !== sellerId) {
       return { success: false, error: 'Unauthorized: You are not a participant in this conversation' };
