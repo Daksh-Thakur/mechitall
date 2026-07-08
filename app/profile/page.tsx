@@ -398,6 +398,8 @@ export default function ProfilePage() {
     }
   };
 
+  const [publishingListing, setPublishingListing] = useState(false);
+
   const activeShipmentsCount = orders.filter(o => o.status === 'Processing' || o.status === 'Shipped').length;
 
   if (isGuest === true) {
@@ -2124,55 +2126,24 @@ export default function ProfilePage() {
 
             <form onSubmit={async (e) => {
               e.preventDefault();
-              const target = e.target as any;
-              const title = target.title.value.trim();
-              const type = target.type.value;
-              const price = Number(target.price.value) || 0;
-              const desc = target.description.value.trim();
-              const gradient = imagePreviews.length > 0 ? 'custom-image' : 'from-cobalt/20 to-cobalt/5 border-cobalt/20';
-              
-              if (type === 'Product') {
-                const sku = target.sku.value.trim();
-                const category = selectedCategory === 'Other' ? target.customCategory.value.trim() : selectedCategory;
-                const stock = Number(target.stock.value) || 0;
+              if (publishingListing) return;
+              setPublishingListing(true);
 
-                const newProduct = {
-                  id: crypto.randomUUID ? crypto.randomUUID() : 'prod-' + Math.random().toString(36).substr(2, 9),
-                  part_number: sku,
-                  title: title,
-                  category: category,
-                  price: price,
-                  stock: stock,
-                  description: desc,
-                  gradient_class: gradient,
-                  image_data: imagePreviews[0] || undefined,
-                  images_data: imagePreviews || [],
-                  specs: customSpecs.reduce((acc, curr) => {
-                    if (curr.key.trim()) {
-                      acc[curr.key.trim()] = curr.value.trim();
-                    }
-                    return acc;
-                  }, {} as Record<string, string>),
-                  bulk_pricing: enableBulkPricing ? [
-                    { minQty: 10, pricePerUnit: Number(target.tierPrice1?.value) || price },
-                    { minQty: 50, pricePerUnit: Number(target.tierPrice2?.value) || price }
-                  ] : [],
-                  datasheet_url: datasheetFile ? datasheetFile.name : '',
-                  cad_file: cadFile ? cadFile.name : '',
-                  extended_specs: {
-                    ingressProtection: target.ipRating.value.trim(),
-                    mtbf: target.mtbf.value.trim(),
-                    dimensions: 'Standard Frame'
-                  }
-                };
-
-                const updatedProds = [...localProducts, newProduct];
-                setLocalProducts(updatedProds);
-                localStorage.setItem('local_listed_products', JSON.stringify(updatedProds));
+              try {
+                const target = e.target as any;
+                const title = target.title.value.trim();
+                const type = target.type.value;
+                const price = Number(target.price.value) || 0;
+                const desc = target.description.value.trim();
+                const gradient = imagePreviews.length > 0 ? 'custom-image' : 'from-cobalt/20 to-cobalt/5 border-cobalt/20';
                 
-                // Submit to database via server action (handles auth + seller_profile_id)
-                try {
-                  await submitProductListing({
+                if (type === 'Product') {
+                  const sku = target.sku.value.trim();
+                  const category = selectedCategory === 'Other' ? target.customCategory.value.trim() : selectedCategory;
+                  const stock = Number(target.stock.value) || 0;
+
+                  const newProduct = {
+                    id: crypto.randomUUID ? crypto.randomUUID() : 'prod-' + Math.random().toString(36).substr(2, 9),
                     part_number: sku,
                     title: title,
                     category: category,
@@ -2182,85 +2153,123 @@ export default function ProfilePage() {
                     gradient_class: gradient,
                     image_data: imagePreviews[0] || undefined,
                     images_data: imagePreviews || [],
-                    specs: newProduct.specs,
-                    bulk_pricing: newProduct.bulk_pricing,
-                    datasheet_url: newProduct.datasheet_url,
-                    cad_file: newProduct.cad_file,
-                    extended_specs: newProduct.extended_specs,
-                  });
-                  // Remove from localStorage once DB confirmed
-                  const withoutNew = updatedProds.filter((p: any) => p.id !== newProduct.id);
-                  setLocalProducts(withoutNew);
-                  localStorage.setItem('local_listed_products', JSON.stringify(withoutNew));
-                  showToast(`Technical Product "${title}" (${sku}) published and live in marketplace!`, 'success');
-                } catch (dbErr: any) {
-                  console.warn('DB insert failed, product saved locally:', dbErr?.message);
-                  showToast(`Product saved locally. DB error: ${dbErr?.message || 'Unknown'}`, 'error');
-                }
-              } else {
-                const processType = selectedProcessType === 'Other'
-                  ? target.customProcessType.value.trim()
-                  : selectedProcessType;
-                const leadTime = target.leadTime.value.trim();
-                const materials = target.materials.value.trim();
-                const finishes = target.finishes.value.trim();
+                    specs: customSpecs.reduce((acc, curr) => {
+                      if (curr.key.trim()) {
+                        acc[curr.key.trim()] = curr.value.trim();
+                      }
+                      return acc;
+                    }, {} as Record<string, string>),
+                    bulk_pricing: enableBulkPricing ? [
+                      { minQty: 10, pricePerUnit: Number(target.tierPrice1?.value) || price },
+                      { minQty: 50, pricePerUnit: Number(target.tierPrice2?.value) || price }
+                    ] : [],
+                    datasheet_url: datasheetFile ? datasheetFile.name : '',
+                    cad_file: cadFile ? cadFile.name : '',
+                    extended_specs: {
+                      ingressProtection: target.ipRating.value.trim(),
+                      mtbf: target.mtbf.value.trim(),
+                      dimensions: 'Standard Frame'
+                    }
+                  };
 
-                const newService = {
-                  id: crypto.randomUUID ? crypto.randomUUID() : 'serv-' + Math.random().toString(36).substr(2, 9),
-                  title: title,
-                  category: processType,
-                  base_price: price,
-                  lead_time: `${leadTime} Lead`,
-                  features: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
-                  gradient_class: gradient,
-                  image_data: imagePreviews[0] || undefined,
-                  images_data: imagePreviews || []
-                };
-                
-                const updatedServs = [...localServices, newService];
-                setLocalServices(updatedServs);
-                localStorage.setItem('local_listed_services', JSON.stringify(updatedServs));
-                
-                // 1. Submit general service listing via Server Action
-                try {
-                  await submitServiceListing({
-                    title: newService.title,
-                    category: newService.category,
-                    description: desc,
-                    base_price: newService.base_price,
-                    lead_time: newService.lead_time,
-                    features: newService.features,
-                    gradient_class: newService.gradient_class,
-                    image_data: newService.image_data,
-                    images_data: newService.images_data
-                  });
-                } catch (err) {
-                  console.warn('Failed to submit general service catalog listing:', err);
-                }
+                  const updatedProds = [...localProducts, newProduct];
+                  setLocalProducts(updatedProds);
+                  localStorage.setItem('local_listed_products', JSON.stringify(updatedProds));
+                  
+                  // Submit to database via server action (handles auth + seller_profile_id)
+                  try {
+                    await submitProductListing({
+                      part_number: sku,
+                      title: title,
+                      category: category,
+                      price: price,
+                      stock: stock,
+                      description: desc,
+                      gradient_class: gradient,
+                      image_data: imagePreviews[0] || undefined,
+                      images_data: imagePreviews || [],
+                      specs: newProduct.specs,
+                      bulk_pricing: newProduct.bulk_pricing,
+                      datasheet_url: newProduct.datasheet_url,
+                      cad_file: newProduct.cad_file,
+                      extended_specs: newProduct.extended_specs,
+                    });
+                    // Remove from localStorage once DB confirmed
+                    const withoutNew = updatedProds.filter((p: any) => p.id !== newProduct.id);
+                    setLocalProducts(withoutNew);
+                    localStorage.setItem('local_listed_products', JSON.stringify(withoutNew));
+                    showToast(`Technical Product "${title}" (${sku}) published and live in marketplace!`, 'success');
+                  } catch (dbErr: any) {
+                    console.warn('DB insert failed, product saved locally:', dbErr?.message);
+                    showToast(`Product saved locally. DB error: ${dbErr?.message || 'Unknown'}`, 'error');
+                  }
+                } else {
+                  const processType = selectedProcessType === 'Other'
+                    ? target.customProcessType.value.trim()
+                    : selectedProcessType;
+                  const leadTime = target.leadTime.value.trim();
+                  const materials = target.materials.value.trim();
+                  const finishes = target.finishes.value.trim();
 
-                // 2. Submit custom machining capability via Server Action
-                try {
-                  await listMachiningService(profile.id, {
+                  const newService = {
+                    id: crypto.randomUUID ? crypto.randomUUID() : 'serv-' + Math.random().toString(36).substr(2, 9),
                     title: title,
-                    processType: processType as any,
-                    description: desc,
-                    basePrice: price,
-                    leadTime: leadTime,
-                    materials: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
-                    finishes: finishes.split(',').map((s: string) => s.trim()).filter(Boolean),
-                  });
-                  // Refresh seller registry
-                  await fetchSellerData();
-                } catch (err) {
-                  console.warn('Failed to submit custom machining capability:', err);
+                    category: processType,
+                    base_price: price,
+                    lead_time: `${leadTime} Lead`,
+                    features: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
+                    gradient_class: gradient,
+                    image_data: imagePreviews[0] || undefined,
+                    images_data: imagePreviews || []
+                  };
+                  
+                  const updatedServs = [...localServices, newService];
+                  setLocalServices(updatedServs);
+                  localStorage.setItem('local_listed_services', JSON.stringify(updatedServs));
+                  
+                  // 1. Submit general service listing via Server Action
+                  try {
+                    await submitServiceListing({
+                      title: newService.title,
+                      category: newService.category,
+                      description: desc,
+                      base_price: newService.base_price,
+                      lead_time: newService.lead_time,
+                      features: newService.features,
+                      gradient_class: newService.gradient_class,
+                      image_data: newService.image_data,
+                      images_data: newService.images_data
+                    });
+                  } catch (err) {
+                    console.warn('Failed to submit general service catalog listing:', err);
+                  }
+
+                  // 2. Submit custom machining capability via Server Action
+                  try {
+                    await listMachiningService(profile.id, {
+                      title: title,
+                      processType: processType as any,
+                      description: desc,
+                      basePrice: price,
+                      leadTime: leadTime,
+                      materials: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
+                      finishes: finishes.split(',').map((s: string) => s.trim()).filter(Boolean),
+                    });
+                    // Refresh seller registry
+                    await fetchSellerData();
+                  } catch (err) {
+                    console.warn('Failed to submit custom machining capability:', err);
+                  }
+
+                  showToast(`Technical Service "${title}" (${processType}) published successfully!`, 'success');
                 }
 
-                showToast(`Technical Service "${title}" (${processType}) published successfully!`, 'success');
+                setImagePreviews([]);
+                setImageFileNames([]);
+                setShowAddListingModal(false);
+              } finally {
+                setPublishingListing(false);
               }
-
-              setImagePreviews([]);
-              setImageFileNames([]);
-              setShowAddListingModal(false);
             }} className="space-y-4">
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
@@ -2665,8 +2674,19 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex gap-3 pt-3 border-t border-[#E4E4E7]">
-                <button type="submit" className="flex-1 bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer text-center">
-                  Publish
+                <button 
+                  type="submit" 
+                  disabled={publishingListing}
+                  className="flex-1 bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer text-center disabled:opacity-50 flex items-center justify-center gap-1.5"
+                >
+                  {publishingListing ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Publishing...</span>
+                    </>
+                  ) : (
+                    <span>Publish</span>
+                  )}
                 </button>
                 <button type="button" onClick={() => setShowAddListingModal(false)} className="flex-1 border border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#76777d] py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center">
                   Cancel
@@ -3030,13 +3050,43 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
                   <span className="text-[10px] font-bold text-slate-text-muted block mt-0.5">Participant: {activeThread.otherParticipantName}</span>
                 </div>
               </div>
-              <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${
-                activeThread.status === 'ACCEPTED' 
-                  ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
-                  : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-              }`}>
-                {activeThread.status}
-              </span>
+              <div className="flex items-center gap-2">
+                {activeThread.cadFilePath && (
+                  <button
+                    onClick={async () => {
+                      const client = createClient();
+                      const { data } = await client.storage
+                        .from('rfq-cad-files')
+                        .createSignedUrl(activeThread.cadFilePath!, 60);
+                      if (data?.signedUrl) {
+                        window.open(data.signedUrl, '_blank');
+                      } else {
+                        // Fallback path check
+                        const { data: data2 } = await client.storage
+                          .from('rfq-cad-files')
+                          .createSignedUrl(`${activeThread.rfqId}/${activeThread.cadFilePath!}`, 60);
+                        if (data2?.signedUrl) {
+                          window.open(data2.signedUrl, '_blank');
+                        } else {
+                          showToast('Could not retrieve design file link.', 'error');
+                        }
+                      }
+                    }}
+                    className="flex items-center gap-1 bg-[#0f172a] hover:bg-[#06b6d4] text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
+                    title="View Customer Design File"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Open Design</span>
+                  </button>
+                )}
+                <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${
+                  activeThread.status === 'ACCEPTED' 
+                    ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
+                    : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                }`}>
+                  {activeThread.status}
+                </span>
+              </div>
             </div>
 
             {/* Messages Log */}

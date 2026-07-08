@@ -80,6 +80,7 @@ export interface ChatThread {
   status: QuoteStatus;
   lastMessageText: string | null;
   lastMessageTime: string | null;
+  cadFilePath?: string | null;
 }
 
 export interface ActionResponse<T = any> {

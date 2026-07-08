@@ -165,25 +165,29 @@ export async function requestMachiningQuote(
       .select()
       .single();
 
-    if (rfq && service?.seller_profile_id) {
-      await supabase
-        .from('quotes')
-        .insert([
-          {
-            rfq_id: rfq.id,
-            seller_id: service.seller_profile_id,
-            total_cost: 0,
-            lead_time_days: 7,
-            seller_notes: 'Awaiting seller custom pricing offer.',
-            status: 'SUBMITTED',
-          }
-        ]);
+    let rfqId: string | null = null;
+    if (rfq) {
+      rfqId = rfq.id;
+      if (service?.seller_profile_id) {
+        await supabase
+          .from('quotes')
+          .insert([
+            {
+              rfq_id: rfq.id,
+              seller_id: service.seller_profile_id,
+              total_cost: 0,
+              lead_time_days: 7,
+              seller_notes: 'Awaiting seller custom pricing offer.',
+              status: 'SUBMITTED',
+            }
+          ]);
+      }
     }
+    return { quote: quote as MachiningQuote, rfqId };
   } catch (linkErr) {
     console.error('Non-fatal: Failed to link to RFQs/Quotes tables:', linkErr);
+    return { quote: quote as MachiningQuote, rfqId: null };
   }
-
-  return quote as MachiningQuote;
 }
 
 /**

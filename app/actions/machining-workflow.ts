@@ -268,6 +268,7 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
           id,
           title,
           buyer_id,
+          cad_file_path,
           profiles:buyer_id (
             full_name
           )
@@ -318,6 +319,7 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
         status: q.status,
         lastMessageText: latestMsg?.message_text || null,
         lastMessageTime: latestMsg?.created_at || null,
+        cadFilePath: rfq.cad_file_path || null,
       });
     }
 

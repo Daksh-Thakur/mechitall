@@ -17,6 +17,7 @@ import {
   ChevronRight, Info, X, Upload, File, Trash2, Eye, ArrowRight, 
   Zap, RotateCcw, Package, Search, SlidersHorizontal, SlidersVertical
 } from 'lucide-react';
+import { getUploadSignedUrl } from '@/app/actions/machining-workflow';
 
 const MOCK_DEMO_SERVICES: MachiningService[] = [];
 
@@ -209,9 +210,32 @@ export default function MachiningMarketplacePage() {
 
     setSubmittingQuote(true);
     try {
-      await requestMachiningQuote(profile.id, selectedService.id, {
+      const resObj = await requestMachiningQuote(profile.id, selectedService.id, {
         cadFileName: uploadedFile.name,
       });
+
+      const { rfqId } = resObj as any;
+
+      if (rfqId) {
+        // Generate signed upload URL for the CAD file
+        const signedRes = await getUploadSignedUrl(rfqId, uploadedFile.name);
+        if (signedRes.success && signedRes.data) {
+          const { signedUrl } = signedRes.data;
+          
+          // Upload file directly via PUT
+          const uploadResponse = await fetch(signedUrl, {
+            method: 'PUT',
+            body: uploadedFile,
+            headers: {
+              'Content-Type': uploadedFile.type || 'application/octet-stream',
+            },
+          });
+
+          if (!uploadResponse.ok) {
+            console.error('Failed to upload CAD file to storage bucket');
+          }
+        }
+      }
 
       showToast(`"${uploadedFile.name}" shared with seller! Awaiting custom quote.`, 'success');
       setSelectedService(null);
