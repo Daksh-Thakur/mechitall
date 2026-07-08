@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useCart } from '@/components/CartProvider';
-import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, submitSellerKYC, getSellerDashboardData, submitProductListing, Profile, BoltsTransaction } from '@/app/actions/rewards';
+import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, submitSellerKYC, getSellerDashboardData, submitProductListing, getSellerOrders, updateSellerOrderStatus, deleteSellerCapability, submitServiceListing, deleteSellerProduct, deleteSellerService, Profile, BoltsTransaction } from '@/app/actions/rewards';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import LoginPage from '../login/page';
@@ -22,6 +22,7 @@ import {
   sendChatMessage, 
   getChatUploadSignedUrl 
 } from '@/app/actions/machining-workflow';
+import { listMachiningService } from '@/app/actions/marketplace';
 import { ChatThread, ChatMessage } from '@/types/machining';
 export default function ProfilePage() {
   const router = useRouter();
@@ -167,19 +168,27 @@ export default function ProfilePage() {
     monthlyEarnings: number;
     earningsVelocity: any[];
     capabilities: any[];
+    products: any[];
+    services: any[];
   } | null>(null);
   const [loadingSeller, setLoadingSeller] = useState(false);
+  const [sellerOrders, setSellerOrders] = useState<any[]>([]);
+  const [loadingSellerOrders, setLoadingSellerOrders] = useState(false);
 
   const fetchSellerData = async () => {
     if (!profile) return;
     setLoadingSeller(true);
+    setLoadingSellerOrders(true);
     try {
       const data = await getSellerDashboardData(profile.id);
       setSellerData(data);
+      const sOrders = await getSellerOrders(profile.id);
+      setSellerOrders(sOrders);
     } catch (err) {
       console.error('Failed to load seller data:', err);
     } finally {
       setLoadingSeller(false);
+      setLoadingSellerOrders(false);
     }
   };
 
@@ -328,6 +337,65 @@ export default function ProfilePage() {
         showToast(err.message || 'Failed to update settings', 'error');
       }
     });
+  };
+
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const handleUpdateOrderStatus = async (orderId: string, nextStatus: 'Processing' | 'Shipped' | 'Delivered' | 'Completed') => {
+    setUpdatingOrderId(orderId);
+    try {
+      await updateSellerOrderStatus(orderId, nextStatus);
+      showToast(`Order status updated to "${nextStatus}" successfully!`, 'success');
+      await fetchSellerData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update order status.', 'error');
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const [deletingServiceId, setDeletingServiceId] = useState<string | null>(null);
+  const handleDeleteCapability = async (serviceId: string) => {
+    if (!profile) return;
+    setDeletingServiceId(serviceId);
+    try {
+      await deleteSellerCapability(serviceId, profile.id);
+      showToast('Capability deleted successfully!', 'success');
+      await fetchSellerData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete capability.', 'error');
+    } finally {
+      setDeletingServiceId(null);
+    }
+  };
+
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+  const handleDeleteProduct = async (productId: string) => {
+    if (!profile) return;
+    setDeletingProductId(productId);
+    try {
+      await deleteSellerProduct(productId, profile.id);
+      showToast('Product listing deleted successfully!', 'success');
+      await fetchSellerData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete product listing.', 'error');
+    } finally {
+      setDeletingProductId(null);
+    }
+  };
+
+  const [deletingCatalogServiceId, setDeletingCatalogServiceId] = useState<string | null>(null);
+  const handleDeleteService = async (serviceId: string) => {
+    if (!profile) return;
+    setDeletingCatalogServiceId(serviceId);
+    try {
+      await deleteSellerService(serviceId, profile.id);
+      showToast('Service listing deleted successfully!', 'success');
+      await fetchSellerData();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete service listing.', 'error');
+    } finally {
+      setDeletingCatalogServiceId(null);
+    }
   };
 
   const activeShipmentsCount = orders.filter(o => o.status === 'Processing' || o.status === 'Shipped').length;
@@ -995,12 +1063,100 @@ export default function ProfilePage() {
 
           {/* OTHER SELLER HUB TABS */}
           {profile.is_seller && activeTab === 'seller_orders' && (
-            <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm text-center py-20 space-y-3">
-              <ShoppingBag className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
-              <h4 className="text-sm font-bold text-[#0F172A] font-['Space_Grotesk']">Seller Orders Manager</h4>
-              <p className="text-xs text-[#76777d] max-w-sm mx-auto font-medium">
-                View, track, and complete purchase orders submitted for custom fabrication jobs or catalog parts.
-              </p>
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm">
+                <h2 className="text-base font-bold text-[#0F172A] tracking-tight uppercase font-['Space_Grotesk']">Seller Orders Manager</h2>
+                <p className="text-xs text-[#76777d] mt-1 font-semibold">
+                  Track, ship, and complete purchase orders submitted by customers for custom machining contracts or catalog mechatronic parts.
+                </p>
+              </div>
+
+              {loadingSellerOrders ? (
+                <div className="bg-white border border-[#E4E4E7] p-12 text-center rounded space-y-3">
+                  <RefreshCw className="w-8 h-8 text-cobalt animate-spin mx-auto" />
+                  <p className="text-xs font-bold text-slate-text-muted animate-pulse">Loading orders queue...</p>
+                </div>
+              ) : sellerOrders.length === 0 ? (
+                <div className="bg-white border border-[#E4E4E7] rounded p-12 text-center py-20 space-y-3 shadow-sm">
+                  <ShoppingBag className="w-12 h-12 text-slate-text-muted/20 mx-auto" />
+                  <h4 className="text-sm font-bold text-[#0F172A] font-['Space_Grotesk']">No orders received yet</h4>
+                  <p className="text-xs text-[#76777d] max-w-sm mx-auto font-medium">
+                    When buyers checkout your mechatronics parts or accept your custom machining quotes, their purchase orders will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {sellerOrders.map(order => {
+                    const nextStatusMap = {
+                      'Processing': 'Shipped',
+                      'Shipped': 'Delivered',
+                      'Delivered': 'Completed',
+                      'Completed': null
+                    };
+                    const nextStatus = nextStatusMap[order.status as keyof typeof nextStatusMap];
+                    const isUpdating = updatingOrderId === order.id;
+
+                    return (
+                      <div key={order.id} className="bg-white border border-[#E4E4E7] p-6 rounded shadow-sm hover:border-slate-300 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-mono font-bold text-cobalt bg-cobalt/5 border border-cobalt/15 px-2.5 py-1 rounded">
+                              {order.id}
+                            </span>
+                            <span className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                              order.status === 'Completed'
+                                ? 'bg-emerald/8 text-emerald border-emerald/20'
+                                : order.status === 'Delivered'
+                                ? 'bg-sky-500/8 text-sky-600 border-sky-500/20'
+                                : order.status === 'Shipped'
+                                ? 'bg-amber-500/8 text-amber-600 border-amber-500/20'
+                                : 'bg-slate-500/8 text-slate-600 border-slate-500/20'
+                            }`}>
+                              {order.status}
+                            </span>
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <h4 className="text-xs font-black text-slate-text-primary">
+                              Buyer: <span className="text-slate-text-secondary">{order.buyer_name}</span> 
+                              <span className="text-[10px] text-slate-text-muted font-normal font-mono ml-2">({order.buyer_email})</span>
+                            </h4>
+                            <p className="text-[11px] text-slate-text-muted font-semibold">
+                              Total Amount: <span className="text-[#0F172A] font-extrabold">₹{Number(order.total_amount).toLocaleString('en-IN')}</span> | Items: <span className="font-bold">{order.items_count}</span>
+                            </p>
+                            <p className="text-[10px] text-slate-text-muted font-mono">
+                              Ordered on: {new Date(order.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                        </div>
+
+                        {nextStatus && (
+                          <button
+                            onClick={() => handleUpdateOrderStatus(order.id, nextStatus as any)}
+                            disabled={isUpdating}
+                            className="bg-[#0f172a] hover:bg-[#06b6d4] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-colors shadow flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          >
+                            {isUpdating ? (
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                            )}
+                            <span>Mark as {nextStatus}</span>
+                          </button>
+                        )}
+
+                        {order.status === 'Completed' && (
+                          <div className="flex items-center gap-1.5 text-emerald font-bold text-xs">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>Order Completed</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
@@ -1022,100 +1178,348 @@ export default function ProfilePage() {
                 </button>
               </div>
 
-              {/* Listings Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Product Listings Card */}
-                <div className="bg-white border border-[#E4E4E7] rounded p-5 shadow-sm space-y-4">
-                  <div className="flex justify-between items-center pb-3 border-b border-[#E4E4E7]">
-                    <div className="flex items-center gap-2">
-                      <Package className="w-4 h-4 text-cobalt" />
-                      <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#0f172a]">Catalog Products ({localProducts.length})</h3>
+              {loadingSeller && !sellerData ? (
+                <div className="bg-white border border-[#E4E4E7] p-12 text-center rounded space-y-3">
+                  <RefreshCw className="w-8 h-8 text-cobalt animate-spin mx-auto" />
+                  <p className="text-xs font-bold text-slate-text-muted animate-pulse">Loading active inventory...</p>
+                </div>
+              ) : (
+                /* Listings Grid */
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Product Listings Card */}
+                  <div className="bg-white border border-[#E4E4E7] rounded p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-[#E4E4E7]">
+                      <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-cobalt" />
+                        <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#0f172a]">
+                          Catalog Products ({sellerData ? sellerData.products.length : 0})
+                        </h3>
+                      </div>
+                      <span className="text-[9px] font-mono font-bold text-[#76777d] uppercase">Stock Active</span>
                     </div>
-                    <span className="text-[9px] font-mono font-bold text-[#76777d] uppercase">Stock Active</span>
+
+                    <div className="space-y-3">
+                      {!sellerData || sellerData.products.length === 0 ? (
+                        <p className="text-center py-6 text-xs text-slate-text-muted font-semibold">No catalog products listed yet.</p>
+                      ) : (
+                        sellerData.products.map((item) => {
+                          const isDeleting = deletingProductId === item.id;
+                          return (
+                            <div key={item.id} className="flex justify-between items-center p-3 border border-[#E4E4E7] bg-[#F8FAFC]/50 rounded text-xs font-medium gap-3">
+                              <div className="flex gap-3 items-center min-w-0 flex-1">
+                                {item.image_data || item.imageData ? (
+                                  <img src={item.image_data || item.imageData} alt={item.title} className="w-8 h-8 object-cover rounded border bg-white shrink-0" />
+                                ) : (
+                                  <div className="w-8 h-8 bg-white flex items-center justify-center rounded border shrink-0">
+                                    <Package className="w-3.5 h-3.5 text-[#76777d]" />
+                                  </div>
+                                )}
+                                <div className="space-y-0.5 min-w-0 flex-1">
+                                  <span className="block text-[8px] font-mono text-[#76777d] uppercase tracking-wider truncate">{item.part_number || item.sku}</span>
+                                  <span className="block font-semibold text-[#0f172a] truncate">{item.title}</span>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0 flex items-center gap-4">
+                                <div>
+                                  <span className="block font-bold text-coral">₹{Number(item.price).toLocaleString('en-IN')}</span>
+                                  <span className="block text-[8px] font-mono font-bold text-[#76777d] uppercase">{item.stock} units</span>
+                                </div>
+                                <button
+                                  onClick={() => handleDeleteProduct(item.id)}
+                                  disabled={isDeleting}
+                                  className="text-red-500 hover:text-red-600 disabled:opacity-50 transition-colors p-1 cursor-pointer"
+                                  title="Delete product listing"
+                                >
+                                  {isDeleting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
                   </div>
 
-                  <div className="space-y-3">
-                    {localProducts.map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center p-3 border border-[#E4E4E7] bg-[#F8FAFC]/50 rounded text-xs font-medium">
-                        <div className="flex gap-3 items-center">
-                          {item.image_data || item.imageData ? (
-                            <img src={item.image_data || item.imageData} alt={item.title} className="w-8 h-8 object-cover rounded border" />
-                          ) : (
-                            <div className="w-8 h-8 bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center rounded border">
-                              <Package className="w-3.5 h-3.5 text-[#76777d]" />
-                            </div>
-                          )}
-                          <div className="space-y-0.5">
-                            <span className="block text-[8px] font-mono text-[#76777d] uppercase tracking-wider">{item.part_number || item.sku}</span>
-                            <span className="block font-semibold text-[#0f172a] truncate max-w-[180px]">{item.title}</span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span className="block font-bold text-coral">₹{Number(item.price).toLocaleString('en-IN')}</span>
-                          <span className="block text-[8px] font-mono font-bold text-[#76777d] uppercase">{item.stock} units</span>
-                        </div>
+                  {/* Service Listings Card */}
+                  <div className="bg-white border border-[#E4E4E7] rounded p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-[#E4E4E7]">
+                      <div className="flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-[#06B6D4]" />
+                        <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#0f172a]">
+                          Catalog Services ({sellerData ? sellerData.services.length : 0})
+                        </h3>
                       </div>
-                    ))}
+                      <span className="text-[9px] font-mono font-bold text-[#76777d] uppercase">Online</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {!sellerData || sellerData.services.length === 0 ? (
+                        <p className="text-center py-6 text-xs text-slate-text-muted font-semibold">No catalog services listed yet.</p>
+                      ) : (
+                        sellerData.services.map((item) => {
+                          const isDeleting = deletingCatalogServiceId === item.id;
+                          return (
+                            <div key={item.id} className="flex justify-between items-center p-3 border border-[#E4E4E7] bg-[#F8FAFC]/50 rounded text-xs font-medium gap-3">
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                {item.image_data ? (
+                                  <div className="w-8 h-8 rounded border border-[#E4E4E7] overflow-hidden bg-white shrink-0">
+                                    <img src={item.image_data} alt={item.title} className="w-full h-full object-cover" />
+                                  </div>
+                                ) : (
+                                  <div className="w-8 h-8 rounded border border-[#E4E4E7] bg-white text-[#76777d] flex items-center justify-center shrink-0">
+                                    <Settings className="w-4 h-4 text-zinc-400" />
+                                  </div>
+                                )}
+                                <div className="space-y-0.5 min-w-0 flex-1">
+                                  <span className="block font-semibold text-[#0f172a] truncate">{item.title}</span>
+                                  <span className="block text-[8px] font-mono text-[#76777d] uppercase tracking-wider">{item.lead_time || '3-5 Days Lead'}</span>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0 flex items-center gap-4">
+                                <div>
+                                  <span className="block font-bold text-[#06B6D4]">₹{Number(item.base_price).toLocaleString('en-IN')}/hr</span>
+                                  <span className="block text-[8px] font-mono font-bold text-[#76777d] uppercase">Active</span>
+                                </div>
+                                <button
+                                  onClick={() => handleDeleteService(item.id)}
+                                  disabled={isDeleting}
+                                  className="text-red-500 hover:text-red-600 disabled:opacity-50 transition-colors p-1 cursor-pointer"
+                                  title="Delete service listing"
+                                >
+                                  {isDeleting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
                   </div>
                 </div>
-
-                {/* Service Listings Card */}
-                <div className="bg-white border border-[#E4E4E7] rounded p-5 shadow-sm space-y-4">
-                  <div className="flex justify-between items-center pb-3 border-b border-[#E4E4E7]">
-                    <div className="flex items-center gap-2">
-                      <Settings className="w-4 h-4 text-[#06B6D4]" />
-                      <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#0f172a]">Custom Services ({localServices.length})</h3>
-                    </div>
-                    <span className="text-[9px] font-mono font-bold text-[#76777d] uppercase">Online</span>
-                  </div>
-
-                  <div className="space-y-3">
-                    {localServices.map((item, idx) => (
-                      <div key={idx} className="flex justify-between items-center p-3 border border-[#E4E4E7] bg-[#F8FAFC]/50 rounded text-xs font-medium gap-3">
-                        <div className="flex items-center gap-3">
-                          {item.image_data ? (
-                            <div className="w-10 h-10 rounded border border-[#E4E4E7] overflow-hidden bg-white shrink-0">
-                              <img src={item.image_data} alt={item.title} className="w-full h-full object-cover" />
-                            </div>
-                          ) : (
-                            <div className="w-10 h-10 rounded border border-[#E4E4E7] bg-white text-[#76777d] flex items-center justify-center shrink-0">
-                              <Settings className="w-4 h-4 text-zinc-400" />
-                            </div>
-                          )}
-                          <div className="space-y-0.5">
-                            <span className="block font-semibold text-[#0f172a]">{item.title}</span>
-                            <span className="block text-[8px] font-mono text-[#76777d] uppercase tracking-wider">{item.lead_time || item.time || '3-5 Days Lead'}</span>
-                          </div>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <span className="block font-bold text-[#06B6D4]">₹{Number(item.base_price || item.rate || 0).toLocaleString('en-IN')}/hr</span>
-                          <span className="block text-[8px] font-mono font-bold text-[#76777d] uppercase">Active</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           )}
 
           {profile.is_seller && activeTab === 'seller_capabilities' && (
-            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm text-center py-20 space-y-3">
-              <Cpu className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
-              <h4 className="text-sm font-black text-slate-text-primary">Machine Capabilities Registry</h4>
-              <p className="text-xs text-slate-text-muted max-w-sm mx-auto font-medium">
-                Edit machine tolerances, list raw materials, and update CNC envelope dimensions.
-              </p>
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <h2 className="text-base font-bold text-[#0F172A] tracking-tight uppercase font-['Space_Grotesk']">Machine Capabilities Registry</h2>
+                  <p className="text-xs text-[#76777d] mt-1 font-semibold">
+                    Manage your listed mechatronics fabrication systems, CNC machines, and 3D printing envelopes.
+                  </p>
+                </div>
+                <button 
+                  onClick={openAddListingModal}
+                  className="bg-[#0f172a] hover:bg-[#06b6d4] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-colors shadow flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Capability
+                </button>
+              </div>
+
+              {loadingSeller && !sellerData ? (
+                <div className="bg-white border border-[#E4E4E7] p-12 text-center rounded space-y-3">
+                  <RefreshCw className="w-8 h-8 text-cobalt animate-spin mx-auto" />
+                  <p className="text-xs font-bold text-slate-text-muted animate-pulse">Loading machine registry...</p>
+                </div>
+              ) : !sellerData || sellerData.capabilities.length === 0 ? (
+                <div className="bg-white border border-[#E4E4E7] rounded p-12 text-center py-20 space-y-3 shadow-sm">
+                  <Cpu className="w-12 h-12 text-slate-text-muted/20 mx-auto" />
+                  <h4 className="text-sm font-bold text-[#0F172A] font-['Space_Grotesk'] font-black">No machine capabilities registered</h4>
+                  <p className="text-xs text-[#76777d] max-w-sm mx-auto font-semibold">
+                    Register your CNC mills, SLS printers, or laser cutters to start receiving high-value mechatronics quote contracts.
+                  </p>
+                  <button
+                    onClick={openAddListingModal}
+                    className="mt-2 py-2 px-5 border border-[#0F172A] text-[#0F172A] hover:bg-[#0F172A] hover:text-white font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    Add Your First Capability
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {sellerData.capabilities.map(cap => {
+                    const isDeleting = deletingServiceId === cap.id;
+                    return (
+                      <div key={cap.id} className="bg-white border border-[#E4E4E7] p-5 rounded shadow-sm hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-start gap-3">
+                            <div>
+                              <span className="inline-block text-[9px] font-mono font-bold uppercase tracking-wider bg-sky-500/8 text-sky-600 border border-sky-500/15 px-2 py-0.5 rounded mb-1">
+                                {cap.process_type}
+                              </span>
+                              <h4 className="text-sm font-black text-slate-text-primary leading-tight font-['Space_Grotesk']">
+                                {cap.title}
+                              </h4>
+                            </div>
+                            <span className="text-xs font-mono font-black text-emerald shrink-0">
+                              ₹{Number(cap.base_price).toLocaleString('en-IN')}/hr
+                            </span>
+                          </div>
+                          
+                          <p className="text-[11px] text-slate-text-muted leading-relaxed font-semibold">
+                            {cap.description}
+                          </p>
+
+                          <div className="space-y-1.5 pt-2 border-t border-[#E4E4E7]/65 text-[10px]">
+                            {cap.material_capabilities?.length > 0 && (
+                              <p className="text-slate-text-secondary font-semibold">
+                                <span className="text-slate-text-muted font-bold">Materials:</span> {cap.material_capabilities.join(', ')}
+                              </p>
+                            )}
+                            {cap.finish_options?.length > 0 && (
+                              <p className="text-slate-text-secondary font-semibold">
+                                <span className="text-slate-text-muted font-bold">Finishes:</span> {cap.finish_options.join(', ')}
+                              </p>
+                            )}
+                            <p className="text-slate-text-secondary font-semibold">
+                              <span className="text-slate-text-muted font-bold">Lead Time:</span> {cap.lead_time || '3-5 Days'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <button
+                            onClick={() => handleDeleteCapability(cap.id)}
+                            disabled={isDeleting}
+                            className="text-xs font-mono font-bold uppercase tracking-wider text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/50 hover:border-rose-300 px-3 py-1.5 rounded transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                          >
+                            {isDeleting ? (
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                            <span>Unregister Device</span>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
 
           {profile.is_seller && activeTab === 'seller_earnings' && (
-            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm text-center py-20 space-y-3">
-              <IndianRupee className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
-              <h4 className="text-sm font-black text-slate-text-primary">Seller Earnings Dashboard</h4>
-              <p className="text-xs text-slate-text-muted max-w-sm mx-auto font-medium">
-                Track payments, view billing statements, and check linked corporate bank account statuses.
-              </p>
+            <div className="space-y-6">
+              {/* Header */}
+              <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h2 className="text-base font-bold text-[#0F172A] tracking-tight uppercase font-['Space_Grotesk']">Seller Earnings Dashboard</h2>
+                  <p className="text-xs text-[#76777d] mt-1 font-semibold">
+                    Monitor your weekly sales velocity, track pending payouts, and view completed custom order ledger history.
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-emerald bg-emerald/5 border border-emerald/15 px-3 py-1.5 rounded">
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>Account Verified</span>
+                </div>
+              </div>
+
+              {loadingSeller && !sellerData ? (
+                <div className="bg-white border border-[#E4E4E7] p-12 text-center rounded space-y-3">
+                  <RefreshCw className="w-8 h-8 text-cobalt animate-spin mx-auto" />
+                  <p className="text-xs font-bold text-slate-text-muted animate-pulse">Loading financial summary...</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Left Column - Metrics */}
+                  <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-white border border-[#E4E4E7] p-6 rounded shadow-sm space-y-4">
+                      <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">
+                        Active Job Escrow
+                      </span>
+                      <div className="space-y-1">
+                        <span className="text-3xl font-black text-[#0f172a] block tracking-tight">
+                          ₹{sellerData ? Number(sellerData.monthlyEarnings).toLocaleString('en-IN') : '0'}
+                        </span>
+                        <span className="text-[10px] text-slate-text-muted font-bold block">
+                          Escrow funds from active contracts
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white border border-[#E4E4E7] p-6 rounded shadow-sm space-y-3">
+                      <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">
+                        Payout Preferences
+                      </span>
+                      <div className="space-y-1 bg-[#F8FAFC]/70 border border-[#E4E4E7]/40 p-3 rounded text-[11px] font-semibold text-slate-text-secondary">
+                        <p className="flex justify-between">
+                          <span>Bank Account:</span>
+                          <span className="text-slate-900 font-bold">•••• 4820</span>
+                        </p>
+                        <p className="flex justify-between mt-1">
+                          <span>IFS Code:</span>
+                          <span className="text-slate-900 font-bold">HDFC0000104</span>
+                        </p>
+                        <p className="flex justify-between mt-1">
+                          <span>Settlement Period:</span>
+                          <span className="text-slate-900 font-bold">T+2 Days</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column - Chart and Ledger */}
+                  <div className="lg:col-span-2 space-y-6">
+                    {/* Velocity Chart */}
+                    <div className="bg-white border border-[#E4E4E7] p-6 rounded shadow-sm space-y-4">
+                      <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">
+                        Weekly Sales Velocity
+                      </span>
+                      
+                      <div className="flex items-end justify-between h-40 pt-4 px-2">
+                        {sellerData?.earningsVelocity.map((item, idx) => {
+                          const maxVal = Math.max(...sellerData.earningsVelocity.map(v => v.amount), 1);
+                          const barHeight = Math.max(8, (item.amount / maxVal) * 100);
+                          return (
+                            <div key={idx} className="flex flex-col items-center gap-2 w-12 group">
+                              <span className="text-[9px] font-bold text-slate-text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                                ₹{item.amount.toLocaleString('en-IN')}
+                              </span>
+                              <div className="w-8 bg-[#E2E8F0] hover:bg-cobalt rounded-t-sm transition-all duration-200" style={{ height: `${barHeight}%` }} />
+                              <span className="text-[9px] font-mono font-bold text-slate-text-muted block mt-1">
+                                {item.label}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Job Ledger */}
+                    <div className="bg-white border border-[#E4E4E7] rounded shadow-sm overflow-hidden">
+                      <div className="px-5 py-4 border-b border-[#E4E4E7]">
+                        <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">
+                          Recent Contracts Ledger
+                        </span>
+                      </div>
+                      
+                      {!sellerData || sellerData.activeJobs.length === 0 ? (
+                        <div className="p-8 text-center text-xs font-semibold text-slate-text-muted">
+                          No recent custom jobs completed or active.
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-[#E4E4E7] text-[11px]">
+                          {sellerData.activeJobs.map(job => (
+                            <div key={job.id} className="p-4 flex justify-between items-center hover:bg-[#F8FAFC]/50 transition-all font-semibold">
+                              <div>
+                                <span className="block text-[#0f172a] font-bold">{job.rfq?.title || 'Custom Machining Contract'}</span>
+                                <span className="block text-[10px] text-slate-text-muted font-mono mt-0.5">RFQ ID: {job.rfq_id.slice(0, 8).toUpperCase()}</span>
+                              </div>
+                              <div className="text-right">
+                                <span className="block text-[#0f172a] font-black">₹{Number(job.total_cost).toLocaleString('en-IN')}</span>
+                                <span className="block text-[9px] font-mono text-emerald uppercase tracking-wider font-bold">Escrow Active</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1817,30 +2221,38 @@ export default function ProfilePage() {
                 setLocalServices(updatedServs);
                 localStorage.setItem('local_listed_services', JSON.stringify(updatedServs));
                 
-                // 1. Insert into general services table
+                // 1. Submit general service listing via Server Action
                 try {
-                  await supabase.from('services').insert([newService]);
+                  await submitServiceListing({
+                    title: newService.title,
+                    category: newService.category,
+                    description: desc,
+                    base_price: newService.base_price,
+                    lead_time: newService.lead_time,
+                    features: newService.features,
+                    gradient_class: newService.gradient_class,
+                    image_data: newService.image_data,
+                    images_data: newService.images_data
+                  });
                 } catch (err) {
-                  console.warn('Supabase DB write blocked by RLS, persisted locally:', err);
+                  console.warn('Failed to submit general service catalog listing:', err);
                 }
 
-                // 2. Insert into custom machining_services table
-                const newMachiningService = {
-                  id: newService.id,
-                  seller_profile_id: profile.id,
-                  title: title,
-                  process_type: processType,
-                  description: desc,
-                  base_price: price,
-                  lead_time: leadTime,
-                  material_capabilities: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
-                  finish_options: finishes.split(',').map((s: string) => s.trim()).filter(Boolean),
-                };
-                
+                // 2. Submit custom machining capability via Server Action
                 try {
-                  await supabase.from('machining_services').insert([newMachiningService]);
+                  await listMachiningService(profile.id, {
+                    title: title,
+                    processType: processType as any,
+                    description: desc,
+                    basePrice: price,
+                    leadTime: leadTime,
+                    materials: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
+                    finishes: finishes.split(',').map((s: string) => s.trim()).filter(Boolean),
+                  });
+                  // Refresh seller registry
+                  await fetchSellerData();
                 } catch (err) {
-                  console.warn('Supabase DB write blocked by RLS for machining_services, persisted locally:', err);
+                  console.warn('Failed to submit custom machining capability:', err);
                 }
 
                 showToast(`Technical Service "${title}" (${processType}) published successfully!`, 'success');

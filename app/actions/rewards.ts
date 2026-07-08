@@ -428,6 +428,23 @@ export async function createDbOrder(
   const supabase = createClient(cookieStore);
 
   const orderId = `PO-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+
+  // Resolve seller_id from the first cart item's product (if catalog order)
+  let sellerId: string | null = null;
+  if (cartItems && cartItems.length > 0) {
+    try {
+      const { data: prod } = await supabase
+        .from('products')
+        .select('seller_profile_id')
+        .eq('id', cartItems[0].product_id)
+        .single();
+      if (prod) {
+        sellerId = prod.seller_profile_id;
+      }
+    } catch (err) {
+      console.warn('Failed to resolve seller_profile_id for order:', err);
+    }
+  }
   
   const { data: order, error } = await supabase
     .from('orders')
@@ -438,6 +455,7 @@ export async function createDbOrder(
         total_amount: totalAmount,
         items_count: itemsCount,
         status: 'Processing',
+        seller_id: sellerId,
       }
     ])
     .select()
@@ -740,14 +758,199 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     .select('*')
     .eq('seller_profile_id', sellerProfileId);
 
+  // 6. Get listed products
+  const { data: products } = await supabase
+    .from('products')
+    .select('*')
+    .eq('seller_profile_id', sellerProfileId)
+    .order('created_at', { ascending: false });
+
+  // 7. Get listed catalog services
+  const { data: services } = await supabase
+    .from('services')
+    .select('*')
+    .eq('seller_profile_id', sellerProfileId)
+    .order('created_at', { ascending: false });
+
   return {
     openRfqs: openRfqs || [],
     myQuotes: myQuotes || [],
     activeJobs: activeJobs || [],
     monthlyEarnings,
     earningsVelocity,
-    capabilities: capabilities || []
+    capabilities: capabilities || [],
+    products: products || [],
+    services: services || []
   };
+}
+
+/**
+ * Retrieves all orders submitted for catalog items or custom quote contracts
+ * belonging to a given seller.
+ */
+export async function getSellerOrders(sellerProfileId: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data: orders, error } = await supabase
+    .from('orders')
+    .select(`
+      *,
+      profiles:profile_id (
+        full_name,
+        email
+      )
+    `)
+    .eq('seller_id', sellerProfileId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching seller orders:', error.message);
+    return [];
+  }
+
+  return (orders || []).map((o: any) => ({
+    ...o,
+    buyer_name: o.profiles?.full_name || 'Guest Buyer',
+    buyer_email: o.profiles?.email || '',
+  }));
+}
+
+/**
+ * Updates status of a seller order (Processing -> Shipped -> Delivered -> Completed).
+ */
+export async function updateSellerOrderStatus(orderId: string, nextStatus: 'Processing' | 'Shipped' | 'Delivered' | 'Completed') {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data: order, error } = await supabase
+    .from('orders')
+    .update({
+      status: nextStatus,
+      updated_at: new Date().toISOString(),
+      ...(nextStatus === 'Delivered' ? { delivered_at: new Date().toISOString() } : {})
+    })
+    .eq('id', orderId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating seller order status:', error.message);
+    throw new Error(`Failed to update order status: ${error.message}`);
+  }
+
+  return order;
+}
+
+/**
+ * Deletes a capability (custom machining service) listed by a seller.
+ */
+export async function deleteSellerCapability(serviceId: string, sellerProfileId: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { error } = await supabase
+    .from('machining_services')
+    .delete()
+    .eq('id', serviceId)
+    .eq('seller_profile_id', sellerProfileId);
+
+  if (error) {
+    console.error('Error deleting seller capability:', error.message);
+    throw new Error(`Failed to delete capability: ${error.message}`);
+  }
+
+  return { success: true };
+}
+
+/**
+ * Submits a new general catalog service listing.
+ */
+export async function submitServiceListing(serviceData: {
+  title: string;
+  category: string;
+  description: string;
+  base_price: number;
+  lead_time: string;
+  features: string[];
+  gradient_class: string;
+  image_data?: string;
+  images_data?: string[];
+}) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  // Must be authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be signed in to submit a listing.');
+
+  // Look up the seller's profile
+  const { data: sellerProfile } = await supabase
+    .from('profiles')
+    .select('id, is_seller')
+    .eq('user_id', user.id)
+    .single();
+
+  if (!sellerProfile) throw new Error('Seller profile not found.');
+  if (!sellerProfile.is_seller) throw new Error('You must be a verified seller to list services.');
+
+  const { data: newService, error } = await supabase
+    .from('services')
+    .insert([{
+      ...serviceData,
+      seller_profile_id: sellerProfile.id
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Service listing failed:', error.message);
+    throw new Error(`Failed to submit listing: ${error.message}`);
+  }
+
+  return newService;
+}
+
+/**
+ * Deletes a product listed by a seller.
+ */
+export async function deleteSellerProduct(productId: string, sellerProfileId: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', productId)
+    .eq('seller_profile_id', sellerProfileId);
+
+  if (error) {
+    console.error('Error deleting product:', error.message);
+    throw new Error(`Failed to delete product: ${error.message}`);
+  }
+
+  return { success: true };
+}
+
+/**
+ * Deletes a catalog service listed by a seller.
+ */
+export async function deleteSellerService(serviceId: string, sellerProfileId: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { error } = await supabase
+    .from('services')
+    .delete()
+    .eq('id', serviceId)
+    .eq('seller_profile_id', sellerProfileId);
+
+  if (error) {
+    console.error('Error deleting catalog service:', error.message);
+    throw new Error(`Failed to delete service: ${error.message}`);
+  }
+
+  return { success: true };
 }
 
 

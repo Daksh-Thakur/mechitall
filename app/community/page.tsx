@@ -194,6 +194,32 @@ export default function CommunityPage() {
     ];
   }, [liveReviews]);
 
+  // Dynamically calculate average rating and stars distribution based on database data
+  const reviewStats = useMemo(() => {
+    const total = allReviews.length;
+    const sum = allReviews.reduce((acc, r) => acc + (r.rating || 0), 0);
+    const avg = total > 0 ? (sum / total).toFixed(1) : '0.0';
+    
+    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } as Record<number, number>;
+    allReviews.forEach(r => {
+      const rating = Math.round(r.rating);
+      if (rating >= 1 && rating <= 5) {
+        distribution[rating as keyof typeof distribution] += 1;
+      }
+    });
+
+    const percentages = {} as Record<number, number>;
+    [1, 2, 3, 4, 5].forEach(star => {
+      percentages[star] = total > 0 ? Math.round((distribution[star] / total) * 100) : 0;
+    });
+
+    return {
+      total,
+      average: avg,
+      percentages,
+    };
+  }, [allReviews]);
+
   // Suggestions search logic
   const suggestions = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -558,13 +584,15 @@ export default function CommunityPage() {
                 style={{ boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)' }}
               >
                 <div className="text-center shrink-0">
-                  <span className="block text-5xl font-extrabold text-[#0F172A]">4.8</span>
-                  <div className="flex justify-center mt-1"><StarRating rating={5} /></div>
-                  <span className="block text-[10px] text-slate-text-muted mt-1.5 font-bold uppercase tracking-wider">1,800+ Verified Reviews</span>
+                  <span className="block text-5xl font-extrabold text-[#0F172A]">{reviewStats.average}</span>
+                  <div className="flex justify-center mt-1"><StarRating rating={Math.round(Number(reviewStats.average))} /></div>
+                  <span className="block text-[10px] text-slate-text-muted mt-1.5 font-bold uppercase tracking-wider">
+                    {reviewStats.total} {reviewStats.total === 1 ? 'Verified Review' : 'Verified Reviews'}
+                  </span>
                 </div>
                 <div className="flex-1 space-y-2 w-full">
                   {[5, 4, 3, 2, 1].map(star => {
-                    const pct = star === 5 ? 78 : star === 4 ? 16 : star === 3 ? 4 : star === 2 ? 1 : 1;
+                    const pct = reviewStats.percentages[star];
                     return (
                       <div key={star} className="flex items-center gap-3">
                         <span className="text-xs font-bold text-slate-text-muted w-4 text-right">{star}</span>

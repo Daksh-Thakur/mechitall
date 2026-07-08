@@ -118,6 +118,14 @@ export async function requestMachiningQuote(
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
+  // 1. Fetch capability details to get seller_profile_id and info
+  const { data: service } = await supabase
+    .from('machining_services')
+    .select('title, description, seller_profile_id')
+    .eq('id', serviceId)
+    .single();
+
+  // 2. Insert into machining_quotes for local machining marketplace view
   const { data: quote, error } = await supabase
     .from('machining_quotes')
     .insert([
@@ -137,6 +145,42 @@ export async function requestMachiningQuote(
   if (error) {
     console.error('Error creating quote request:', error.message);
     throw new Error(`Failed to submit quote request: ${error.message}`);
+  }
+
+  // 3. Insert matching RFQ & Quote records to integrate with Chat & Profile Seller Hub
+  try {
+    const { data: rfq } = await supabase
+      .from('rfqs')
+      .insert([
+        {
+          buyer_id: buyerProfileId,
+          title: `Quote Request: ${service?.title || 'Machining Job'}`,
+          description: service?.description || 'Custom machining quote request.',
+          material_preference: 'Pending Review',
+          quantity: 1,
+          cad_file_path: data.cadFileName,
+          status: 'OPEN_FOR_BIDS',
+        }
+      ])
+      .select()
+      .single();
+
+    if (rfq && service?.seller_profile_id) {
+      await supabase
+        .from('quotes')
+        .insert([
+          {
+            rfq_id: rfq.id,
+            seller_id: service.seller_profile_id,
+            total_cost: 0,
+            lead_time_days: 7,
+            seller_notes: 'Awaiting seller custom pricing offer.',
+            status: 'SUBMITTED',
+          }
+        ]);
+    }
+  } catch (linkErr) {
+    console.error('Non-fatal: Failed to link to RFQs/Quotes tables:', linkErr);
   }
 
   return quote as MachiningQuote;
@@ -217,9 +261,6 @@ export async function getSubmittedQuotes(buyerProfileId: string) {
   })) as MachiningQuote[];
 }
 
-/**
- * Allows a seller to submit a price offer for a quote request.
- */
 export async function submitQuoteOffer(
   quoteId: string,
   data: {
@@ -252,6 +293,31 @@ export async function submitQuoteOffer(
     throw new Error(`Failed to submit offer: ${error.message}`);
   }
 
+  // Update corresponding quotes table record if exists
+  try {
+    const { data: rfqRecord } = await supabase
+      .from('rfqs')
+      .select('id')
+      .eq('buyer_id', quote.buyer_profile_id)
+      .eq('cad_file_path', quote.cad_file_name)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (rfqRecord) {
+      await supabase
+        .from('quotes')
+        .update({
+          total_cost: data.price,
+          seller_notes: data.notes,
+          status: 'SUBMITTED', // active offer
+        })
+        .eq('rfq_id', rfqRecord.id);
+    }
+  } catch (linkErr) {
+    console.error('Non-fatal: Failed to sync offer to quotes table:', linkErr);
+  }
+
   return quote as MachiningQuote;
 }
 
@@ -262,10 +328,10 @@ export async function acceptQuoteOffer(quoteId: string) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  // 1. Get the quote details
+  // 1. Get the quote details, joining machining_services to get seller_profile_id
   const { data: quote, error: quoteErr } = await supabase
     .from('machining_quotes')
-    .select('*')
+    .select('*, machining_services:service_id(*)')
     .eq('id', quoteId)
     .single();
 
@@ -287,8 +353,37 @@ export async function acceptQuoteOffer(quoteId: string) {
     throw new Error(`Failed to accept offer: ${updateErr.message}`);
   }
 
+  // Update corresponding quotes table record status to ACCEPTED
+  try {
+    const { data: rfqRecord } = await supabase
+      .from('rfqs')
+      .select('id')
+      .eq('buyer_id', quote.buyer_profile_id)
+      .eq('cad_file_path', quote.cad_file_name)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (rfqRecord) {
+      await supabase
+        .from('quotes')
+        .update({ status: 'ACCEPTED' })
+        .eq('rfq_id', rfqRecord.id);
+      
+      // Also update RFQ status to CLOSED (or ACCEPTED status if it exists)
+      await supabase
+        .from('rfqs')
+        .update({ status: 'CLOSED' })
+        .eq('id', rfqRecord.id);
+    }
+  } catch (linkErr) {
+    console.error('Non-fatal: Failed to sync acceptance status to quotes/rfqs tables:', linkErr);
+  }
+
   // 3. Create a simulated matching order in the orders table
   const orderId = `RFQ-${quote.id.substring(0, 8).toUpperCase()}`;
+  const sellerId = quote.machining_services?.seller_profile_id;
+
   const { error: orderErr } = await supabase
     .from('orders')
     .insert([
@@ -299,7 +394,7 @@ export async function acceptQuoteOffer(quoteId: string) {
         items_count: quote.quantity,
         status: 'Processing',
         rewards_claimed: false,
-        seller_id: quote.machining_services?.seller_profile_id,
+        seller_id: sellerId || null,
       },
     ]);
 
