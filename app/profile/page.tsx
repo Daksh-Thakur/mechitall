@@ -2838,6 +2838,7 @@ export default function ProfilePage() {
 }
 
 function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: any }) {
+  const supabase = createClient();
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeThread, setActiveThread] = useState<ChatThread | null>(null);
@@ -2867,7 +2868,7 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
     loadThreads();
   }, []);
 
-  // Poll for new messages when a thread is active
+  // Subscribe to real-time message inserts
   useEffect(() => {
     if (!activeThread) return;
     
@@ -2879,10 +2880,60 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
     };
     
     loadMessages();
-    const interval = setInterval(loadMessages, 5000); // Poll every 5 seconds
-    
-    return () => clearInterval(interval);
-  }, [activeThread]);
+
+    // Subscribe to Postgres changes on this specific quote_id
+    const channel = supabase
+      .channel(`chat_messages:${activeThread.quoteId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'chat_messages',
+          filter: `quote_id=eq.${activeThread.quoteId}`,
+        },
+        (payload) => {
+          const newMsg = payload.new as any;
+
+          // Determine sender_name
+          const senderName = newMsg.sender_id === profile.id
+            ? (profile.full_name || 'You')
+            : (activeThread.otherParticipantName || 'Other');
+
+          const formattedMsg: ChatMessage = {
+            id: newMsg.id,
+            rfq_id: newMsg.rfq_id,
+            quote_id: newMsg.quote_id,
+            sender_id: newMsg.sender_id,
+            message_text: newMsg.message_text,
+            file_attachment_path: newMsg.file_attachment_path,
+            created_at: newMsg.created_at,
+            sender_name: senderName
+          };
+
+          // Append if not already present
+          setMessages((prev) => {
+            if (prev.some(m => m.id === formattedMsg.id)) return prev;
+            return [...prev, formattedMsg];
+          });
+
+          // Update thread in list
+          setThreads((prev) =>
+            prev.map((t) =>
+              t.quoteId === activeThread.quoteId
+                ? { ...t, lastMessageText: formattedMsg.message_text, lastMessageTime: formattedMsg.created_at }
+                : t
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeThread, profile?.id, profile?.full_name]);
+
 
   const selectThread = async (thread: ChatThread) => {
     setActiveThread(thread);
