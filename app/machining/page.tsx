@@ -238,7 +238,7 @@ export default function MachiningMarketplacePage() {
           });
 
           if (!msgRes.success) {
-            console.error('Failed to link design file as chat message:', msgRes.error);
+            throw new Error(`Failed to link design file in chat: ${msgRes.error || 'Unknown error'}`);
           }
         }
       }
