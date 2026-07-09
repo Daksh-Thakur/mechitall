@@ -230,9 +230,11 @@ export default function ProfilePage() {
     setLoadingSeller(true);
     setLoadingSellerOrders(true);
     try {
-      const data = await getSellerDashboardData(profile.id);
+      const [data, sOrders] = await Promise.all([
+        getSellerDashboardData(profile.id),
+        getSellerOrders(profile.id)
+      ]);
       setSellerData(data);
-      const sOrders = await getSellerOrders(profile.id);
       setSellerOrders(sOrders);
     } catch (err) {
       console.error('Failed to load seller data:', err);
@@ -243,7 +245,7 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    if (profile?.is_seller) {
+    if (profile?.is_seller && activeTab.startsWith('seller_')) {
       fetchSellerData();
     }
   }, [profile?.is_seller, activeTab]);
@@ -331,15 +333,15 @@ export default function ProfilePage() {
 
   // Sync edit name state
   useEffect(() => {
-    if (profile) {
+    if (profile?.full_name) {
       setEditName(profile.full_name);
     }
-  }, [profile]);
+  }, [profile?.full_name]);
 
   // Load orders
   useEffect(() => {
     async function loadOrders() {
-      if (!profile) return;
+      if (!profile || activeTab !== 'orders') return;
       try {
         setLoadingOrders(true);
         const data = await getProfileOrders(profile.id);
@@ -354,12 +356,12 @@ export default function ProfilePage() {
       }
     }
     loadOrders();
-  }, [profile]);
+  }, [profile?.id, activeTab]);
 
   // Load rewards transaction log
   useEffect(() => {
     async function loadRewards() {
-      if (!profile) return;
+      if (!profile || activeTab !== 'rewards') return;
       try {
         setLoadingTx(true);
         const data = await getProfileTransactions(profile.id);
@@ -371,7 +373,7 @@ export default function ProfilePage() {
       }
     }
     loadRewards();
-  }, [profile]);
+  }, [profile?.id, activeTab]);
 
   // Handle edit details submit
   const handleUpdateNameSubmit = async (e: React.FormEvent) => {
@@ -2967,8 +2969,10 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
   };
 
   useEffect(() => {
-    loadThreads();
-  }, []);
+    if (activeTab === 'chats') {
+      loadThreads();
+    }
+  }, [activeTab]);
 
   // Update offer form states when active thread changes
   useEffect(() => {
