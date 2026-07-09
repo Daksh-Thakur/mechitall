@@ -77,6 +77,7 @@ export default function MachiningMarketplacePage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [submittingQuote, setSubmittingQuote] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   // Seller: Add Service modal state
   const [showListingModal, setShowListingModal] = useState(false);
@@ -187,6 +188,7 @@ export default function MachiningMarketplacePage() {
     }
 
     setSubmittingQuote(true);
+    setUploadProgress(0);
     try {
       const resObj = await requestMachiningQuote(profile.id, selectedService.id, {
         cadFileName: uploadedFile.name,
@@ -198,14 +200,33 @@ export default function MachiningMarketplacePage() {
         // Generate signed upload URL for the CAD file
         const signedRes = await getUploadSignedUrl(quoteId, uploadedFile.name);
         if (signedRes.success && signedRes.data) {
-          const { token, path } = signedRes.data;
-          const client = createClient();
-          const { error: uploadError } = await client.storage
-            .from('rfq-cad-files')
-            .uploadToSignedUrl(path, token, uploadedFile);
-          if (uploadError) {
-            throw new Error(`Failed to upload CAD file to storage: ${uploadError.message}`);
-          }
+          const { token, path, signedUrl } = signedRes.data;
+          
+          // Upload with progress using XMLHttpRequest
+          await new Promise<void>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', signedUrl);
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+            xhr.setRequestHeader('Content-Type', uploadedFile.type || 'application/octet-stream');
+
+            xhr.upload.addEventListener('progress', (e) => {
+              if (e.lengthComputable) {
+                const percent = Math.round((e.loaded / e.total) * 100);
+                setUploadProgress(percent);
+              }
+            });
+
+            xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                resolve();
+              } else {
+                reject(new Error(`Upload failed with status: ${xhr.status}`));
+              }
+            };
+
+            xhr.onerror = () => reject(new Error('Network error during file upload'));
+            xhr.send(uploadedFile);
+          });
         }
       }
 
@@ -217,6 +238,7 @@ export default function MachiningMarketplacePage() {
       showToast(err.message || 'Failed to submit request.', 'error');
     } finally {
       setSubmittingQuote(false);
+      setUploadProgress(null);
     }
   };
 
@@ -803,13 +825,28 @@ export default function MachiningMarketplacePage() {
                 Your design model will be shared securely with this manufacturer. They will analyze geometric tolerances, recommend optimal materials, and send you a mechatronic RFQ quote.
               </div>
  
+              {uploadProgress !== null && (
+                <div className="space-y-1.5 bg-slate-50 border border-slate-250/60 p-3 rounded-lg">
+                  <div className="flex justify-between text-[10px] font-bold text-[#06b6d4] uppercase tracking-wider font-mono">
+                    <span>Uploading Design Model</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full bg-[#E4E4E7] h-2 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-[#06b6d4] transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={submittingQuote || !uploadedFile}
                 className="w-full bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 disabled:opacity-50"
               >
                 {submittingQuote ? (
-                  <><RotateCcw className="w-3.5 h-3.5 animate-spin" /> Submitting Request...</>
+                  <><RotateCcw className="w-3.5 h-3.5 animate-spin" /> {uploadProgress !== null ? `Uploading Design (${uploadProgress}%)...` : 'Submitting Request...'}</>
                 ) : (
                   <><Send className="w-3.5 h-3.5" /> Send Design & Request Quote</>
                 )}
