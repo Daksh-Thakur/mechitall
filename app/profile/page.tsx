@@ -3513,7 +3513,7 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
             {/* Contextual Quoting Workflow Card */}
             {activeThread.machiningQuote && 
              activeThread.status !== 'ACCEPTED' && 
-             activeThread.machiningQuote.status !== 'Accepted' && (
+             (activeThread.machiningQuote.status as string) !== 'Accepted' && (
               <div className="mx-4 mb-4 p-4 rounded-xl border bg-slate-bg/40 border-slate-border/60 space-y-3">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-border/50">
                   <div className="flex items-center gap-2">
