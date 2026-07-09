@@ -346,13 +346,14 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
         lastMessageTime: latestMsg?.created_at || null,
         cadFilePath: rfq.cad_file_path || null,
         machiningQuote: mappedMachQuote,
+        createdAt: q.created_at,
       });
     }
 
-    // Sort by latest message time descending
+    // Sort by latest message time or creation time descending (newest on top)
     threads.sort((a, b) => {
-      const timeA = a.lastMessageTime || '';
-      const timeB = b.lastMessageTime || '';
+      const timeA = a.lastMessageTime || a.createdAt;
+      const timeB = b.lastMessageTime || b.createdAt;
       return timeB.localeCompare(timeA);
     });
 

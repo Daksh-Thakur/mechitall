@@ -707,22 +707,47 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     .select('*, rfq:rfqs(*)')
     .eq('seller_id', sellerProfileId);
 
-  // 3. Get my active production queue jobs (all quotes submitted by this seller with status ACCEPTED)
-  const { data: activeJobs } = await supabase
-    .from('quotes')
-    .select('*, rfq:rfqs(*, buyer:profiles(*))')
+  // 3. Get my actual orders from orders table
+  const { data: orders } = await supabase
+    .from('orders')
+    .select('*, profiles:profile_id(full_name, email)')
     .eq('seller_id', sellerProfileId)
-    .eq('status', 'ACCEPTED');
+    .order('created_at', { ascending: false });
 
-  // 4. Calculate monthly earnings (sum of accepted quotes total_cost)
-  const monthlyEarnings = activeJobs?.reduce((sum, job) => sum + Number(job.total_cost), 0) || 0;
+  // Map order records into "activeJobs" if they are Processing or Shipped
+  const activeJobs = (orders || [])
+    .filter(o => o.status === 'Processing' || o.status === 'Shipped')
+    .map((o: any) => ({
+      id: o.id,
+      rfq: {
+        title: `Order #${o.id} - ${o.items_count} Units`,
+      },
+      status: o.status,
+      created_at: o.created_at,
+      total_cost: o.total_amount,
+    }));
+
+  // Map order records into "completedJobs" if they are Completed or Delivered
+  const completedJobs = (orders || [])
+    .filter(o => o.status === 'Completed' || o.status === 'Delivered')
+    .map((o: any) => ({
+      id: o.id,
+      status: o.status,
+      created_at: o.created_at,
+      total_cost: o.total_amount,
+    }));
+
+  // Calculate monthly earnings based on completed / active mechatronic orders + accepted custom quotes
+  const monthlyEarnings = (orders || [])
+    .filter(o => o.status !== 'Cancelled' && o.status !== 'Rejected')
+    .reduce((sum, o) => sum + Number(o.total_amount), 0);
 
   // Calculate dynamic weekly earnings based on calendar
   const now = new Date();
   const msInDay = 24 * 60 * 60 * 1000;
   const weeklyEarnings = [0, 0, 0, 0, 0];
 
-  activeJobs?.forEach(job => {
+  activeJobs.forEach(job => {
     const jobDate = new Date(job.created_at);
     const diffDays = Math.floor((now.getTime() - jobDate.getTime()) / msInDay);
 
@@ -776,6 +801,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     openRfqs: openRfqs || [],
     myQuotes: myQuotes || [],
     activeJobs: activeJobs || [],
+    completedJobs: completedJobs || [],
     monthlyEarnings,
     earningsVelocity,
     capabilities: capabilities || [],

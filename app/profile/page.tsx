@@ -214,6 +214,7 @@ export default function ProfilePage() {
     openRfqs: any[];
     myQuotes: any[];
     activeJobs: any[];
+    completedJobs: any[];
     monthlyEarnings: number;
     earningsVelocity: any[];
     capabilities: any[];
@@ -927,22 +928,22 @@ export default function ProfilePage() {
                           No active production jobs in the pipeline.
                         </div>
                       ) : (
-                        sellerData.activeJobs.map((job, idx) => {
-                          const isQC = idx === 1 || job.rfq?.title.toLowerCase().includes('assembly');
-                          const progress = isQC ? 80 : 50;
+                        sellerData.activeJobs.map((job) => {
+                          const isShipped = job.status === 'Shipped';
+                          const progress = isShipped ? 80 : 40;
                           return (
                             <div key={job.id} className="bg-white border border-slate-border/70 rounded-2xl p-4 space-y-4 hover:border-slate-border transition-colors shadow-sm">
                               <div className="flex justify-between items-start gap-4">
                                 <div>
-                                  <span className="block text-[8px] font-black text-slate-400 font-mono">PROJ-{job.id.slice(0, 4).toUpperCase()}</span>
+                                  <span className="block text-[8px] font-black text-slate-400 font-mono">ORDER-{job.id.substring(0, 8).toUpperCase()}</span>
                                   <h5 className="text-xs font-black text-slate-text-primary mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</h5>
                                 </div>
                                 <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
-                                  isQC 
-                                    ? 'bg-emerald-500/10 text-emerald border-emerald-500/20' 
+                                  isShipped 
+                                    ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' 
                                     : 'bg-sky-500/10 text-sky-600 border-sky-500/20'
                                 }`}>
-                                  {isQC ? 'QUALITY CHECK' : 'IN MACHINING'}
+                                  {isShipped ? 'SHIPPED' : 'PROCESSING'}
                                 </span>
                               </div>
 
@@ -953,7 +954,7 @@ export default function ProfilePage() {
                                 </div>
                                 <div className="w-full bg-slate-bg border border-slate-border/50 h-2 rounded-full overflow-hidden">
                                   <div 
-                                    className={`h-full rounded-full transition-all ${isQC ? 'bg-[#00D0F5]' : 'bg-sky-500'}`}
+                                    className={`h-full rounded-full transition-all ${isShipped ? 'bg-amber-500' : 'bg-sky-500'}`}
                                     style={{ width: `${progress}%` }}
                                   ></div>
                                 </div>
@@ -993,29 +994,29 @@ export default function ProfilePage() {
                                 <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
                               </td>
                             </tr>
-                          ) : !sellerData || sellerData.activeJobs.length === 0 ? (
+                          ) : !sellerData || sellerData.completedJobs.length === 0 ? (
                             <tr>
                               <td colSpan={3} className="py-8 text-center text-xs font-bold text-slate-text-muted">
-                                No recently dispatched shipments.
+                                No recently completed/delivered orders.
                               </td>
                             </tr>
                           ) : (
-                            sellerData.activeJobs.map((job, idx) => {
-                              const isDelivered = idx === 1;
+                            sellerData.completedJobs.map((job) => {
+                              const isCompleted = job.status === 'Completed';
                               return (
                                 <tr key={job.id} className="text-xs">
                                   <td className="py-3 font-mono font-black text-slate-text-primary">
-                                    #ORD-{job.id.slice(0, 3).toUpperCase()}
+                                    #{job.id.substring(0, 12).toUpperCase()}
                                   </td>
                                   <td className="py-3 px-3 font-bold text-slate-text-secondary">
-                                    {idx === 0 ? 'BlueDart' : 'FedEx'}
+                                    Standard Delivery
                                   </td>
                                   <td className="py-3 text-right">
                                     <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase ${
-                                      isDelivered ? 'text-emerald' : 'text-sky-600'
+                                      isCompleted ? 'text-emerald' : 'text-sky-600'
                                     }`}>
-                                      <span className={`w-1.5 h-1.5 rounded-full ${isDelivered ? 'bg-emerald' : 'bg-sky-500 animate-pulse'}`}></span>
-                                      {isDelivered ? 'Delivered' : 'In Transit'}
+                                      <span className={`w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-emerald' : 'bg-sky-500 animate-pulse'}`}></span>
+                                      {job.status}
                                     </span>
                                   </td>
                                 </tr>
@@ -3422,25 +3423,14 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
                   </button>
                 )}
                 {activeThread.status !== 'REJECTED' && activeThread.status !== 'ACCEPTED' && (
-                  <>
-                    <button
-                      onClick={() => setShowRejectForm(true)}
-                      className="flex items-center gap-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
-                      title="Reject Quotation"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                      <span>Reject</span>
-                    </button>
-                    <button
-                      onClick={handleCancelQuote}
-                      disabled={cancelling}
-                      className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0 disabled:opacity-50"
-                      title="Cancel Quotation"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Cancel</span>
-                    </button>
-                  </>
+                  <button
+                    onClick={() => setShowRejectForm(true)}
+                    className="flex items-center gap-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
+                    title="Reject Quotation"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Reject</span>
+                  </button>
                 )}
                 <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${
                   activeThread.status === 'ACCEPTED'

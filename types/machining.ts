@@ -94,6 +94,7 @@ export interface ChatThread {
     material_capabilities: string[];
     finish_options: string[];
   } | null;
+  createdAt: string;
 }
 
 export interface ActionResponse<T = any> {
