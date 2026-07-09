@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useCart } from '@/components/CartProvider';
-import { getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, submitSellerKYC, getSellerDashboardData, submitProductListing, getSellerOrders, updateSellerOrderStatus, deleteSellerCapability, submitServiceListing, deleteSellerProduct, deleteSellerService, Profile, BoltsTransaction } from '@/app/actions/rewards';
+import { 
+  getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, 
+  submitSellerKYC, getSellerDashboardData, submitProductListing, getSellerOrders, 
+  updateSellerOrderStatus, deleteSellerCapability, submitServiceListing, deleteSellerProduct, 
+  deleteSellerService, Profile, BoltsTransaction, confirmDeliveryAndClaimBolts, simulateOrderStatus 
+} from '@/app/actions/rewards';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import LoginPage from '../login/page';
@@ -14,7 +19,7 @@ import {
   ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus, 
   Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play, Upload,
   Send, Paperclip, FileText, ExternalLink, CircleDollarSign, IndianRupee, LayoutDashboard, ArrowRight,
-  Package, X
+  Package, X, Camera, Loader2
 } from 'lucide-react';
 import { 
   getOngoingChats, 
@@ -99,6 +104,8 @@ export default function ProfilePage() {
   
   // Tracking selected order for detailed progress timeline
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [uploadingOrderId, setUploadingOrderId] = useState<string | null>(null);
+  const [isPending, startTransitionStatus] = useTransition();
 
   // Profile Edit fields
   const [editName, setEditName] = useState('');
@@ -338,25 +345,81 @@ export default function ProfilePage() {
     }
   }, [profile?.full_name]);
 
+  const fetchOrders = async () => {
+    if (!profile) return;
+    try {
+      setLoadingOrders(true);
+      const data = await getProfileOrders(profile.id);
+      setOrders(data || []);
+      // Keep selected order updated with fresh database state
+      if (selectedOrder) {
+        const updated = (data || []).find((o: any) => o.id === selectedOrder.id);
+        if (updated) {
+          setSelectedOrder(updated);
+        } else if (data && data.length > 0) {
+          setSelectedOrder(data[0]);
+        }
+      } else if (data && data.length > 0) {
+        setSelectedOrder(data[0]);
+      }
+    } catch (err) {
+      console.error('Failed to load profile orders:', err);
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
   // Load orders
   useEffect(() => {
-    async function loadOrders() {
-      if (!profile || activeTab !== 'orders') return;
-      try {
-        setLoadingOrders(true);
-        const data = await getProfileOrders(profile.id);
-        setOrders(data || []);
-        if (data && data.length > 0) {
-          setSelectedOrder(data[0]); // Select first order for detail tracker
-        }
-      } catch (err) {
-        console.error('Failed to load profile orders:', err);
-      } finally {
-        setLoadingOrders(false);
-      }
+    if (activeTab === 'orders') {
+      fetchOrders();
     }
-    loadOrders();
   }, [profile?.id, activeTab]);
+
+  // Handle mock photo upload and claiming rewards (escrow release)
+  const handlePhotoUploadAndClaim = async (orderId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0 || !profile) return;
+    const file = event.target.files[0];
+    
+    setUploadingOrderId(orderId);
+    
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result as string;
+      
+      startTransitionStatus(async () => {
+        try {
+          const response = await confirmDeliveryAndClaimBolts(orderId, base64String, profile.id);
+          
+          if (response.success) {
+            showToast(`Successfully released PayU escrow funds & credited ${response.earnedBolts} Bolts!`, 'success');
+            await fetchProfile();
+            await fetchOrders();
+          }
+        } catch (err: any) {
+          console.error(err);
+          showToast(err.message || 'Verification failed', 'error');
+        } finally {
+          setUploadingOrderId(null);
+        }
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Simulate order statuses for sandbox testing
+  const handleSimulateStatus = async (orderId: string, nextStatus: 'Shipped' | 'Delivered') => {
+    if (!profile) return;
+    startTransitionStatus(async () => {
+      try {
+        await simulateOrderStatus(orderId, nextStatus);
+        await fetchOrders();
+        showToast(`Order status updated to ${nextStatus}`, 'success');
+      } catch (err: any) {
+        showToast(err.message || 'Status transition failed', 'error');
+      }
+    });
+  };
 
   // Load rewards transaction log
   useEffect(() => {
@@ -1918,6 +1981,89 @@ export default function ProfilePage() {
                         <span className="block font-bold">Delivered</span>
                         <span className="block text-[8px] text-slate-text-muted">Pending</span>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Action Section for Delivery Simulation and Escrow / Bolts Release */}
+                  <div className="pt-4 border-t border-slate-border/50 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                      <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">Sandbox Actions</span>
+                      <p className="text-[10px] text-slate-text-muted mt-0.5">Manage order sandbox simulation and claim rewards proof.</p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {selectedOrder.status === 'Processing' && (
+                        <button
+                          onClick={() => handleSimulateStatus(selectedOrder.id, 'Shipped')}
+                          disabled={isPending}
+                          className="btn-cobalt py-1.5 px-3 rounded-lg text-[10px] font-bold cursor-pointer"
+                        >
+                          {isPending ? 'Processing...' : 'Simulate Ship'}
+                        </button>
+                      )}
+                      {selectedOrder.status === 'Shipped' && (
+                        <button
+                          onClick={() => handleSimulateStatus(selectedOrder.id, 'Delivered')}
+                          disabled={isPending}
+                          className="btn-cobalt py-1.5 px-3 rounded-lg text-[10px] font-bold cursor-pointer"
+                        >
+                          {isPending ? 'Processing...' : 'Simulate Delivery'}
+                        </button>
+                      )}
+
+                      {/* Delivered -> Prominent Unboxing Claim Button */}
+                      {selectedOrder.status === 'Delivered' && (
+                        <div className="relative">
+                          <label
+                            htmlFor={`file-upload-${selectedOrder.id}`}
+                            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500 hover:bg-amber-600 text-zinc-950 px-3 py-2 rounded-lg cursor-pointer transition-all shadow"
+                          >
+                            {uploadingOrderId === selectedOrder.id || isPending ? (
+                              <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                Crediting...
+                              </>
+                            ) : (
+                              <>
+                                <Camera className="w-3.5 h-3.5" />
+                                Claim Bolts &amp; Release Escrow
+                              </>
+                            )}
+                          </label>
+                          <input
+                            id={`file-upload-${selectedOrder.id}`}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handlePhotoUploadAndClaim(selectedOrder.id, e)}
+                            disabled={uploadingOrderId !== null || isPending}
+                          />
+                        </div>
+                      )}
+
+                      {/* Completed state */}
+                      {(selectedOrder.status === 'Completed' || selectedOrder.status === 'completed') && (
+                        <div className="flex items-center gap-4">
+                          {selectedOrder.unboxing_photo_url && (
+                            <div className="relative w-10 h-10 rounded border border-slate-border overflow-hidden bg-slate-bg shadow-sm">
+                              <img
+                                src={selectedOrder.unboxing_photo_url}
+                                alt="Unboxing proof"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="text-right">
+                            <span className="text-[10px] font-black text-emerald flex items-center gap-1 justify-end uppercase tracking-wider">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              Escrow Released (PayU)
+                            </span>
+                            <span className="text-[8px] font-mono text-slate-text-muted block uppercase tracking-wider">
+                              Nodal Payout Confirmed
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
