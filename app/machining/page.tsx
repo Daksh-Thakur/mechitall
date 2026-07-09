@@ -192,11 +192,11 @@ export default function MachiningMarketplacePage() {
         cadFileName: uploadedFile.name,
       });
 
-      const { rfqId } = resObj as any;
+      const quoteId = resObj.quote?.id;
 
-      if (rfqId) {
+      if (quoteId) {
         // Generate signed upload URL for the CAD file
-        const signedRes = await getUploadSignedUrl(rfqId, uploadedFile.name);
+        const signedRes = await getUploadSignedUrl(quoteId, uploadedFile.name);
         if (signedRes.success && signedRes.data) {
           const { token, path } = signedRes.data;
           const client = createClient();

@@ -3348,9 +3348,13 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
                     </div>
                   </div>
                   <div className="flex justify-between items-center text-[10px] text-slate-text-muted">
-                    <span className="font-bold text-slate-text-secondary">With: {t.otherParticipantName}</span>
+                    <div className="flex items-center gap-1.5 font-mono">
+                      <span className="text-[#007084] font-black">#CHAT-{t.quoteId.substring(0, 8).toUpperCase()}</span>
+                      <span className="text-slate-400">|</span>
+                      <span className="font-bold text-slate-text-secondary">With: {t.otherParticipantName}</span>
+                    </div>
                     {t.lastMessageTime && (
-                      <span className="font-mono">{new Date(t.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="font-mono text-[9px]">{new Date(t.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     )}
                   </div>
                   {t.lastMessageText && (
@@ -3383,7 +3387,11 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
                 </button>
                 <div>
                   <h3 className="text-sm font-black text-slate-text-primary leading-tight">{activeThread.rfqTitle}</h3>
-                  <span className="text-[10px] font-bold text-slate-text-muted block mt-0.5">Participant: {activeThread.otherParticipantName}</span>
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-text-muted mt-0.5">
+                    <span className="font-mono text-[#007084] font-black">#CHAT-{activeThread.quoteId.substring(0, 8).toUpperCase()}</span>
+                    <span>•</span>
+                    <span>Participant: {activeThread.otherParticipantName}</span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -3391,27 +3399,35 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
                   <button
                     onClick={async () => {
                       const client = createClient();
-                      // Try the stored path directly first
+                      // Try the quoteId path (new standard) first
                       const { data, error } = await client.storage
                         .from('rfq-cad-files')
-                        .createSignedUrl(activeThread.cadFilePath!, 60);
+                        .createSignedUrl(`${activeThread.quoteId}/${activeThread.cadFilePath!}`, 60);
                       if (data?.signedUrl) {
                         window.open(data.signedUrl, '_blank');
                         return;
                       }
                       // Fallback: try with rfqId prefix (older uploads stored as rfqId/filename)
-                      const { data: data2, error: error2 } = await client.storage
+                      const { data: data2 } = await client.storage
                         .from('rfq-cad-files')
                         .createSignedUrl(`${activeThread.rfqId}/${activeThread.cadFilePath!}`, 60);
                       if (data2?.signedUrl) {
                         window.open(data2.signedUrl, '_blank');
                         return;
                       }
+                      // Second Fallback: try direct path if already has prefix
+                      const { data: data3, error: error3 } = await client.storage
+                        .from('rfq-cad-files')
+                        .createSignedUrl(activeThread.cadFilePath!, 60);
+                      if (data3?.signedUrl) {
+                        window.open(data3.signedUrl, '_blank');
+                        return;
+                      }
                       // Both failed — storage policy likely not yet applied
                       showToast(
-                        error2?.message?.includes('not found')
+                        error3?.message?.includes('not found')
                           ? 'Design file not found in storage. Ask the buyer to re-upload.'
-                          : `Storage access denied: ${error2?.message || 'Unknown error'}. Please apply the RLS storage policies.`,
+                          : `Storage access denied: ${error3?.message || 'Unknown error'}. Please apply the RLS storage policies.`,
                         'error'
                       );
                     }}

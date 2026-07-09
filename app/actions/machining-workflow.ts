@@ -76,7 +76,7 @@ export async function createRFQ(data: RFQInput): Promise<ActionResponse<RFQ>> {
  * Generates a short-lived signed upload URL for raw CAD file storage.
  */
 export async function getUploadSignedUrl(
-  rfqId: string, 
+  quoteId: string, 
   fileName: string
 ): Promise<ActionResponse<{ signedUrl: string; token: string; path: string }>> {
   try {
@@ -85,22 +85,22 @@ export async function getUploadSignedUrl(
 
     const profile = await getAuthProfile(supabase);
 
-    // Verify RFQ ownership before granting upload URL
-    const { data: rfq, error: rfqError } = await supabase
-      .from('rfqs')
-      .select('buyer_id')
-      .eq('id', rfqId)
+    // Verify machining quote ownership before granting upload URL
+    const { data: quote, error: quoteError } = await supabase
+      .from('machining_quotes')
+      .select('buyer_profile_id')
+      .eq('id', quoteId)
       .single();
 
-    if (rfqError || !rfq) {
-      return { success: false, error: 'RFQ not found' };
+    if (quoteError || !quote) {
+      return { success: false, error: 'Quotation request not found' };
     }
 
-    if (rfq.buyer_id !== profile.id) {
-      return { success: false, error: 'Unauthorized: You do not own this RFQ' };
+    if (quote.buyer_profile_id !== profile.id) {
+      return { success: false, error: 'Unauthorized: You do not own this quotation request' };
     }
 
-    const filePath = `${rfqId}/${fileName}`;
+    const filePath = `${quoteId}/${fileName}`;
     const { data, error } = await supabase.storage
       .from('rfq-cad-files')
       .createSignedUploadUrl(filePath);
