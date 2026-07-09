@@ -2969,10 +2969,8 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
   };
 
   useEffect(() => {
-    if (activeTab === 'chats') {
-      loadThreads();
-    }
-  }, [activeTab]);
+    loadThreads();
+  }, []);
 
   // Update offer form states when active thread changes
   useEffect(() => {
