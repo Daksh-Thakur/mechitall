@@ -2998,6 +2998,8 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
       const res = await getChatMessages(activeThread.quoteId);
       if (res.success && res.data) {
         setMessages(res.data);
+      } else {
+        showToast(res.error || 'Failed to load chat messages', 'error');
       }
     };
 
