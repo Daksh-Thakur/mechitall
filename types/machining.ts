@@ -83,6 +83,7 @@ export interface ChatThread {
   cadFilePath?: string | null;
   machiningQuote?: {
     id: string;
+    rfq_id: string | null;
     status: 'Pending' | 'Offered' | 'Accepted' | 'Completed' | 'Rejected';
     offer_price: number | null;
     quantity: number;

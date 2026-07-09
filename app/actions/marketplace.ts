@@ -126,13 +126,36 @@ export async function requestMachiningQuote(
     .eq('id', serviceId)
     .single();
 
-  // 2. Insert into machining_quotes for local machining marketplace view
-  const { data: quote, error } = await supabase
+  // 2. Insert RFQ first to get rfq.id
+  const { data: rfq, error: rfqError } = await supabase
+    .from('rfqs')
+    .insert([
+      {
+        buyer_id: buyerProfileId,
+        title: `Quote Request: ${service?.title || 'Machining Job'}`,
+        description: service?.description || 'Custom machining quote request.',
+        material_preference: 'Pending Review',
+        quantity: 1,
+        cad_file_path: data.cadFileName,
+        status: 'OPEN_FOR_BIDS',
+      }
+    ])
+    .select()
+    .single();
+
+  if (rfqError || !rfq) {
+    console.error('Error creating RFQ request:', rfqError?.message);
+    throw new Error(`Failed to submit quote request (RFQ creation): ${rfqError?.message || 'Database error'}`);
+  }
+
+  // 3. Insert into machining_quotes for local machining marketplace view (with rfq_id)
+  const { data: quote, error: quoteError } = await supabase
     .from('machining_quotes')
     .insert([
       {
         buyer_profile_id: buyerProfileId,
         service_id: serviceId,
+        rfq_id: rfq.id,
         cad_file_name: data.cadFileName,
         quantity: 1, // Default pending review
         selected_material: 'Pending Review',
@@ -143,51 +166,32 @@ export async function requestMachiningQuote(
     .select()
     .single();
 
-  if (error) {
-    console.error('Error creating quote request:', error.message);
-    throw new Error(`Failed to submit quote request: ${error.message}`);
+  if (quoteError || !quote) {
+    console.error('Error creating machining quote:', quoteError?.message);
+    await supabase.from('rfqs').delete().eq('id', rfq.id);
+    throw new Error(`Failed to submit quote request (Machining quote creation): ${quoteError?.message || 'Database error'}`);
   }
 
-  // 3. Insert matching RFQ & Quote records to integrate with Chat & Profile Seller Hub
+  // 4. Create matching quotes record to integrate with Chat & Profile Seller Hub
   try {
-    const { data: rfq } = await supabase
-      .from('rfqs')
-      .insert([
-        {
-          buyer_id: buyerProfileId,
-          title: `Quote Request: ${service?.title || 'Machining Job'}`,
-          description: service?.description || 'Custom machining quote request.',
-          material_preference: 'Pending Review',
-          quantity: 1,
-          cad_file_path: data.cadFileName,
-          status: 'OPEN_FOR_BIDS',
-        }
-      ])
-      .select()
-      .single();
-
-    let rfqId: string | null = null;
-    if (rfq) {
-      rfqId = rfq.id;
-      if (service?.seller_profile_id) {
-        await supabase
-          .from('quotes')
-          .insert([
-            {
-              rfq_id: rfq.id,
-              seller_id: service.seller_profile_id,
-              total_cost: 0,
-              lead_time_days: 7,
-              seller_notes: 'Awaiting seller custom pricing offer.',
-              status: 'SUBMITTED',
-            }
-          ]);
-      }
+    if (service?.seller_profile_id) {
+      await supabase
+        .from('quotes')
+        .insert([
+          {
+            rfq_id: rfq.id,
+            seller_id: service.seller_profile_id,
+            total_cost: 0,
+            lead_time_days: 7,
+            seller_notes: 'Awaiting seller custom pricing offer.',
+            status: 'SUBMITTED',
+          }
+        ]);
     }
-    return { quote: quote as MachiningQuote, rfqId };
+    return { quote: quote as MachiningQuote, rfqId: rfq.id };
   } catch (linkErr) {
-    console.error('Non-fatal: Failed to link to RFQs/Quotes tables:', linkErr);
-    return { quote: quote as MachiningQuote, rfqId: null };
+    console.error('Non-fatal: Failed to link to Quotes table:', linkErr);
+    return { quote: quote as MachiningQuote, rfqId: rfq.id };
   }
 }
 
@@ -230,20 +234,18 @@ export async function getIncomingQuotes(sellerProfileId: string) {
   const buyerIds = (quotes || []).map((q: any) => q.buyer_profile_id);
   const cadFileNames = (quotes || []).map((q: any) => q.cad_file_name);
 
+  const rfqIds = (quotes || []).map((q: any) => q.rfq_id).filter(Boolean);
   let rfqs: any[] = [];
-  if (buyerIds.length > 0 && cadFileNames.length > 0) {
+  if (rfqIds.length > 0) {
     const { data: rfqData } = await supabase
       .from('rfqs')
       .select('id, buyer_id, cad_file_path')
-      .in('buyer_id', buyerIds)
-      .in('cad_file_path', cadFileNames);
+      .in('id', rfqIds);
     rfqs = rfqData || [];
   }
 
   return (quotes || []).map((q: any) => {
-    const matchingRfq = rfqs.find(
-      (rfq) => rfq.buyer_id === q.buyer_profile_id && rfq.cad_file_path === q.cad_file_name
-    );
+    const matchingRfq = rfqs.find((rfq) => rfq.id === q.rfq_id);
     return {
       ...q,
       rfq_id: matchingRfq?.id || null,
@@ -278,21 +280,18 @@ export async function getSubmittedQuotes(buyerProfileId: string) {
     return [];
   }
 
-  const cadFileNames = (quotes || []).map((q: any) => q.cad_file_name);
+  const rfqIds = (quotes || []).map((q: any) => q.rfq_id).filter(Boolean);
   let rfqs: any[] = [];
-  if (cadFileNames.length > 0) {
+  if (rfqIds.length > 0) {
     const { data: rfqData } = await supabase
       .from('rfqs')
       .select('id, buyer_id, cad_file_path')
-      .eq('buyer_id', buyerProfileId)
-      .in('cad_file_path', cadFileNames);
+      .in('id', rfqIds);
     rfqs = rfqData || [];
   }
 
   return (quotes || []).map((q: any) => {
-    const matchingRfq = rfqs.find(
-      (rfq) => rfq.buyer_id === q.buyer_profile_id && rfq.cad_file_path === q.cad_file_name
-    );
+    const matchingRfq = rfqs.find((rfq) => rfq.id === q.rfq_id);
     return {
       ...q,
       rfq_id: matchingRfq?.id || null,
@@ -336,16 +335,7 @@ export async function submitQuoteOffer(
 
   // Update corresponding quotes table record if exists
   try {
-    const { data: rfqRecord } = await supabase
-      .from('rfqs')
-      .select('id')
-      .eq('buyer_id', quote.buyer_profile_id)
-      .eq('cad_file_path', quote.cad_file_name)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (rfqRecord) {
+    if (quote.rfq_id) {
       await supabase
         .from('quotes')
         .update({
@@ -353,7 +343,7 @@ export async function submitQuoteOffer(
           seller_notes: data.notes,
           status: 'SUBMITTED', // active offer
         })
-        .eq('rfq_id', rfqRecord.id);
+        .eq('rfq_id', quote.rfq_id);
     }
   } catch (linkErr) {
     console.error('Non-fatal: Failed to sync offer to quotes table:', linkErr);
@@ -396,26 +386,17 @@ export async function acceptQuoteOffer(quoteId: string) {
 
   // Update corresponding quotes table record status to ACCEPTED
   try {
-    const { data: rfqRecord } = await supabase
-      .from('rfqs')
-      .select('id')
-      .eq('buyer_id', quote.buyer_profile_id)
-      .eq('cad_file_path', quote.cad_file_name)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (rfqRecord) {
+    if (quote.rfq_id) {
       await supabase
         .from('quotes')
         .update({ status: 'ACCEPTED' })
-        .eq('rfq_id', rfqRecord.id);
+        .eq('rfq_id', quote.rfq_id);
       
       // Also update RFQ status to CLOSED (or ACCEPTED status if it exists)
       await supabase
         .from('rfqs')
         .update({ status: 'CLOSED' })
-        .eq('id', rfqRecord.id);
+        .eq('id', quote.rfq_id);
     }
   } catch (linkErr) {
     console.error('Non-fatal: Failed to sync acceptance status to quotes/rfqs tables:', linkErr);

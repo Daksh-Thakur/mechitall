@@ -319,14 +319,12 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
       const { data: machQuote } = await supabase
         .from('machining_quotes')
         .select('*, machining_services(material_capabilities, finish_options)')
-        .eq('buyer_profile_id', buyerId)
-        .eq('cad_file_name', rfq.cad_file_path)
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .eq('rfq_id', rfq.id)
         .maybeSingle();
 
       const mappedMachQuote = machQuote ? {
         id: machQuote.id,
+        rfq_id: machQuote.rfq_id || null,
         status: machQuote.status as any,
         offer_price: machQuote.offer_price ? Number(machQuote.offer_price) : null,
         quantity: machQuote.quantity,
@@ -610,10 +608,7 @@ export async function rejectQuote(
       const { data: machQuote } = await supabase
         .from('machining_quotes')
         .select('id')
-        .eq('buyer_profile_id', buyerId)
-        .eq('cad_file_name', rfq?.cad_file_path)
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .eq('rfq_id', rfqId)
         .maybeSingle();
 
       if (machQuote) {
@@ -699,16 +694,13 @@ export async function cancelQuoteNegotiation(
       const { data: machQuote } = await supabase
         .from('machining_quotes')
         .select('id')
-        .eq('buyer_profile_id', buyerId)
-        .eq('cad_file_name', rfq?.cad_file_path)
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .eq('rfq_id', rfqId)
         .maybeSingle();
 
       if (machQuote) {
         await supabase
           .from('machining_quotes')
-          .update({ status: 'Canceled' })
+          .update({ status: 'Rejected' })
           .eq('id', machQuote.id);
       }
     } catch (linkErr) {
