@@ -3331,13 +3331,13 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
                     </h4>
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
-                        t.status === 'ACCEPTED'
+                        isAccepted
                           ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
                           : t.status === 'REJECTED'
                           ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
                           : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
                       }`}>
-                        {t.status}
+                        {isAccepted ? 'ACCEPTED' : t.status}
                       </span>
                       {isAccepted && t.machiningQuote?.offer_price && (
                         <span className="text-[10px] font-black text-coral">
