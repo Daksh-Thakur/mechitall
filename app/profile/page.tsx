@@ -3151,19 +3151,14 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
         return;
       }
 
-      const { signedUrl, path } = signedRes.data;
+      const { token, path } = signedRes.data;
+      const client = createClient();
+      const { error: uploadError } = await client.storage
+        .from('chat-attachments')
+        .uploadToSignedUrl(path, token, file);
 
-      // Upload file directly to Supabase storage via PUT
-      const response = await fetch(signedUrl, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload file to storage bucket');
+      if (uploadError) {
+        throw new Error(`Failed to upload file to storage: ${uploadError.message}`);
       }
 
       // Send chat message with the attachment path
@@ -3392,7 +3387,7 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
                         return;
                       }
                       // Fallback: try with rfqId prefix (older uploads stored as rfqId/filename)
-                      const { data: data2 } = await client.storage
+                      const { data: data2, error: error2 } = await client.storage
                         .from('rfq-cad-files')
                         .createSignedUrl(`${activeThread.rfqId}/${activeThread.cadFilePath!}`, 60);
                       if (data2?.signedUrl) {
@@ -3401,9 +3396,9 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
                       }
                       // Both failed — storage policy likely not yet applied
                       showToast(
-                        error?.message?.includes('not found')
+                        error2?.message?.includes('not found')
                           ? 'Design file not found in storage. Ask the buyer to re-upload.'
-                          : 'Storage access denied. Please ask your admin to apply the RLS storage policies in the Supabase SQL Editor.',
+                          : `Storage access denied: ${error2?.message || 'Unknown error'}. Please apply the RLS storage policies.`,
                         'error'
                       );
                     }}

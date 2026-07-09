@@ -198,19 +198,13 @@ export default function MachiningMarketplacePage() {
         // Generate signed upload URL for the CAD file
         const signedRes = await getUploadSignedUrl(rfqId, uploadedFile.name);
         if (signedRes.success && signedRes.data) {
-          const { signedUrl } = signedRes.data;
-          
-          // Upload file directly via PUT
-          const uploadResponse = await fetch(signedUrl, {
-            method: 'PUT',
-            body: uploadedFile,
-            headers: {
-              'Content-Type': uploadedFile.type || 'application/octet-stream',
-            },
-          });
-
-          if (!uploadResponse.ok) {
-            console.error('Failed to upload CAD file to storage bucket');
+          const { token, path } = signedRes.data;
+          const client = createClient();
+          const { error: uploadError } = await client.storage
+            .from('rfq-cad-files')
+            .uploadToSignedUrl(path, token, uploadedFile);
+          if (uploadError) {
+            throw new Error(`Failed to upload CAD file to storage: ${uploadError.message}`);
           }
         }
       }
