@@ -175,7 +175,7 @@ export async function requestMachiningQuote(
   // 4. Create matching quotes record to integrate with Chat & Profile Seller Hub
   try {
     if (service?.seller_profile_id) {
-      await supabase
+      const { data: mainQuote, error: mainQuoteError } = await supabase
         .from('quotes')
         .insert([
           {
@@ -186,12 +186,24 @@ export async function requestMachiningQuote(
             seller_notes: 'Awaiting seller custom pricing offer.',
             status: 'SUBMITTED',
           }
-        ]);
+        ])
+        .select()
+        .single();
+
+      if (mainQuoteError) {
+        console.error('Failed to create matching quote record:', mainQuoteError.message);
+      }
+
+      return { 
+        quote: quote as MachiningQuote, 
+        rfqId: rfq.id, 
+        quoteId: mainQuote?.id || null 
+      };
     }
-    return { quote: quote as MachiningQuote, rfqId: rfq.id };
+    return { quote: quote as MachiningQuote, rfqId: rfq.id, quoteId: null };
   } catch (linkErr) {
     console.error('Non-fatal: Failed to link to Quotes table:', linkErr);
-    return { quote: quote as MachiningQuote, rfqId: rfq.id };
+    return { quote: quote as MachiningQuote, rfqId: rfq.id, quoteId: null };
   }
 }
 
