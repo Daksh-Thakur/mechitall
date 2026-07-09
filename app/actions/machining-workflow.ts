@@ -274,13 +274,11 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
       return { success: false, error: `Failed to fetch quote threads: ${quotesError.message}` };
     }
 
-    const threads: ChatThread[] = [];
-
-    for (const q of (quotesData || [])) {
+    // Step 2: Fetch thread details in parallel
+    const threadPromises = (quotesData || []).map(async (q) => {
       const sellerProfile = q.seller_profile as any;
       const sellerId = q.seller_id;
 
-      // Step 2: Fetch the RFQ for this quote individually.
       // This is necessary because nested joins are blocked by RLS for non-buyers on closed RFQs.
       const { data: rfq } = await supabase
         .from('rfqs')
@@ -289,16 +287,14 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
         .maybeSingle();
 
       if (!rfq) {
-        // RFQ not accessible or deleted — skip this thread
-        console.warn(`[getOngoingChats] Could not fetch RFQ for quote ${q.id}. Skipping.`);
-        continue;
+        return null;
       }
 
       const buyerId = rfq.buyer_id;
 
       // Only include threads where this user is buyer or seller
       if (profile.id !== buyerId && profile.id !== sellerId) {
-        continue;
+        return null;
       }
 
       // Determine the other participant name
@@ -306,21 +302,24 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
         ? (sellerProfile?.full_name || 'Seller')
         : ((rfq.profiles as any)?.full_name || 'Buyer');
 
-      // Fetch latest message preview for thread sidebar
-      const { data: latestMsg } = await supabase
-        .from('chat_messages')
-        .select('message_text, created_at')
-        .eq('quote_id', q.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Fetch latest message preview & corresponding machining_quotes record in parallel
+      const [latestMsgResult, machQuoteResult] = await Promise.all([
+        supabase
+          .from('chat_messages')
+          .select('message_text, created_at')
+          .eq('quote_id', q.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('machining_quotes')
+          .select('*, machining_services(material_capabilities, finish_options)')
+          .eq('rfq_id', rfq.id)
+          .maybeSingle()
+      ]);
 
-      // Fetch corresponding machining_quotes record
-      const { data: machQuote } = await supabase
-        .from('machining_quotes')
-        .select('*, machining_services(material_capabilities, finish_options)')
-        .eq('rfq_id', rfq.id)
-        .maybeSingle();
+      const latestMsg = latestMsgResult.data;
+      const machQuote = machQuoteResult.data;
 
       const mappedMachQuote = machQuote ? {
         id: machQuote.id,
@@ -336,7 +335,7 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
         finish_options: (machQuote.machining_services as any)?.finish_options || [],
       } : null;
 
-      threads.push({
+      return {
         quoteId: q.id,
         rfqId: rfq.id,
         rfqTitle: rfq.title,
@@ -347,8 +346,11 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
         cadFilePath: rfq.cad_file_path || null,
         machiningQuote: mappedMachQuote,
         createdAt: q.created_at,
-      });
-    }
+      } as ChatThread;
+    });
+
+    const threadsArray = await Promise.all(threadPromises);
+    const threads = threadsArray.filter((t): t is ChatThread => t !== null);
 
     // Sort by latest message time or creation time descending (newest on top)
     threads.sort((a, b) => {

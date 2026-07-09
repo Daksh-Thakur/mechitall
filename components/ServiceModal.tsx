@@ -22,26 +22,10 @@ interface ServiceModalProps {
   onClose: () => void;
 }
 
-function StarRating({ rating, interactive = false, onChange }: { rating: number; interactive?: boolean; onChange?: (r: number) => void }) {
-  const [hovered, setHovered] = useState(0);
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map(i => (
-        <Star
-          key={i}
-          className={`w-3.5 h-3.5 transition-colors ${
-            i <= (interactive ? (hovered || rating) : rating)
-              ? 'fill-amber-400 text-amber-400'
-              : 'text-slate-border'
-          } ${interactive ? 'cursor-pointer' : ''}`}
-          onMouseEnter={() => interactive && setHovered(i)}
-          onMouseLeave={() => interactive && setHovered(0)}
-          onClick={() => interactive && onChange?.(i)}
-        />
-      ))}
-    </div>
-  );
-}
+import StarRating from './StarRating';
+import ImageCarousel from './ImageCarousel';
+
+
 
 export default function ServiceModal({ service, onClose }: ServiceModalProps) {
   const { profile, showToast } = useCart();
@@ -127,38 +111,12 @@ export default function ServiceModal({ service, onClose }: ServiceModalProps) {
           return images.length > 0 ? (
             <div className="md:w-5/12 bg-slate-900 relative flex flex-col justify-between overflow-hidden group p-6 shrink-0 text-left">
               {/* Background Image Carousel */}
-              <div className="absolute inset-0 w-full h-full">
-                <img 
-                  src={images[currentImageIndex]} 
-                  alt={service.title} 
-                  className="w-full h-full object-cover transition-all duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent animate-fade-in" />
-              </div>
-
-              {/* Carousel navigation arrows */}
-              {images.length > 1 && (
-                <>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-                    }}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#06B6D4] transition-all text-xs font-bold z-20 cursor-pointer border-none outline-none"
-                  >
-                    &larr;
-                  </button>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
-                    }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-[#06B6D4] transition-all text-xs font-bold z-20 cursor-pointer border-none outline-none"
-                  >
-                    &rarr;
-                  </button>
-                </>
-              )}
+              <ImageCarousel 
+                images={images} 
+                title={service.title} 
+                currentImageIndex={currentImageIndex} 
+                setCurrentImageIndex={setCurrentImageIndex} 
+              />
 
               {/* Category overlay */}
               <div className="z-10 flex justify-between items-start">

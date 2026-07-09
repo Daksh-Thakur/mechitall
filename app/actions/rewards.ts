@@ -35,6 +35,25 @@ export interface BoltsTransaction {
 }
 
 /**
+ * Helper to award welcome bolts to new users
+ */
+async function awardWelcomeBolts(supabase: any, profileId: string) {
+  const expirationDate = new Date();
+  expirationDate.setDate(expirationDate.getDate() + 45);
+  await supabase
+    .from('bolts_transactions')
+    .insert([
+      {
+        profile_id: profileId,
+        amount: 25,
+        type: 'credit',
+        description: 'Welcome Reward: 25 Bolts credited',
+        expires_at: expirationDate.toISOString(),
+      },
+    ]);
+}
+
+/**
  * Fetches or creates an anonymous profile for a user.
  * Helps simulate tracking rewards and wallet balances for guest sessions.
  */
@@ -57,6 +76,8 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
       return authProfile as Profile;
     }
 
+    const isNewSignUp = user.created_at ? (new Date().getTime() - new Date(user.created_at).getTime() < 120000) : false;
+
     // 2. If no profile exists for user, check if we have a guest profile to link
     if (profileId) {
       const { data: guestProfile } = await supabase
@@ -67,8 +88,6 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
 
       if (guestProfile && !guestProfile.user_id) {
         // Link the guest profile to this user
-        const isNewSignUp = user.created_at ? (new Date().getTime() - new Date(user.created_at).getTime() < 120000) : false;
-
         const { data: linkedProfile, error: linkError } = await supabase
           .from('profiles')
           .update({
@@ -86,20 +105,7 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
 
         if (!linkError && linkedProfile) {
           if (isNewSignUp && guestProfile.wallet_balance === 0) {
-            // Create ledger entry
-            const expirationDate = new Date();
-            expirationDate.setDate(expirationDate.getDate() + 45);
-            await supabase
-              .from('bolts_transactions')
-              .insert([
-                {
-                  profile_id: linkedProfile.id,
-                  amount: 25,
-                  type: 'credit',
-                  description: 'Welcome Reward: 25 Bolts credited',
-                  expires_at: expirationDate.toISOString(),
-                },
-              ]);
+            await awardWelcomeBolts(supabase, linkedProfile.id);
           }
           return linkedProfile as Profile;
         }
@@ -107,8 +113,6 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
     }
 
     // 3. Create a new authenticated profile if none was found or linked
-    const isNewSignUp = user.created_at ? (new Date().getTime() - new Date(user.created_at).getTime() < 120000) : false;
-
     const { data: newProfile, error: createError } = await supabase
       .from('profiles')
       .insert([
@@ -125,20 +129,7 @@ export async function getOrCreateProfile(profileId?: string): Promise<Profile> {
 
     if (!createError && newProfile) {
       if (isNewSignUp) {
-        // Create ledger entry
-        const expirationDate = new Date();
-        expirationDate.setDate(expirationDate.getDate() + 45);
-        await supabase
-          .from('bolts_transactions')
-          .insert([
-            {
-              profile_id: newProfile.id,
-              amount: 25,
-              type: 'credit',
-              description: 'Welcome Reward: 25 Bolts credited',
-              expires_at: expirationDate.toISOString(),
-            },
-          ]);
+        await awardWelcomeBolts(supabase, newProfile.id);
       }
       return newProfile as Profile;
     }
