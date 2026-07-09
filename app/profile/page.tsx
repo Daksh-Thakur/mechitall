@@ -3306,13 +3306,18 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
               const hasNewMsg = t.lastMessageTime && (!seen || new Date(t.lastMessageTime) > new Date(seen.lastMessageTime));
               const hasNewStatus = !seen || t.status !== seen.status;
               const isUnread = hasNewMsg || hasNewStatus;
+              const isAccepted = t.status === 'ACCEPTED';
 
               return (
                 <div
                   key={t.quoteId}
                   onClick={() => selectThread(t)}
                   className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 text-left ${
-                    activeThread?.quoteId === t.quoteId
+                    isAccepted
+                      ? activeThread?.quoteId === t.quoteId
+                        ? 'border-emerald bg-emerald-500/10 ring-1 ring-emerald/20'
+                        : 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
+                      : activeThread?.quoteId === t.quoteId
                       ? 'border-cobalt bg-cobalt/5 ring-1 ring-cobalt/10'
                       : 'border-slate-border hover:bg-slate-bg/50'
                   }`}
@@ -3324,15 +3329,22 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
                       )}
                       {t.rfqTitle}
                     </h4>
-                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
-                      t.status === 'ACCEPTED'
-                        ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
-                        : t.status === 'REJECTED'
-                        ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                        : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                    }`}>
-                      {t.status}
-                    </span>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                        t.status === 'ACCEPTED'
+                          ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
+                          : t.status === 'REJECTED'
+                          ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                          : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                      }`}>
+                        {t.status}
+                      </span>
+                      {isAccepted && t.machiningQuote?.offer_price && (
+                        <span className="text-[10px] font-black text-coral">
+                          ₹{Number(t.machiningQuote.offer_price).toLocaleString('en-IN')}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex justify-between items-center text-[10px] text-slate-text-muted">
                     <span className="font-bold text-slate-text-secondary">With: {t.otherParticipantName}</span>
@@ -3499,7 +3511,7 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
             </div>
 
             {/* Contextual Quoting Workflow Card */}
-            {activeThread.machiningQuote && (
+            {activeThread.machiningQuote && activeThread.status !== 'ACCEPTED' && (
               <div className="mx-4 mb-4 p-4 rounded-xl border bg-slate-bg/40 border-slate-border/60 space-y-3">
                 <div className="flex justify-between items-center pb-2 border-b border-slate-border/50">
                   <div className="flex items-center gap-2">
