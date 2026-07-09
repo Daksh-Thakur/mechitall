@@ -32,6 +32,7 @@ export interface MachiningQuote {
   service_title?: string;
   process_type?: string;
   buyer_name?: string;
+  rfq_id?: string | null;
 }
 
 /**
@@ -226,12 +227,31 @@ export async function getIncomingQuotes(sellerProfileId: string) {
     return [];
   }
 
-  return (quotes || []).map((q: any) => ({
-    ...q,
-    service_title: q.machining_services?.title || 'Machining Capability',
-    process_type: q.machining_services?.process_type || 'CNC',
-    buyer_name: q.profiles?.full_name || 'Guest User',
-  })) as MachiningQuote[];
+  const buyerIds = (quotes || []).map((q: any) => q.buyer_profile_id);
+  const cadFileNames = (quotes || []).map((q: any) => q.cad_file_name);
+
+  let rfqs: any[] = [];
+  if (buyerIds.length > 0 && cadFileNames.length > 0) {
+    const { data: rfqData } = await supabase
+      .from('rfqs')
+      .select('id, buyer_id, cad_file_path')
+      .in('buyer_id', buyerIds)
+      .in('cad_file_path', cadFileNames);
+    rfqs = rfqData || [];
+  }
+
+  return (quotes || []).map((q: any) => {
+    const matchingRfq = rfqs.find(
+      (rfq) => rfq.buyer_id === q.buyer_profile_id && rfq.cad_file_path === q.cad_file_name
+    );
+    return {
+      ...q,
+      rfq_id: matchingRfq?.id || null,
+      service_title: q.machining_services?.title || 'Machining Capability',
+      process_type: q.machining_services?.process_type || 'CNC',
+      buyer_name: q.profiles?.full_name || 'Guest User',
+    };
+  }) as MachiningQuote[];
 }
 
 /**
@@ -258,11 +278,28 @@ export async function getSubmittedQuotes(buyerProfileId: string) {
     return [];
   }
 
-  return (quotes || []).map((q: any) => ({
-    ...q,
-    service_title: q.machining_services?.title || 'Machining Capability',
-    process_type: q.machining_services?.process_type || 'CNC',
-  })) as MachiningQuote[];
+  const cadFileNames = (quotes || []).map((q: any) => q.cad_file_name);
+  let rfqs: any[] = [];
+  if (cadFileNames.length > 0) {
+    const { data: rfqData } = await supabase
+      .from('rfqs')
+      .select('id, buyer_id, cad_file_path')
+      .eq('buyer_id', buyerProfileId)
+      .in('cad_file_path', cadFileNames);
+    rfqs = rfqData || [];
+  }
+
+  return (quotes || []).map((q: any) => {
+    const matchingRfq = rfqs.find(
+      (rfq) => rfq.buyer_id === q.buyer_profile_id && rfq.cad_file_path === q.cad_file_name
+    );
+    return {
+      ...q,
+      rfq_id: matchingRfq?.id || null,
+      service_title: q.machining_services?.title || 'Machining Capability',
+      process_type: q.machining_services?.process_type || 'CNC',
+    };
+  }) as MachiningQuote[];
 }
 
 export async function submitQuoteOffer(

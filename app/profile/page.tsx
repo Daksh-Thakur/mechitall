@@ -24,17 +24,64 @@ import {
   rejectQuote,
   cancelQuoteNegotiation 
 } from '@/app/actions/machining-workflow';
-import { listMachiningService } from '@/app/actions/marketplace';
+import { listMachiningService, submitQuoteOffer, acceptQuoteOffer } from '@/app/actions/marketplace';
 import { ChatThread, ChatMessage } from '@/types/machining';
+
 export default function ProfilePage() {
   const router = useRouter();
   const supabase = createClient();
   const { profile, fetchProfile, showToast, addToCart, wishlist, toggleWishlist } = useCart();
 
   const [activeTab, setActiveTab] = useState<'orders' | 'rewards' | 'wishlist' | 'settings' | 'address' | 'support' | 'chats' | 'seller_orders' | 'seller_rfqs' | 'seller_listings' | 'seller_capabilities' | 'seller_earnings'>('orders');
+  const [unreadChatsCount, setUnreadChatsCount] = useState(0);
+
+  const checkUnreadChats = async () => {
+    try {
+      const res = await getOngoingChats();
+      if (res.success && res.data) {
+        const seenChatsStr = localStorage.getItem('mechitall_seen_chats');
+        const seenChats = seenChatsStr ? JSON.parse(seenChatsStr) : {};
+        let unreadCount = 0;
+        for (const t of res.data) {
+          const seen = seenChats[t.quoteId];
+          const hasNewMsg = t.lastMessageTime && (!seen || new Date(t.lastMessageTime) > new Date(seen.lastMessageTime));
+          const hasNewStatus = !seen || t.status !== seen.status;
+          if (hasNewMsg || hasNewStatus) {
+            unreadCount++;
+          }
+        }
+        setUnreadChatsCount(unreadCount);
+      }
+    } catch (err) {
+      console.error('Failed to check unread chats:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (profile) {
+      checkUnreadChats();
+      const interval = setInterval(checkUnreadChats, 15000);
+      return () => clearInterval(interval);
+    }
+  }, [profile]);
+
+  // Load tab from URL query params
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam && ['orders', 'rewards', 'wishlist', 'settings', 'address', 'support', 'chats', 'seller_orders', 'seller_rfqs', 'seller_listings', 'seller_capabilities', 'seller_earnings'].includes(tabParam)) {
+        setActiveTab(tabParam as any);
+      }
+    }
+  }, []);
 
   // Switch tabs dynamically when toggling Seller Mode
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab')) return;
+    }
     if (profile?.is_seller) {
       setActiveTab('seller_rfqs');
     } else {
@@ -462,12 +509,15 @@ export default function ProfilePage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
-                className="flex flex-col items-center gap-0.5 py-1 flex-1 cursor-pointer transition-colors"
+                className="flex flex-col items-center gap-0.5 py-1 flex-1 cursor-pointer transition-colors relative"
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`} />
                 <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`}>
                   {label}
                 </span>
+                {tab === 'chats' && unreadChatsCount > 0 && (
+                  <span className="absolute top-1 right-5 w-1.5 h-1.5 rounded-full bg-[#00D0F5] animate-pulse"></span>
+                )}
               </button>
             );
           })}
@@ -490,12 +540,15 @@ export default function ProfilePage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
-                className="flex flex-col items-center gap-0.5 py-1 flex-1 cursor-pointer transition-colors"
+                className="flex flex-col items-center gap-0.5 py-1 flex-1 cursor-pointer transition-colors relative"
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`} />
                 <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? 'text-[#00D0F5]' : 'text-slate-400'}`}>
                   {label}
                 </span>
+                {tab === 'chats' && unreadChatsCount > 0 && (
+                  <span className="absolute top-1 right-5 w-1.5 h-1.5 rounded-full bg-[#00D0F5] animate-pulse"></span>
+                )}
               </button>
             );
           })}
@@ -547,6 +600,9 @@ export default function ProfilePage() {
                     >
                       <Icon className={`w-4 h-4 shrink-0 ${activeTab === tab ? 'text-[#06B6D4]' : 'text-[#76777d]'}`} />
                       <span>{label}</span>
+                      {tab === 'chats' && unreadChatsCount > 0 && (
+                        <span className="ml-auto w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
+                      )}
                     </button>
                   ))}
                 </nav>
@@ -695,6 +751,9 @@ export default function ProfilePage() {
                   >
                     <MessageSquare className="w-4 h-4 shrink-0" />
                     <span>Quotation Chats</span>
+                    {unreadChatsCount > 0 && (
+                      <span className="ml-auto w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
+                    )}
                   </button>
                 </nav>
               </div>
@@ -2100,7 +2159,7 @@ export default function ProfilePage() {
 
           {/* TAB 7: QUOTATION CHATS */}
           {activeTab === 'chats' && (
-            <QuotationChatsTab profile={profile} showToast={showToast} />
+            <QuotationChatsTab profile={profile} showToast={showToast} onUnreadChange={checkUnreadChats} />
           )}
 
         </section>
@@ -2837,7 +2896,7 @@ export default function ProfilePage() {
   );
 }
 
-function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: any }) {
+function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: any; showToast: any; onUnreadChange?: () => void }) {
   const supabase = createClient();
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [loading, setLoading] = useState(true);
@@ -2851,13 +2910,55 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
   const [rejectionReasonInput, setRejectionReasonInput] = useState('');
   const [rejecting, setRejecting] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-  
+
+  // Seller offer form states
+  const [offerPrice, setOfferPrice] = useState(0);
+  const [offerQuantity, setOfferQuantity] = useState(1);
+  const [offerMaterial, setOfferMaterial] = useState('');
+  const [offerFinish, setOfferFinish] = useState('');
+  const [sellerNotes, setSellerNotes] = useState('');
+  const [submittingOffer, setSubmittingOffer] = useState(false);
+
+  const markThreadAsSeen = (threadId: string, lastMessageTime: string | null, status: string) => {
+    try {
+      const seenChatsStr = localStorage.getItem('mechitall_seen_chats');
+      const seenChats = seenChatsStr ? JSON.parse(seenChatsStr) : {};
+      seenChats[threadId] = {
+        lastMessageTime: lastMessageTime || new Date().toISOString(),
+        status
+      };
+      localStorage.setItem('mechitall_seen_chats', JSON.stringify(seenChats));
+      if (onUnreadChange) {
+        onUnreadChange();
+      }
+    } catch (err) {
+      console.error('Failed to update local storage seen chats:', err);
+    }
+  };
+
   // Load threads
   const loadThreads = async () => {
     setLoading(true);
     const res = await getOngoingChats();
     if (res.success && res.data) {
       setThreads(res.data);
+      if (onUnreadChange) {
+        onUnreadChange();
+      }
+
+      // Auto-select thread based on URL param or default to first
+      const params = new URLSearchParams(window.location.search);
+      const quoteIdParam = params.get('quoteId') || params.get('thread');
+      if (quoteIdParam) {
+        const found = res.data.find(t => t.quoteId === quoteIdParam);
+        if (found) {
+          selectThread(found);
+        } else if (res.data.length > 0) {
+          selectThread(res.data[0]);
+        }
+      } else if (res.data.length > 0) {
+        selectThread(res.data[0]);
+      }
     } else {
       showToast(res.error || 'Failed to load chat threads', 'error');
     }
@@ -2868,17 +2969,35 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
     loadThreads();
   }, []);
 
+  // Update offer form states when active thread changes
+  useEffect(() => {
+    if (activeThread?.machiningQuote) {
+      const mq = activeThread.machiningQuote;
+      setOfferPrice(mq.offer_price || 0);
+      setOfferQuantity(mq.quantity || 1);
+      setOfferMaterial(mq.selected_material || mq.material_capabilities[0] || 'Aluminium 6061');
+      setOfferFinish(mq.selected_finish || mq.finish_options[0] || 'As-Machined');
+      setSellerNotes(mq.seller_notes || '');
+    } else {
+      setOfferPrice(0);
+      setOfferQuantity(1);
+      setOfferMaterial('');
+      setOfferFinish('');
+      setSellerNotes('');
+    }
+  }, [activeThread]);
+
   // Subscribe to real-time message inserts
   useEffect(() => {
     if (!activeThread) return;
-    
+
     const loadMessages = async () => {
       const res = await getChatMessages(activeThread.quoteId);
       if (res.success && res.data) {
         setMessages(res.data);
       }
     };
-    
+
     loadMessages();
 
     // Subscribe to Postgres changes on this specific quote_id
@@ -2917,6 +3036,9 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
             return [...prev, formattedMsg];
           });
 
+          // Mark as seen immediately if we are actively viewing this thread
+          markThreadAsSeen(activeThread.quoteId, formattedMsg.created_at, activeThread.status);
+
           // Update thread in list
           setThreads((prev) =>
             prev.map((t) =>
@@ -2934,10 +3056,10 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
     };
   }, [activeThread, profile?.id, profile?.full_name]);
 
-
   const selectThread = async (thread: ChatThread) => {
     setActiveThread(thread);
     setLoadingMessages(true);
+    markThreadAsSeen(thread.quoteId, thread.lastMessageTime, thread.status);
     const res = await getChatMessages(thread.quoteId);
     if (res.success && res.data) {
       setMessages(res.data);
@@ -2961,10 +3083,11 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
     if (res.success && res.data) {
       setMessages((prev) => [...prev, res.data!]);
       setNewMessage('');
+      markThreadAsSeen(activeThread.quoteId, res.data!.created_at, activeThread.status);
       // Update thread last message in list
-      setThreads((prev) => 
-        prev.map((t) => 
-          t.quoteId === activeThread.quoteId 
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.quoteId === activeThread.quoteId
             ? { ...t, lastMessageText: res.data!.message_text, lastMessageTime: res.data!.created_at }
             : t
         )
@@ -2985,7 +3108,7 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
       showToast('Quotation rejected and status updated.', 'success');
       setShowRejectForm(false);
       setRejectionReasonInput('');
-      
+
       // Refresh current thread view and messages list
       const threadToSelect = { ...activeThread, status: 'REJECTED' as any };
       setActiveThread(threadToSelect);
@@ -3005,7 +3128,7 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
     const res = await cancelQuoteNegotiation(activeThread.quoteId, activeThread.rfqId);
     if (res.success) {
       showToast('Quotation negotiation cancelled successfully.', 'success');
-      
+
       const threadToSelect = { ...activeThread, status: 'REJECTED' as any };
       setActiveThread(threadToSelect);
       await selectThread(threadToSelect);
@@ -3053,9 +3176,9 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
 
       if (res.success && res.data) {
         setMessages((prev) => [...prev, res.data!]);
-        setThreads((prev) => 
-          prev.map((t) => 
-            t.quoteId === activeThread.quoteId 
+        setThreads((prev) =>
+          prev.map((t) =>
+            t.quoteId === activeThread.quoteId
               ? { ...t, lastMessageText: res.data!.message_text, lastMessageTime: res.data!.created_at }
               : t
           )
@@ -3068,6 +3191,99 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
       showToast(err.message || 'Attachment upload failed', 'error');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleOfferSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeThread || !activeThread.machiningQuote || offerPrice <= 0 || !offerMaterial || !offerFinish || offerQuantity < 1) {
+      showToast('Please fill in all offer details.', 'error');
+      return;
+    }
+
+    setSubmittingOffer(true);
+    try {
+      await submitQuoteOffer(activeThread.machiningQuote.id, {
+        price: offerPrice,
+        notes: sellerNotes,
+        quantity: offerQuantity,
+        material: offerMaterial,
+        finish: offerFinish,
+      });
+      showToast('Pricing offer sent to buyer!', 'success');
+
+      // Update local state for immediate feedback
+      const updatedMachQuote = {
+        ...activeThread.machiningQuote,
+        status: 'Offered' as const,
+        offer_price: offerPrice,
+        selected_material: offerMaterial,
+        selected_finish: offerFinish,
+        quantity: offerQuantity,
+        seller_notes: sellerNotes,
+      };
+
+      const updatedThread = {
+        ...activeThread,
+        status: 'Offered' as any,
+        machiningQuote: updatedMachQuote,
+      };
+
+      setActiveThread(updatedThread);
+      setThreads(prev => prev.map(t => t.quoteId === activeThread.quoteId ? updatedThread : t));
+
+      // Send a system message in the chat
+      await sendChatMessage({
+        rfqId: activeThread.rfqId,
+        quoteId: activeThread.quoteId,
+        messageText: `[SYSTEM] Price quote submitted: ₹${offerPrice.toLocaleString('en-IN')} for ${offerQuantity} units in ${offerMaterial} (${offerFinish}).`,
+      });
+
+      // Update local storage seen state
+      markThreadAsSeen(activeThread.quoteId, new Date().toISOString(), 'Offered');
+
+      await loadThreads();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to submit offer.', 'error');
+    } finally {
+      setSubmittingOffer(false);
+    }
+  };
+
+  const handleAcceptOffer = async () => {
+    if (!activeThread || !activeThread.machiningQuote) return;
+    try {
+      const res = await acceptQuoteOffer(activeThread.machiningQuote.id);
+      showToast(`Offer accepted! Order ${res.orderId} placed.`, 'success');
+
+      // Update local state
+      const updatedMachQuote = {
+        ...activeThread.machiningQuote,
+        status: 'Accepted' as const,
+      };
+
+      const updatedThread = {
+        ...activeThread,
+        status: 'ACCEPTED' as any,
+        machiningQuote: updatedMachQuote,
+      };
+
+      setActiveThread(updatedThread);
+      setThreads(prev => prev.map(t => t.quoteId === activeThread.quoteId ? updatedThread : t));
+
+      // Send a system message in the chat
+      await sendChatMessage({
+        rfqId: activeThread.rfqId,
+        quoteId: activeThread.quoteId,
+        messageText: `[SYSTEM] Quote offer accepted! Order ${res.orderId} has been placed.`,
+      });
+
+      // Update local storage seen state
+      markThreadAsSeen(activeThread.quoteId, new Date().toISOString(), 'ACCEPTED');
+
+      await loadThreads();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to accept offer.', 'error');
     }
   };
 
@@ -3088,41 +3304,55 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
               <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
             </div>
           ) : threads.length > 0 ? (
-            threads.map((t) => (
-              <div
-                key={t.quoteId}
-                onClick={() => selectThread(t)}
-                className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 text-left ${
-                  activeThread?.quoteId === t.quoteId 
-                    ? 'border-cobalt bg-cobalt/5 ring-1 ring-cobalt/10'
-                    : 'border-slate-border hover:bg-slate-bg/50'
-                }`}
-              >
-                <div className="flex justify-between items-start gap-2">
-                  <h4 className="text-xs font-black text-slate-text-primary line-clamp-1 flex-1">{t.rfqTitle}</h4>
-                  <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
-                    t.status === 'ACCEPTED' 
-                      ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
-                      : t.status === 'REJECTED'
-                      ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                      : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                  }`}>
-                    {t.status}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center text-[10px] text-slate-text-muted">
-                  <span className="font-bold text-slate-text-secondary">With: {t.otherParticipantName}</span>
-                  {t.lastMessageTime && (
-                    <span className="font-mono">{new Date(t.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            threads.map((t) => {
+              const seenChatsStr = localStorage.getItem('mechitall_seen_chats');
+              const seenChats = seenChatsStr ? JSON.parse(seenChatsStr) : {};
+              const seen = seenChats[t.quoteId];
+              const hasNewMsg = t.lastMessageTime && (!seen || new Date(t.lastMessageTime) > new Date(seen.lastMessageTime));
+              const hasNewStatus = !seen || t.status !== seen.status;
+              const isUnread = hasNewMsg || hasNewStatus;
+
+              return (
+                <div
+                  key={t.quoteId}
+                  onClick={() => selectThread(t)}
+                  className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 text-left ${
+                    activeThread?.quoteId === t.quoteId
+                      ? 'border-cobalt bg-cobalt/5 ring-1 ring-cobalt/10'
+                      : 'border-slate-border hover:bg-slate-bg/50'
+                  }`}
+                >
+                  <div className="flex justify-between items-start gap-2">
+                    <h4 className="text-xs font-black text-slate-text-primary line-clamp-1 flex-1 flex items-center gap-1.5">
+                      {isUnread && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#06B6D4] animate-pulse shrink-0"></span>
+                      )}
+                      {t.rfqTitle}
+                    </h4>
+                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                      t.status === 'ACCEPTED'
+                        ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
+                        : t.status === 'REJECTED'
+                        ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                        : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                    }`}>
+                      {t.status}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] text-slate-text-muted">
+                    <span className="font-bold text-slate-text-secondary">With: {t.otherParticipantName}</span>
+                    {t.lastMessageTime && (
+                      <span className="font-mono">{new Date(t.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    )}
+                  </div>
+                  {t.lastMessageText && (
+                    <p className="text-[11px] text-slate-text-muted font-medium line-clamp-1 italic bg-slate-bg/30 px-2 py-1 rounded">
+                      "{t.lastMessageText}"
+                    </p>
                   )}
                 </div>
-                {t.lastMessageText && (
-                  <p className="text-[11px] text-slate-text-muted font-medium line-clamp-1 italic bg-slate-bg/30 px-2 py-1 rounded">
-                    "{t.lastMessageText}"
-                  </p>
-                )}
-              </div>
-            ))
+              );
+            })
           ) : (
             <div className="py-20 text-center border border-dashed border-slate-border rounded-xl">
               <MessageSquare className="w-8 h-8 text-slate-text-muted/30 mx-auto mb-2" />
@@ -3206,7 +3436,7 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
                   </>
                 )}
                 <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${
-                  activeThread.status === 'ACCEPTED' 
+                  activeThread.status === 'ACCEPTED'
                     ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
                     : activeThread.status === 'REJECTED'
                     ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
@@ -3230,8 +3460,8 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
                     <div key={m.id} className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'self-end ml-auto items-end' : 'self-start mr-auto items-start'}`}>
                       <span className="text-[9px] font-bold text-slate-text-muted mb-0.5 px-1">{m.sender_name}</span>
                       <div className={`p-3 rounded-xl border text-xs font-semibold leading-relaxed ${
-                        isOwnMessage 
-                          ? 'bg-cobalt text-white border-cobalt shadow-sm' 
+                        isOwnMessage
+                          ? 'bg-cobalt text-white border-cobalt shadow-sm'
                           : 'bg-white text-slate-text-primary border-slate-border shadow-sm'
                       }`}>
                         <p>{m.message_text}</p>
@@ -3273,6 +3503,165 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
               )}
             </div>
 
+            {/* Contextual Quoting Workflow Card */}
+            {activeThread.machiningQuote && (
+              <div className="mx-4 mb-4 p-4 rounded-xl border bg-slate-bg/40 border-slate-border/60 space-y-3">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-border/50">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-text-primary">
+                      Quote Request Status: {activeThread.machiningQuote.status}
+                    </span>
+                  </div>
+                  {activeThread.machiningQuote.status === 'Pending' && !profile.is_seller && (
+                    <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded animate-pulse">
+                      Awaiting Fabricator Pricing
+                    </span>
+                  )}
+                  {activeThread.machiningQuote.status === 'Offered' && profile.is_seller && (
+                    <span className="text-[9px] font-bold text-[#06B6D4] bg-[#06B6D4]/10 border border-[#06B6D4]/20 px-2 py-0.5 rounded">
+                      Awaiting Customer Approval
+                    </span>
+                  )}
+                  {activeThread.machiningQuote.status === 'Accepted' && (
+                    <span className="text-[9px] font-bold text-emerald bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Order Placed
+                    </span>
+                  )}
+                </div>
+
+                {activeThread.machiningQuote.status === 'Pending' && profile.is_seller && (
+                  /* Seller: Submit Offer Form */
+                  <form onSubmit={handleOfferSubmit} className="space-y-3 text-xs font-bold">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="space-y-1">
+                        <label className="block text-[8px] text-slate-text-secondary uppercase">Material</label>
+                        <select
+                          value={offerMaterial}
+                          onChange={(e) => setOfferMaterial(e.target.value)}
+                          className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                        >
+                          {(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m) => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[8px] text-slate-text-secondary uppercase">Finish</label>
+                        <select
+                          value={offerFinish}
+                          onChange={(e) => setOfferFinish(e.target.value)}
+                          className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                        >
+                          {(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f) => (
+                            <option key={f} value={f}>{f}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[8px] text-slate-text-secondary uppercase">Qty (Units)</label>
+                        <input
+                          type="number"
+                          required
+                          min={1}
+                          value={offerQuantity}
+                          onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
+                          className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[8px] text-slate-text-secondary uppercase">Total Price (₹)</label>
+                        <input
+                          type="number"
+                          required
+                          min={1}
+                          value={offerPrice || ''}
+                          placeholder="0"
+                          onChange={(e) => setOfferPrice(Number(e.target.value))}
+                          className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="block text-[8px] text-slate-text-secondary uppercase">Notes / Inspection Feedback</label>
+                      <input
+                        type="text"
+                        placeholder="Detail tolerancing check, recommended tooling modifications, etc..."
+                        value={sellerNotes}
+                        onChange={(e) => setSellerNotes(e.target.value)}
+                        className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={submittingOffer}
+                      className="w-full py-2 bg-cobalt hover:bg-[#06b6d4] text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      {submittingOffer ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <>
+                          <CircleDollarSign className="w-3.5 h-3.5" />
+                          <span>Submit Price Offer to Buyer</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+
+                {activeThread.machiningQuote.status === 'Offered' && (
+                  /* Offer Details View */
+                  <div className="bg-white border border-slate-border/60 p-3 rounded-lg space-y-2">
+                    <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
+                      <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-[10px] text-slate-text-secondary font-bold">
+                        <div>Material: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_material}</span></div>
+                        <div>Finish: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_finish}</span></div>
+                        <div>Quantity: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.quantity} Units</span></div>
+                      </div>
+                      <div className="flex items-baseline gap-1 self-start md:self-auto">
+                        <span className="text-[9px] text-slate-text-muted uppercase">Total Offered:</span>
+                        <span className="text-sm font-black text-coral">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+
+                    {activeThread.machiningQuote.seller_notes && (
+                      <p className="text-[10px] text-slate-text-muted italic border-t border-slate-border/40 pt-1.5 mt-1">
+                        Seller Notes: "{activeThread.machiningQuote.seller_notes}"
+                      </p>
+                    )}
+
+                    {!profile.is_seller && (
+                      <button
+                        onClick={handleAcceptOffer}
+                        className="w-full mt-2 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>Accept Offer & Place Order</span>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {activeThread.machiningQuote.status === 'Accepted' && (
+                  /* Accepted Offer Summary */
+                  <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-lg text-[10px] font-bold text-slate-text-secondary space-y-1">
+                    <p className="text-emerald font-black">Contract Terms Finalized & Accepted</p>
+                    <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-slate-text-secondary">
+                      <div>Material: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_material}</span></div>
+                      <div>Finish: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_finish}</span></div>
+                      <div>Quantity: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.quantity} Units</span></div>
+                      <div className="ml-auto">Price: <span className="text-coral font-black">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Input message bar */}
             <form onSubmit={handleSendMessage} className="border-t border-slate-border/50 pt-4 flex gap-2">
               <label className="btn-secondary p-3 rounded-lg border border-slate-border cursor-pointer flex items-center justify-center shrink-0 hover:bg-slate-bg transition-colors" title="Attach file">
@@ -3312,29 +3701,29 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
       {showRejectForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             onClick={() => setShowRejectForm(false)}
           ></div>
-          
+
           {/* Panel */}
           <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-2xl relative z-10 animate-fade-in space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-slate-100">
               <h3 className="text-sm font-black text-slate-text-primary uppercase tracking-tight font-['Space_Grotesk']">
                 Reject Quotation
               </h3>
-              <button 
-                onClick={() => setShowRejectForm(false)} 
+              <button
+                onClick={() => setShowRejectForm(false)}
                 className="p-1 rounded hover:bg-slate-50 text-slate-text-muted cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            
+
             <p className="text-xs text-slate-text-muted font-semibold leading-relaxed">
               Please provide a reason for rejecting this quotation. This feedback will be sent directly to <strong>{activeThread?.otherParticipantName}</strong> inside this chat channel.
             </p>
-            
+
             <form onSubmit={handleRejectQuote} className="space-y-4">
               <div className="space-y-1">
                 <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">
@@ -3349,7 +3738,7 @@ function QuotationChatsTab({ profile, showToast }: { profile: any; showToast: an
                   className="w-full text-xs font-semibold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-rose-500 resize-none"
                 />
               </div>
-              
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"

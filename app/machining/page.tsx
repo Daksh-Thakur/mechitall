@@ -8,8 +8,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
   getMachiningServices, listMachiningService, requestMachiningQuote, 
-  getIncomingQuotes, getSubmittedQuotes, submitQuoteOffer, acceptQuoteOffer,
-  MachiningService, MachiningQuote 
+  MachiningService 
 } from '@/app/actions/marketplace';
 import { 
   Cpu, FileUp, Settings, Plus, Sparkles, CheckCircle2, Clock, 
@@ -37,10 +36,7 @@ export default function MachiningMarketplacePage() {
   const [activeView, setActiveView] = useState<'buyer' | 'seller'>('buyer');
   const [services, setServices] = useState<MachiningService[]>([]);
   const [myServices, setMyServices] = useState<MachiningService[]>([]);
-  const [buyerQuotes, setBuyerQuotes] = useState<MachiningQuote[]>([]);
-  const [sellerQuotes, setSellerQuotes] = useState<MachiningQuote[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
-  const [loadingQuotes, setLoadingQuotes] = useState(true);
 
   // Search & filter state (buyer view)
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,8 +47,6 @@ export default function MachiningMarketplacePage() {
   // New state variables to match products page layout
   const [sortBy, setSortBy] = useState<string>('featured');
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
-  const [buyerTab, setBuyerTab] = useState<'browse' | 'quotes'>('browse');
-  const [sellerTab, setSellerTab] = useState<'listings' | 'incoming'>('listings');
   const [hasSetInitialView, setHasSetInitialView] = useState(false);
 
   // Handle click outside for auto-complete dropdown
@@ -95,14 +89,7 @@ export default function MachiningMarketplacePage() {
   const [newFinishes, setNewFinishes] = useState('');
   const [listingService, setListingService] = useState(false);
 
-  // Seller: Submit Offer state
-  const [quotingItem, setQuotingItem] = useState<MachiningQuote | null>(null);
-  const [offerPrice, setOfferPrice] = useState(0);
-  const [offerQuantity, setOfferQuantity] = useState(1);
-  const [offerMaterial, setOfferMaterial] = useState('');
-  const [offerFinish, setOfferFinish] = useState('');
-  const [sellerNotes, setSellerNotes] = useState('');
-  const [submittingOffer, setSubmittingOffer] = useState(false);
+
 
   // Filtered and sorted services (buyer search + process filter + sort by base price)
   const filteredServices = useMemo(() => {
@@ -157,29 +144,20 @@ export default function MachiningMarketplacePage() {
     }
   }, [profile, hasSetInitialView]);
 
-  // Load my seller services and quotes
+  // Load my seller services
   useEffect(() => {
-    async function loadQuotes() {
+    async function loadSellerServices() {
       if (!profile) return;
       try {
-        setLoadingQuotes(true);
-        if (activeView === 'buyer') {
-          const quotes = await getSubmittedQuotes(profile.id);
-          setBuyerQuotes(quotes);
-        } else {
-          const quotes = await getIncomingQuotes(profile.id);
-          setSellerQuotes(quotes);
-          // Also filter my listed services from the full list
+        if (activeView === 'seller') {
           const allServices = await getMachiningServices();
           setMyServices(allServices.filter(s => s.seller_profile_id === profile.id));
         }
       } catch (err) {
-        console.error('Failed to load quotes:', err);
-      } finally {
-        setLoadingQuotes(false);
+        console.error('Failed to load seller services:', err);
       }
     }
-    loadQuotes();
+    loadSellerServices();
   }, [profile, activeView]);
 
   // File upload handlers
@@ -240,10 +218,7 @@ export default function MachiningMarketplacePage() {
       showToast(`"${uploadedFile.name}" shared with seller! Awaiting custom quote.`, 'success');
       setSelectedService(null);
       setUploadedFile(null);
-      setBuyerTab('quotes'); // Switch to quotes view tab to track immediately
-
-      const quotes = await getSubmittedQuotes(profile.id);
-      setBuyerQuotes(quotes);
+      router.push('/profile?tab=chats');
     } catch (err: any) {
       showToast(err.message || 'Failed to submit request.', 'error');
     } finally {
@@ -298,52 +273,7 @@ export default function MachiningMarketplacePage() {
     }
   };
 
-  // Handle seller submitting a quote offer
-  const handleOfferSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!quotingItem || offerPrice <= 0 || !offerMaterial || !offerFinish || offerQuantity < 1) {
-      showToast('Please fill in all offer details.', 'error');
-      return;
-    }
 
-    setSubmittingOffer(true);
-    try {
-      await submitQuoteOffer(quotingItem.id, {
-        price: offerPrice,
-        notes: sellerNotes,
-        quantity: offerQuantity,
-        material: offerMaterial,
-        finish: offerFinish,
-      });
-      showToast('Pricing offer sent to buyer!', 'success');
-      setQuotingItem(null);
-      setSellerNotes('');
-      setOfferPrice(0);
-
-      if (profile) {
-        const quotes = await getIncomingQuotes(profile.id);
-        setSellerQuotes(quotes);
-      }
-    } catch (err: any) {
-      showToast(err.message || 'Failed to submit offer.', 'error');
-    } finally {
-      setSubmittingOffer(false);
-    }
-  };
-
-  // Handle buyer accepting an offer
-  const handleAcceptOffer = async (quoteId: string) => {
-    try {
-      const res = await acceptQuoteOffer(quoteId);
-      showToast(`Offer accepted! Order ${res.orderId} placed.`, 'success');
-      if (profile) {
-        const quotes = await getSubmittedQuotes(profile.id);
-        setBuyerQuotes(quotes);
-      }
-    } catch (err: any) {
-      showToast(err.message || 'Failed to accept offer.', 'error');
-    }
-  };
 
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -509,71 +439,10 @@ export default function MachiningMarketplacePage() {
             </div>
           </div>
 
-          {/* View Sub-Tabs switcher */}
-          <div className="flex border-b border-[#E4E4E7] mb-6">
-            {activeView === 'buyer' ? (
-              <>
-                <button
-                  onClick={() => setBuyerTab('browse')}
-                  className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
-                    buyerTab === 'browse'
-                      ? 'border-[#06B6D4] text-[#06B6D4] font-bold'
-                      : 'border-transparent text-[#76777d] hover:text-[#0F172A]'
-                  }`}
-                >
-                  Browse services
-                </button>
-                <button
-                  onClick={() => setBuyerTab('quotes')}
-                  className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
-                    buyerTab === 'quotes'
-                      ? 'border-[#06B6D4] text-[#06B6D4] font-bold'
-                      : 'border-transparent text-[#76777d] hover:text-[#0F172A]'
-                  }`}
-                >
-                  My Quote Requests
-                  {buyerQuotes.length > 0 && (
-                    <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">
-                      {buyerQuotes.length}
-                    </span>
-                  )}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={() => setSellerTab('listings')}
-                  className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
-                    sellerTab === 'listings'
-                      ? 'border-[#06B6D4] text-[#06B6D4] font-bold'
-                      : 'border-transparent text-[#76777d] hover:text-[#0F172A]'
-                  }`}
-                >
-                  My Listed Capabilities
-                </button>
-                <button
-                  onClick={() => setSellerTab('incoming')}
-                  className={`py-3 px-6 text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5 ${
-                    sellerTab === 'incoming'
-                      ? 'border-[#06B6D4] text-[#06B6D4] font-bold'
-                      : 'border-transparent text-[#76777d] hover:text-[#0F172A]'
-                  }`}
-                >
-                  Incoming Quote Requests
-                  {sellerQuotes.filter(q => q.status === 'Pending').length > 0 && (
-                    <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold animate-pulse">
-                      {sellerQuotes.filter(q => q.status === 'Pending').length}
-                    </span>
-                  )}
-                </button>
-              </>
-            )}
-          </div>
-
           {/* ==========================================
               BUYER SUB-VIEWS
               ========================================== */}
-          {activeView === 'buyer' && buyerTab === 'browse' && (
+          {activeView === 'buyer' && (
             <div className="space-y-4">
               {/* Search Bar */}
               <div ref={searchRef} className={`mb-4 relative ${showSuggestions && suggestions.length > 0 ? 'z-30' : 'z-10'}`}>
@@ -693,106 +562,14 @@ export default function MachiningMarketplacePage() {
             </div>
           )}
 
-          {activeView === 'buyer' && buyerTab === 'quotes' && (
-            <div className="space-y-4">
-              {!profile ? (
-                <div className="bg-white border border-[#E4E4E7] rounded-2xl p-8 text-center space-y-4 max-w-md mx-auto">
-                  <ShieldCheck className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
-                  <h3 className="text-sm font-bold text-[#0F172A]">Sign in to track quotes</h3>
-                  <p className="text-xs text-[#76777d]">Track requests, communicate with fabrication facilities, and approve pricing offers.</p>
-                  <button onClick={() => router.push('/login')} className="bg-[#0f172a] text-white hover:bg-[#06b6d4] text-xs font-bold px-6 py-2.5 rounded-lg cursor-pointer">
-                    Sign In
-                  </button>
-                </div>
-              ) : loadingQuotes ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
-                  {[1, 2, 3].map(n => <div key={n} className="h-44 bg-white border border-[#E4E4E7]" />)}
-                </div>
-              ) : buyerQuotes.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {buyerQuotes.map((quote) => (
-                    <div key={quote.id} className="bg-white border border-[#E4E4E7] p-5 flex flex-col justify-between space-y-4 hover:border-[#0f172a] transition-all relative">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-start gap-2">
-                          <span className={`text-[9px] font-mono px-1.5 py-0.5 uppercase border font-semibold ${
-                            quote.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-750 border-blue-500/20'
-                            : quote.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-750 border-violet-500/20'
-                            : quote.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-750 border-amber-500/20'
-                            : 'bg-red-500/10 text-red-750 border-red-500/20'
-                          }`}>
-                            {quote.process_type}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-mono uppercase border font-bold ${
-                            quote.status === 'Accepted' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                            : quote.status === 'Offered' ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
-                            : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                          }`}>
-                            {quote.status}
-                          </span>
-                        </div>
 
-                        <div>
-                          <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] leading-tight">
-                            {quote.service_title}
-                          </h4>
-                          <p className="font-mono text-[10px] text-slate-text-muted mt-1.5 flex items-center gap-1 truncate font-semibold">
-                            <File className="w-3.5 h-3.5 text-[#76777d] shrink-0" /> {quote.cad_file_name}
-                          </p>
-                        </div>
-
-                        {quote.status === 'Offered' && quote.offer_price && (
-                          <div className="bg-[#F8FAFC] border border-[#E4E4E7] p-3 rounded space-y-2 mt-2">
-                            <div className="flex justify-between items-baseline">
-                              <span className="text-[10px] text-[#45464d] font-mono">Total Price Offered</span>
-                              <span className="text-base font-bold text-coral">₹{Number(quote.offer_price).toLocaleString('en-IN')}</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-1 text-[10px] text-[#76777d] font-semibold">
-                              <div>Material: <span className="text-[#1b1b1d] font-bold">{quote.selected_material}</span></div>
-                              <div>Finish: <span className="text-[#1b1b1d] font-bold">{quote.selected_finish}</span></div>
-                              <div>Quantity: <span className="text-[#1b1b1d] font-bold">{quote.quantity} Units</span></div>
-                            </div>
-                            {quote.seller_notes && (
-                              <p className="text-[10px] text-[#76777d] italic border-t border-[#E4E4E7]/60 pt-1.5 mt-1.5">
-                                "{quote.seller_notes}"
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {quote.status === 'Offered' && (
-                        <button
-                          onClick={() => handleAcceptOffer(quote.id)}
-                          className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded font-bold text-xs transition-colors cursor-pointer"
-                        >
-                          Accept & Order
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
-                  <FileUp className="w-12 h-12 text-[#76777d]/20 mx-auto mb-2" />
-                  <p className="text-sm font-bold text-[#0F172A]">No requests found</p>
-                  <p className="text-xs text-[#45464d]">Click "Get Quote" on any machining capability to submit your first CAD request.</p>
-                  <button
-                    onClick={() => setBuyerTab('browse')}
-                    className="mt-2 py-2 px-5 border border-[#0F172A] text-[#0F172A] font-bold text-xs hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer"
-                  >
-                    Browse Services
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* ==========================================
               SELLER SUB-VIEWS
               ========================================== */}
-          {activeView === 'seller' && sellerTab === 'listings' && (
+          {activeView === 'seller' && (
             <div className="space-y-4">
-              {loadingQuotes ? (
+              {loadingServices ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
                   {[1, 2, 3].map(n => <div key={n} className="h-44 bg-white border border-[#E4E4E7]" />)}
                 </div>
@@ -855,87 +632,7 @@ export default function MachiningMarketplacePage() {
             </div>
           )}
 
-          {activeView === 'seller' && sellerTab === 'incoming' && (
-            <div className="space-y-4">
-              {loadingQuotes ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
-                  {[1, 2, 3].map(n => <div key={n} className="h-44 bg-white border border-[#E4E4E7]" />)}
-                </div>
-              ) : sellerQuotes.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {sellerQuotes.map((quote) => (
-                    <div key={quote.id} className="bg-white border border-[#E4E4E7] p-5 flex flex-col justify-between space-y-4 hover:border-[#0F172A] transition-all relative">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-start gap-2">
-                          <span className={`text-[9px] font-mono px-1.5 py-0.5 uppercase border font-semibold ${
-                            quote.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-750 border-blue-500/20'
-                            : quote.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-750 border-violet-500/20'
-                            : quote.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-750 border-amber-500/20'
-                            : 'bg-red-500/10 text-red-750 border-red-500/20'
-                          }`}>
-                            {quote.process_type}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded text-[9px] font-mono uppercase border font-bold ${
-                            quote.status === 'Accepted' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
-                            : quote.status === 'Offered' ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
-                            : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                          }`}>
-                            {quote.status}
-                          </span>
-                        </div>
 
-                        <div>
-                          <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] leading-tight">
-                            {quote.service_title}
-                          </h4>
-                          <p className="font-mono text-[10px] text-slate-text-muted mt-1.5 flex items-center gap-1 truncate font-semibold">
-                            <File className="w-3.5 h-3.5 text-[#76777d] shrink-0" /> {quote.cad_file_name}
-                          </p>
-                        </div>
-
-                        <div className="space-y-1 text-[11px] text-[#45464d] font-semibold border-t border-[#E4E4E7]/60 pt-2">
-                          <div>Buyer: <span className="font-bold text-[#0F172A]">{quote.buyer_name}</span></div>
-                        </div>
-
-                        {quote.status === 'Offered' && quote.offer_price && (
-                          <div className="bg-[#F8FAFC] border border-[#E4E4E7] p-2.5 rounded text-[10px] font-semibold text-[#45464d]">
-                            Offer sent: <span className="font-bold text-coral">₹{Number(quote.offer_price).toLocaleString('en-IN')}</span>
-                          </div>
-                        )}
-
-                        {quote.status === 'Accepted' && (
-                          <div className="bg-emerald-500/8 border border-emerald-500/15 p-2.5 rounded text-[10px] text-emerald-600 font-bold flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5" /> Accepted by Buyer
-                          </div>
-                        )}
-                      </div>
-
-                      {quote.status === 'Pending' && (
-                        <button
-                          onClick={() => {
-                            const service = services.find(s => s.id === quote.service_id);
-                            setQuotingItem(quote);
-                            setOfferQuantity(1);
-                            setOfferMaterial(service?.material_capabilities[0] || 'Aluminium 6061');
-                            setOfferFinish(service?.finish_options[0] || 'As-Machined');
-                          }}
-                          className="w-full bg-[#0F172A] hover:bg-[#06B6D4] text-white py-2.5 rounded font-bold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                        >
-                          <Send className="w-3.5 h-3.5" /> Send Price Quote
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
-                  <ShoppingBag className="w-12 h-12 text-[#76777d]/20 mx-auto" />
-                  <p className="text-sm font-bold text-[#0F172A]">No incoming requests yet</p>
-                  <p className="text-xs text-[#45464d]">Buyers will appear here once they upload design files to your capabilities.</p>
-                </div>
-              )}
-            </div>
-          )}
         </main>
       </div>
 
@@ -1250,110 +947,7 @@ export default function MachiningMarketplacePage() {
         </div>
       )}
 
-      {/* ==========================================
-          MODAL 3: SELLER SUBMIT OFFER
-          ========================================== */}
-      {quotingItem && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E4E4E7] rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-5 animate-slide-in">
-            <div className="flex justify-between items-start">
-              <div>
-                <span className="text-[8px] font-black uppercase tracking-widest text-[#06B6D4]">Submit Price Quote</span>
-                <h3 className="text-base font-black text-slate-text-primary tracking-tight mt-0.5 flex items-center gap-2">
-                  <File className="w-4 h-4 text-slate-text-muted" /> {quotingItem.cad_file_name}
-                </h3>
-              </div>
-              <button
-                onClick={() => setQuotingItem(null)}
-                className="text-slate-text-muted hover:text-slate-text-primary cursor-pointer p-1 rounded-lg hover:bg-slate-bg transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
 
-            <form onSubmit={handleOfferSubmit} className="space-y-4 text-xs font-bold">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="block text-[10px] text-slate-text-secondary uppercase">Recommended Material</label>
-                  <select
-                    value={offerMaterial}
-                    onChange={(e) => setOfferMaterial(e.target.value)}
-                    className="w-full p-3 border border-slate-border rounded-xl bg-white text-slate-text-primary focus:outline-none"
-                  >
-                    {(services.find(s => s.id === quotingItem.service_id)?.material_capabilities || ['Aluminium 6061']).map((m) => (
-                      <option key={m} value={m}>{m}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-[10px] text-slate-text-secondary uppercase">Surface Finish</label>
-                  <select
-                    value={offerFinish}
-                    onChange={(e) => setOfferFinish(e.target.value)}
-                    className="w-full p-3 border border-slate-border rounded-xl bg-white text-slate-text-primary focus:outline-none"
-                  >
-                    {(services.find(s => s.id === quotingItem.service_id)?.finish_options || ['As-Machined']).map((f) => (
-                      <option key={f} value={f}>{f}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="block text-[10px] text-slate-text-secondary uppercase">Quantity (Units)</label>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    value={offerQuantity}
-                    onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
-                    className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-[10px] text-slate-text-secondary uppercase">Total Price (₹)</label>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    value={offerPrice || ''}
-                    placeholder="0"
-                    onChange={(e) => setOfferPrice(Number(e.target.value))}
-                    className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Inspection Notes / Comments *</label>
-                <textarea
-                  rows={3}
-                  required
-                  placeholder="Explain tolerance checks, toolpath analysis, or recommend design changes..."
-                  value={sellerNotes}
-                  onChange={(e) => setSellerNotes(e.target.value)}
-                  className="w-full p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary resize-none focus:outline-none focus:border-cobalt/40"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={submittingOffer}
-                className="w-full btn-cobalt py-3.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                {submittingOffer ? (
-                  <><RotateCcw className="w-4 h-4 animate-spin" /> Sending...</>
-                ) : (
-                  <><Send className="w-4 h-4" /> Send Quote to Buyer</>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

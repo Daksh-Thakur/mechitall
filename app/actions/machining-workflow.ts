@@ -315,6 +315,29 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
         .limit(1)
         .maybeSingle();
 
+      // Fetch corresponding machining_quotes record
+      const { data: machQuote } = await supabase
+        .from('machining_quotes')
+        .select('*, machining_services(material_capabilities, finish_options)')
+        .eq('buyer_profile_id', buyerId)
+        .eq('cad_file_name', rfq.cad_file_path)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const mappedMachQuote = machQuote ? {
+        id: machQuote.id,
+        status: machQuote.status as any,
+        offer_price: machQuote.offer_price ? Number(machQuote.offer_price) : null,
+        quantity: machQuote.quantity,
+        selected_material: machQuote.selected_material,
+        selected_finish: machQuote.selected_finish,
+        seller_notes: machQuote.seller_notes,
+        service_id: machQuote.service_id,
+        material_capabilities: (machQuote.machining_services as any)?.material_capabilities || [],
+        finish_options: (machQuote.machining_services as any)?.finish_options || [],
+      } : null;
+
       threads.push({
         quoteId: q.id,
         rfqId: rfq.id,
@@ -324,6 +347,7 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
         lastMessageText: latestMsg?.message_text || null,
         lastMessageTime: latestMsg?.created_at || null,
         cadFilePath: rfq.cad_file_path || null,
+        machiningQuote: mappedMachQuote,
       });
     }
 

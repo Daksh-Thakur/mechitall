@@ -81,6 +81,18 @@ export interface ChatThread {
   lastMessageText: string | null;
   lastMessageTime: string | null;
   cadFilePath?: string | null;
+  machiningQuote?: {
+    id: string;
+    status: 'Pending' | 'Offered' | 'Accepted' | 'Completed' | 'Rejected';
+    offer_price: number | null;
+    quantity: number;
+    selected_material: string;
+    selected_finish: string;
+    seller_notes: string | null;
+    service_id: string;
+    material_capabilities: string[];
+    finish_options: string[];
+  } | null;
 }
 
 export interface ActionResponse<T = any> {
