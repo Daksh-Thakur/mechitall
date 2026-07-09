@@ -1,3 +1,6 @@
+-- Ensure seller_id column exists on orders table
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS seller_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL;
+
 -- Create database indexes to optimize RLS evaluations and dashboard queries
 CREATE INDEX IF NOT EXISTS idx_profiles_user_id ON public.profiles(user_id);
 CREATE INDEX IF NOT EXISTS idx_rfqs_buyer_id ON public.rfqs(buyer_id);
