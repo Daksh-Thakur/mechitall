@@ -16,7 +16,7 @@ import {
   ChevronRight, Info, X, Upload, File, Trash2, Eye, ArrowRight, 
   Zap, RotateCcw, Package, Search, SlidersHorizontal, SlidersVertical
 } from 'lucide-react';
-import { getUploadSignedUrl } from '@/app/actions/machining-workflow';
+import { getChatUploadSignedUrl, sendChatMessage } from '@/app/actions/machining-workflow';
 
 const MOCK_DEMO_SERVICES: MachiningService[] = [];
 
@@ -195,10 +195,11 @@ export default function MachiningMarketplacePage() {
       });
 
       const quoteId = resObj.quote?.id;
+      const rfqId = resObj.rfqId;
 
-      if (quoteId) {
-        // Generate signed upload URL for the CAD file
-        const signedRes = await getUploadSignedUrl(quoteId, uploadedFile.name);
+      if (quoteId && rfqId) {
+        // Generate signed upload URL for the CAD file in chat-attachments
+        const signedRes = await getChatUploadSignedUrl(quoteId, uploadedFile.name);
         if (signedRes.success && signedRes.data) {
           const { token, path, signedUrl } = signedRes.data;
           
@@ -227,6 +228,18 @@ export default function MachiningMarketplacePage() {
             xhr.onerror = () => reject(new Error('Network error during file upload'));
             xhr.send(uploadedFile);
           });
+
+          // Automatically send this design file as the first chat message in the thread
+          const msgRes = await sendChatMessage({
+            rfqId,
+            quoteId,
+            messageText: `Shared CAD Design: ${uploadedFile.name}`,
+            fileAttachmentPath: path,
+          });
+
+          if (!msgRes.success) {
+            console.error('Failed to link design file as chat message:', msgRes.error);
+          }
         }
       }
 
