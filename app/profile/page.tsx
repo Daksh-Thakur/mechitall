@@ -84,7 +84,10 @@ export default function ProfilePage() {
             checkUnreadChats();
           }
         )
-        .subscribe();
+        .subscribe((status, err) => {
+          if (err) console.error('Global Realtime subscription error:', err);
+          else console.log('Global Realtime subscription status:', status);
+        });
 
       return () => {
         supabase.removeChannel(channel);
@@ -3217,7 +3220,10 @@ function QuotationChatsTab({
           }
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (err) console.error('Active Chat Realtime subscription error:', err);
+        else console.log('Active Chat Realtime subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
