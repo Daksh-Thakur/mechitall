@@ -705,18 +705,54 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     .eq('seller_id', sellerProfileId)
     .order('created_at', { ascending: false });
 
+  // Fetch machining quotes for this seller to resolve RFQ titles
+  const { data: sellerServices } = await supabase
+    .from('machining_services')
+    .select('id')
+    .eq('seller_profile_id', sellerProfileId);
+
+  const serviceIds = (sellerServices || []).map(s => s.id);
+  
+  let machQuotes: any[] = [];
+  if (serviceIds.length > 0) {
+    const { data } = await supabase
+      .from('machining_quotes')
+      .select('id, rfq:rfq_id(title)')
+      .in('service_id', serviceIds);
+    machQuotes = data || [];
+  }
+
   // Map order records into "activeJobs" if they are Processing or Shipped
   const activeJobs = (orders || [])
     .filter(o => o.status === 'Processing' || o.status === 'Shipped')
-    .map((o: any) => ({
-      id: o.id,
-      rfq: {
-        title: `Order #${o.id} - ${o.items_count} Units`,
-      },
-      status: o.status,
-      created_at: o.created_at,
-      total_cost: o.total_amount,
-    }));
+    .map((o: any) => {
+      let rfqTitle = `Order #${o.id} - ${o.items_count} Units`;
+      if (o.id.startsWith('RFQ-')) {
+        const orderSuffix = o.id.replace('RFQ-', '').toUpperCase();
+        const matchedGeneralQuote = (myQuotes || []).find(
+          q => q.id.substring(0, 8).toUpperCase() === orderSuffix
+        );
+        if (matchedGeneralQuote?.rfq?.title) {
+          rfqTitle = `${matchedGeneralQuote.rfq.title} (${o.items_count} Pcs)`;
+        } else {
+          const matchedMachQuote = (machQuotes || []).find(
+            mq => mq.id.substring(0, 8).toUpperCase() === orderSuffix
+          );
+          if (matchedMachQuote?.rfq?.title) {
+            rfqTitle = `${matchedMachQuote.rfq.title} (${o.items_count} Pcs)`;
+          }
+        }
+      }
+      return {
+        id: o.id,
+        rfq: {
+          title: rfqTitle,
+        },
+        status: o.status,
+        created_at: o.created_at,
+        total_cost: o.total_amount,
+      };
+    });
 
   // Map order records into "completedJobs" if they are Completed or Delivered
   const completedJobs = (orders || [])

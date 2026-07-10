@@ -246,6 +246,38 @@ export async function acceptQuote(quoteId: string, rfqId: string): Promise<Actio
       // We don't rollback since accepting the primary quote was already complete, but report warning or complete.
     }
 
+    // Step 4: Create a simulated matching order in the orders table
+    try {
+      const { data: quoteObj } = await supabase
+        .from('quotes')
+        .select('*, rfqs(quantity)')
+        .eq('id', quoteId)
+        .single();
+
+      if (quoteObj) {
+        const orderId = `RFQ-${quoteObj.id.substring(0, 8).toUpperCase()}`;
+        const qty = (quoteObj.rfqs as any)?.quantity || 1;
+        const { error: orderErr } = await supabase
+          .from('orders')
+          .insert([
+            {
+              id: orderId,
+              profile_id: rfq.buyer_id,
+              total_amount: quoteObj.total_cost,
+              items_count: qty,
+              status: 'Processing',
+              rewards_claimed: false,
+              seller_id: quoteObj.seller_id,
+            }
+          ]);
+        if (orderErr) {
+          console.error('Failed to create RFQ order log in acceptQuote:', orderErr.message);
+        }
+      }
+    } catch (orderInsertErr: any) {
+      console.error('Non-fatal: Failed to create simulated order in acceptQuote:', orderInsertErr.message);
+    }
+
     return { success: true, data: { success: true } };
   } catch (err: any) {
     return { success: false, error: err.message || 'An unexpected error occurred' };
