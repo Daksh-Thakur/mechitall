@@ -3170,6 +3170,15 @@ function QuotationChatsTab({
   }, [messages]);
 
   useEffect(() => {
+    if (activeThread) {
+      const element = document.getElementById('chat-messages-panel');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [activeThread]);
+
+  useEffect(() => {
     if (initialActiveRfqId && threads.length > 0) {
       const thread = threads.find(t => t.rfqId === initialActiveRfqId);
       if (thread) {
@@ -3807,7 +3816,7 @@ function QuotationChatsTab({
       </div>
 
       {/* Message Chat Panel */}
-      <div className={`flex-1 flex flex-col min-h-[500px] justify-between ${!activeThread ? 'hidden md:flex items-center justify-center text-center bg-slate-bg/10 rounded-2xl border border-dashed border-slate-border/50 p-6' : 'flex'}`}>
+      <div id="chat-messages-panel" className={`flex-1 flex flex-col min-h-[500px] justify-between ${!activeThread ? 'hidden md:flex items-center justify-center text-center bg-slate-bg/10 rounded-2xl border border-dashed border-slate-border/50 p-6' : 'flex'}`}>
         {activeThread ? (
           <>
             {/* Thread Header */}
