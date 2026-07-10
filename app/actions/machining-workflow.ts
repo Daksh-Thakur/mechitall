@@ -365,6 +365,7 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
         selected_material: machQuote.selected_material,
         selected_finish: machQuote.selected_finish,
         seller_notes: machQuote.seller_notes,
+        last_offered_by: machQuote.last_offered_by,
         service_id: machQuote.service_id,
         material_capabilities: (machQuote.machining_services as any)?.material_capabilities || [],
         finish_options: (machQuote.machining_services as any)?.finish_options || [],

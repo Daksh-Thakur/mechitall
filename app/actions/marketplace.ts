@@ -345,9 +345,10 @@ export async function submitQuoteOffer(
       selected_material: data.material,
       selected_finish: data.finish,
       status: 'Offered',
+      last_offered_by: 'SELLER',
     })
     .eq('id', quoteId)
-    .select()
+    .select('*, machining_services:service_id(*)')
     .single();
 
   if (error) {
@@ -366,12 +367,25 @@ export async function submitQuoteOffer(
           status: 'SUBMITTED', // active offer
         })
         .eq('rfq_id', quote.rfq_id);
+
+      // Append system message
+      const sellerId = quote.machining_services?.seller_profile_id;
+      if (sellerId) {
+        await supabase
+          .from('chat_messages')
+          .insert({
+            rfq_id: quote.rfq_id,
+            quote_id: quote.id,
+            sender_id: sellerId,
+            message_text: `[SYSTEM] Seller proposed an offer of ₹${data.price.toLocaleString('en-IN')} for ${data.quantity} units (${data.material}, ${data.finish}). Notes: "${data.notes || 'None'}"`,
+          });
+      }
     }
   } catch (linkErr) {
     console.error('Non-fatal: Failed to sync offer to quotes table:', linkErr);
   }
 
-  return quote as MachiningQuote;
+  return quote;
 }
 
 /**
@@ -419,6 +433,149 @@ export async function acceptQuoteOffer(quoteId: string) {
         .from('rfqs')
         .update({ status: 'CLOSED' })
         .eq('id', quote.rfq_id);
+    }
+  } catch (linkErr) {
+    console.error('Non-fatal: Failed to sync acceptance status to quotes/rfqs tables:', linkErr);
+  }
+
+  // 3. Create a simulated matching order in the orders table
+  const orderId = `RFQ-${quote.id.substring(0, 8).toUpperCase()}`;
+  const sellerId = quote.machining_services?.seller_profile_id;
+
+  const { error: orderErr } = await supabase
+    .from('orders')
+    .insert([
+      {
+        id: orderId,
+        profile_id: quote.buyer_profile_id,
+        total_amount: quote.offer_price,
+        items_count: quote.quantity,
+        status: 'Processing',
+        rewards_claimed: false,
+        seller_id: sellerId || null,
+      },
+    ]);
+
+  if (orderErr) {
+    console.error('Failed to create RFQ order log:', orderErr.message);
+  }
+
+  return { success: true, orderId };
+}
+
+export async function submitBuyerCounterOffer(
+  quoteId: string,
+  data: {
+    price: number;
+    notes: string;
+    quantity: number;
+    material: string;
+    finish: string;
+  }
+) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data: quote, error } = await supabase
+    .from('machining_quotes')
+    .update({
+      offer_price: data.price,
+      seller_notes: data.notes,
+      quantity: data.quantity,
+      selected_material: data.material,
+      selected_finish: data.finish,
+      status: 'Offered',
+      last_offered_by: 'BUYER',
+    })
+    .eq('id', quoteId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error submitting buyer counter offer:', error.message);
+    throw new Error(`Failed to submit counter offer: ${error.message}`);
+  }
+
+  // Update corresponding quotes table record if exists
+  try {
+    if (quote.rfq_id) {
+      await supabase
+        .from('quotes')
+        .update({
+          total_cost: data.price,
+          seller_notes: data.notes,
+          status: 'SUBMITTED', // active offer
+        })
+        .eq('rfq_id', quote.rfq_id);
+
+      // Append system message
+      await supabase
+        .from('chat_messages')
+        .insert({
+          rfq_id: quote.rfq_id,
+          quote_id: quote.id,
+          sender_id: quote.buyer_profile_id,
+          message_text: `[SYSTEM] Buyer proposed a counter-offer of ₹${data.price.toLocaleString('en-IN')} for ${data.quantity} units (${data.material}, ${data.finish}). Notes: "${data.notes || 'None'}"`,
+        });
+    }
+  } catch (linkErr) {
+    console.error('Non-fatal: Failed to sync counter offer to quotes/chat:', linkErr);
+  }
+
+  return quote;
+}
+
+export async function acceptQuoteOfferBySeller(quoteId: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  // 1. Get the quote details, joining machining_services to get seller_profile_id
+  const { data: quote, error: quoteErr } = await supabase
+    .from('machining_quotes')
+    .select('*, machining_services:service_id(*)')
+    .eq('id', quoteId)
+    .single();
+
+  if (quoteErr || !quote) {
+    throw new Error('Quote details not found');
+  }
+
+  if (quote.status !== 'Offered' || !quote.offer_price) {
+    throw new Error('No valid offer is active on this quote');
+  }
+
+  // 2. Mark the quote as Accepted
+  const { error: updateErr } = await supabase
+    .from('machining_quotes')
+    .update({ status: 'Accepted' })
+    .eq('id', quoteId);
+
+  if (updateErr) {
+    throw new Error(`Failed to accept offer: ${updateErr.message}`);
+  }
+
+  // Update corresponding quotes table record status to ACCEPTED
+  try {
+    if (quote.rfq_id) {
+      await supabase
+        .from('quotes')
+        .update({ status: 'ACCEPTED' })
+        .eq('rfq_id', quote.rfq_id);
+      
+      await supabase
+        .from('rfqs')
+        .update({ status: 'CLOSED' })
+        .eq('id', quote.rfq_id);
+
+      // Append system message
+      await supabase
+        .from('chat_messages')
+        .insert({
+          rfq_id: quote.rfq_id,
+          quote_id: quote.id,
+          sender_id: quote.machining_services?.seller_profile_id,
+          message_text: `[SYSTEM] Seller accepted the buyer's counter-offer! Order placed.`,
+        });
     }
   } catch (linkErr) {
     console.error('Non-fatal: Failed to sync acceptance status to quotes/rfqs tables:', linkErr);

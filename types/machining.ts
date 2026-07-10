@@ -90,6 +90,7 @@ export interface ChatThread {
     selected_material: string;
     selected_finish: string;
     seller_notes: string | null;
+    last_offered_by?: 'BUYER' | 'SELLER' | null;
     service_id: string;
     material_capabilities: string[];
     finish_options: string[];

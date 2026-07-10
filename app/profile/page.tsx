@@ -30,7 +30,7 @@ import {
   rejectQuote,
   cancelQuoteNegotiation 
 } from '@/app/actions/machining-workflow';
-import { listMachiningService, submitQuoteOffer, acceptQuoteOffer } from '@/app/actions/marketplace';
+import { listMachiningService, submitQuoteOffer, acceptQuoteOffer, submitBuyerCounterOffer, acceptQuoteOfferBySeller } from '@/app/actions/marketplace';
 import { ChatThread, ChatMessage } from '@/types/machining';
 
 export default function ProfilePage() {
@@ -3131,13 +3131,13 @@ function QuotationChatsTab({
   const [rejecting, setRejecting] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
-  // Seller offer form states
   const [offerPrice, setOfferPrice] = useState(0);
   const [offerQuantity, setOfferQuantity] = useState(1);
   const [offerMaterial, setOfferMaterial] = useState('');
   const [offerFinish, setOfferFinish] = useState('');
   const [sellerNotes, setSellerNotes] = useState('');
   const [submittingOffer, setSubmittingOffer] = useState(false);
+  const [showCounterForm, setShowCounterForm] = useState(false);
 
   useEffect(() => {
     if (initialActiveRfqId && threads.length > 0) {
@@ -3292,6 +3292,22 @@ function QuotationChatsTab({
 
   const selectThread = async (thread: ChatThread) => {
     setActiveThread(thread);
+    setShowCounterForm(false);
+    
+    if (thread.machiningQuote) {
+      setOfferPrice(thread.machiningQuote.offer_price || 0);
+      setOfferQuantity(thread.machiningQuote.quantity || 1);
+      setOfferMaterial(thread.machiningQuote.selected_material || thread.machiningQuote.material_capabilities[0] || '');
+      setOfferFinish(thread.machiningQuote.selected_finish || thread.machiningQuote.finish_options[0] || '');
+      setSellerNotes(thread.machiningQuote.seller_notes || '');
+    } else {
+      setOfferPrice(0);
+      setOfferQuantity(1);
+      setOfferMaterial('');
+      setOfferFinish('');
+      setSellerNotes('');
+    }
+
     setLoadingMessages(true);
     markThreadAsSeen(thread.quoteId, thread.lastMessageTime, thread.status);
     const res = await getChatMessages(thread.quoteId);
@@ -3445,6 +3461,7 @@ function QuotationChatsTab({
       const updatedMachQuote = {
         ...activeThread.machiningQuote,
         status: 'Offered' as const,
+        last_offered_by: 'SELLER' as const,
         offer_price: offerPrice,
         selected_material: offerMaterial,
         selected_finish: offerFinish,
@@ -3513,6 +3530,101 @@ function QuotationChatsTab({
       await loadThreads();
     } catch (err: any) {
       showToast(err.message || 'Failed to accept offer.', 'error');
+    }
+  };
+
+  const handleAcceptOfferBySeller = async () => {
+    if (!activeThread || !activeThread.machiningQuote) return;
+    try {
+      const res = await acceptQuoteOfferBySeller(activeThread.machiningQuote.id);
+      showToast(`Counter-offer accepted! Order ${res.orderId} placed.`, 'success');
+
+      // Update local state
+      const updatedMachQuote = {
+        ...activeThread.machiningQuote,
+        status: 'Accepted' as const,
+      };
+
+      const updatedThread = {
+        ...activeThread,
+        status: 'ACCEPTED' as any,
+        machiningQuote: updatedMachQuote,
+      };
+
+      setActiveThread(updatedThread);
+      setThreads(prev => prev.map(t => t.quoteId === activeThread.quoteId ? updatedThread : t));
+
+      // Send a system message in the chat
+      await sendChatMessage({
+        rfqId: activeThread.rfqId,
+        quoteId: activeThread.quoteId,
+        messageText: `[SYSTEM] Seller accepted the buyer's counter-offer! Order ${res.orderId} has been placed.`,
+      });
+
+      // Update local storage seen state
+      markThreadAsSeen(activeThread.quoteId, new Date().toISOString(), 'ACCEPTED');
+
+      await loadThreads();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to accept offer.', 'error');
+    }
+  };
+
+  const handleCounterOfferSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeThread || !activeThread.machiningQuote || offerPrice <= 0 || !offerMaterial || !offerFinish || offerQuantity < 1) {
+      showToast('Please fill in all counter-offer details.', 'error');
+      return;
+    }
+
+    setSubmittingOffer(true);
+    try {
+      await submitBuyerCounterOffer(activeThread.machiningQuote.id, {
+        price: offerPrice,
+        notes: sellerNotes,
+        quantity: offerQuantity,
+        material: offerMaterial,
+        finish: offerFinish,
+      });
+      showToast('Counter-offer sent to seller!', 'success');
+
+      // Update local state for immediate feedback
+      const updatedMachQuote = {
+        ...activeThread.machiningQuote,
+        status: 'Offered' as const,
+        last_offered_by: 'BUYER' as const,
+        offer_price: offerPrice,
+        selected_material: offerMaterial,
+        selected_finish: offerFinish,
+        quantity: offerQuantity,
+        seller_notes: sellerNotes,
+      };
+
+      const updatedThread = {
+        ...activeThread,
+        status: 'Offered' as any,
+        machiningQuote: updatedMachQuote,
+      };
+
+      setActiveThread(updatedThread);
+      setThreads(prev => prev.map(t => t.quoteId === activeThread.quoteId ? updatedThread : t));
+
+      // Send a system message in the chat
+      await sendChatMessage({
+        rfqId: activeThread.rfqId,
+        quoteId: activeThread.quoteId,
+        messageText: `[SYSTEM] Counter-offer submitted: ₹${offerPrice.toLocaleString('en-IN')} for ${offerQuantity} units in ${offerMaterial} (${offerFinish}).`,
+      });
+
+      // Update local storage seen state
+      markThreadAsSeen(activeThread.quoteId, new Date().toISOString(), 'Offered');
+
+      setShowCounterForm(false);
+      await loadThreads();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to submit counter-offer.', 'error');
+    } finally {
+      setSubmittingOffer(false);
     }
   };
 
@@ -3832,34 +3944,209 @@ function QuotationChatsTab({
                 )}
 
                 {activeThread.machiningQuote.status === 'Offered' && (
-                  /* Offer Details View */
-                  <div className="bg-white border border-slate-border/60 p-3 rounded-lg space-y-2">
-                    <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
-                      <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-[10px] text-slate-text-secondary font-bold">
-                        <div>Material: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_material}</span></div>
-                        <div>Finish: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_finish}</span></div>
-                        <div>Quantity: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.quantity} Units</span></div>
+                  /* Offer / Counter-Offer Negotiation Details */
+                  <div className="space-y-4">
+                    {/* Offer Details Card */}
+                    <div className="bg-white border border-slate-border/60 p-4 rounded-xl space-y-3">
+                      <div className="flex justify-between items-center pb-2 border-b border-slate-border/40">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                          <span className="text-[10px] font-black text-slate-text-primary uppercase tracking-wider">
+                            Latest Proposal (By {activeThread.machiningQuote.last_offered_by === 'BUYER' ? 'Buyer' : 'Seller'})
+                          </span>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
+                          activeThread.machiningQuote.last_offered_by === 'BUYER'
+                            ? profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
+                            : !profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
+                        }`}>
+                          {activeThread.machiningQuote.last_offered_by === 'BUYER'
+                            ? profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Seller Response'
+                            : !profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Buyer Response'}
+                        </span>
                       </div>
-                      <div className="flex items-baseline gap-1 self-start md:self-auto">
-                        <span className="text-[9px] text-slate-text-muted uppercase">Total Offered:</span>
-                        <span className="text-sm font-black text-coral">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span>
+
+                      <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
+                        <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-[10px] text-slate-text-secondary font-bold font-mono">
+                          <div>Material: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_material}</span></div>
+                          <div>Finish: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_finish}</span></div>
+                          <div>Quantity: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.quantity} Units</span></div>
+                        </div>
+                        <div className="flex items-baseline gap-1 self-start md:self-auto">
+                          <span className="text-[9px] text-slate-text-muted uppercase">Proposed Price:</span>
+                          <span className="text-sm font-black text-coral">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span>
+                        </div>
                       </div>
+
+                      {activeThread.machiningQuote.seller_notes && (
+                        <p className="text-[10px] text-slate-text-muted italic border-t border-slate-border/40 pt-1.5 mt-1">
+                          Notes: "{activeThread.machiningQuote.seller_notes}"
+                        </p>
+                      )}
+
+                      {/* Action Buttons when form is hidden */}
+                      {!showCounterForm && (
+                        <div className="flex gap-3 pt-2">
+                          {/* 1. If buyer receives seller's offer: can Accept or Counter */}
+                          {!profile.is_seller && activeThread.machiningQuote.last_offered_by !== 'BUYER' && (
+                            <>
+                              <button
+                                onClick={handleAcceptOffer}
+                                className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>Accept Offer & Place Order</span>
+                              </button>
+                              <button
+                                onClick={() => setShowCounterForm(true)}
+                                className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
+                              >
+                                Counter-Offer
+                              </button>
+                            </>
+                          )}
+
+                          {/* 2. If seller receives buyer's counter: can Accept or Counter */}
+                          {profile.is_seller && activeThread.machiningQuote.last_offered_by === 'BUYER' && (
+                            <>
+                              <button
+                                onClick={handleAcceptOfferBySeller}
+                                className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                                <span>Accept Counter-Offer</span>
+                              </button>
+                              <button
+                                onClick={() => setShowCounterForm(true)}
+                                className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
+                              >
+                                Counter-Offer
+                              </button>
+                            </>
+                          )}
+
+                          {/* 3. If buyer is waiting for seller: can modify their counter */}
+                          {!profile.is_seller && activeThread.machiningQuote.last_offered_by === 'BUYER' && (
+                            <button
+                              onClick={() => setShowCounterForm(true)}
+                              className="w-full py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              <CircleDollarSign className="w-3.5 h-3.5" />
+                              Modify My Counter-Offer
+                            </button>
+                          )}
+
+                          {/* 4. If seller is waiting for buyer: can modify their offer */}
+                          {profile.is_seller && activeThread.machiningQuote.last_offered_by !== 'BUYER' && (
+                            <button
+                              onClick={() => setShowCounterForm(true)}
+                              className="w-full py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              <CircleDollarSign className="w-3.5 h-3.5" />
+                              Modify My Offer
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    {activeThread.machiningQuote.seller_notes && (
-                      <p className="text-[10px] text-slate-text-muted italic border-t border-slate-border/40 pt-1.5 mt-1">
-                        Seller Notes: "{activeThread.machiningQuote.seller_notes}"
-                      </p>
-                    )}
+                    {/* Counter / Modification Form */}
+                    {showCounterForm && (
+                      <form onSubmit={profile.is_seller ? handleOfferSubmit : handleCounterOfferSubmit} className="bg-slate-bg/30 border border-slate-border/50 rounded-xl p-4 space-y-3 text-xs font-bold animate-slide-in">
+                        <div className="flex justify-between items-center pb-1 border-b border-slate-border/30">
+                          <span className="text-[10px] text-slate-text-primary uppercase tracking-wider">
+                            {profile.is_seller ? 'Modify Offer to Buyer' : 'Submit Counter-Offer to Fabricator'}
+                          </span>
+                        </div>
 
-                    {!profile.is_seller && (
-                      <button
-                        onClick={handleAcceptOffer}
-                        className="w-full mt-2 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Accept Offer & Place Order</span>
-                      </button>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono">
+                          <div className="space-y-1 font-sans">
+                            <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Material</label>
+                            <select
+                              value={offerMaterial}
+                              onChange={(e) => setOfferMaterial(e.target.value)}
+                              className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                            >
+                              {(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m) => (
+                                <option key={m} value={m}>{m}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="space-y-1 font-sans">
+                            <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Finish</label>
+                            <select
+                              value={offerFinish}
+                              onChange={(e) => setOfferFinish(e.target.value)}
+                              className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                            >
+                              {(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f) => (
+                                <option key={f} value={f}>{f}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Qty (Units)</label>
+                            <input
+                              type="number"
+                              required
+                              min={1}
+                              value={offerQuantity}
+                              onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
+                              className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-bold"
+                            />
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Price (₹)</label>
+                            <input
+                              type="number"
+                              required
+                              min={1}
+                              value={offerPrice || ''}
+                              placeholder="0"
+                              onChange={(e) => setOfferPrice(Number(e.target.value))}
+                              className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-bold"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Proposal Notes</label>
+                          <input
+                            type="text"
+                            placeholder="Add explanation for counter-offer..."
+                            value={sellerNotes}
+                            onChange={(e) => setSellerNotes(e.target.value)}
+                            className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-semibold font-sans"
+                          />
+                        </div>
+
+                        <div className="flex gap-3 pt-1">
+                          <button
+                            type="submit"
+                            disabled={submittingOffer}
+                            className="flex-1 py-2 bg-cobalt hover:bg-[#06b6d4] text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                          >
+                            {submittingOffer ? (
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <>
+                                <Send className="w-3.5 h-3.5" />
+                                <span>Send Proposal</span>
+                              </>
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowCounterForm(false)}
+                            className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
                     )}
                   </div>
                 )}
