@@ -71,7 +71,7 @@ export async function getReviews(opts: { productId?: string; serviceId?: string 
 
   let query = supabase
     .from('reviews')
-    .select(`*, profiles:profile_id(full_name, is_verified_buyer)`)
+    .select(`*, profiles:profile_id(full_name, is_verified_buyer), products:product_id(title)`)
     .order('created_at', { ascending: false });
 
   if (opts.productId) query = query.eq('product_id', opts.productId);
@@ -85,6 +85,7 @@ export async function getReviews(opts: { productId?: string; serviceId?: string 
     author_name: r.profiles?.full_name || 'Anonymous',
     author_avatar: (r.profiles?.full_name || 'AN').substring(0, 2).toUpperCase(),
     is_verified_buyer: r.profiles?.is_verified_buyer || false,
+    product_title: r.products?.title || null,
   })) as Review[];
 }
 
@@ -97,7 +98,7 @@ export async function getAllReviews() {
 
   const { data, error } = await supabase
     .from('reviews')
-    .select(`*, profiles:profile_id(full_name, is_verified_buyer)`)
+    .select(`*, profiles:profile_id(full_name, is_verified_buyer), products:product_id(title)`)
     .order('created_at', { ascending: false })
     .limit(30);
 
@@ -108,6 +109,7 @@ export async function getAllReviews() {
     author_name: r.profiles?.full_name || 'Anonymous',
     author_avatar: (r.profiles?.full_name || 'AN').substring(0, 2).toUpperCase(),
     is_verified_buyer: r.profiles?.is_verified_buyer || false,
+    product_title: r.products?.title || null,
   })) as Review[];
 }
 
@@ -158,4 +160,49 @@ export async function getDiscussions() {
     author_name: d.profiles?.full_name || 'Anonymous',
     is_verified_buyer: d.profiles?.is_verified_buyer || false,
   })) as Discussion[];
+}
+
+/**
+ * Get catalog products purchased by a profile
+ */
+export async function getPurchasedProducts(profileId: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  // 1. Get all orders for this profile
+  const { data: orders, error: ordersError } = await supabase
+    .from('orders')
+    .select('id')
+    .eq('profile_id', profileId);
+
+  if (ordersError || !orders || orders.length === 0) {
+    return [];
+  }
+
+  const orderIds = orders.map(o => o.id);
+
+  // 2. Get all order_items for these orders
+  const { data: orderItems, error: itemsError } = await supabase
+    .from('order_items')
+    .select('product_id')
+    .in('order_id', orderIds);
+
+  if (itemsError || !orderItems || orderItems.length === 0) {
+    return [];
+  }
+
+  const productIds = Array.from(new Set(orderItems.map(item => item.product_id)));
+
+  // 3. Fetch product details from products table
+  const { data: products, error: productsError } = await supabase
+    .from('products')
+    .select('id, title, part_number')
+    .in('id', productIds);
+
+  if (productsError) {
+    console.error('Error fetching purchased products:', productsError);
+    return [];
+  }
+
+  return products || [];
 }

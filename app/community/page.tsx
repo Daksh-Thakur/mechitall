@@ -6,7 +6,7 @@ import Footer from '../../components/Footer';
 import { useCart } from '../../components/CartProvider';
 import {
   submitReview, submitDiscussion, getAllReviews, getDiscussions,
-  Review, Discussion
+  getPurchasedProducts, Review, Discussion
 } from '../actions/community';
 import {
   Star, Megaphone, Newspaper, MessageSquare, ThumbsUp, CheckCircle2,
@@ -60,6 +60,8 @@ export default function CommunityPage() {
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [loadingDiscussions, setLoadingDiscussions] = useState(false);
+  const [purchasedProducts, setPurchasedProducts] = useState<any[]>([]);
+  const [loadingPurchasedProducts, setLoadingPurchasedProducts] = useState(false);
 
   // Compose panels
   const [showReviewCompose, setShowReviewCompose] = useState(false);
@@ -101,6 +103,30 @@ export default function CommunityPage() {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    if (profile?.id) {
+      setLoadingPurchasedProducts(true);
+      getPurchasedProducts(profile.id)
+        .then(products => {
+          setPurchasedProducts(products || []);
+          if (products && products.length > 0) {
+            setReviewProduct(products[0].id);
+          } else {
+            setReviewProduct('');
+          }
+        })
+        .catch(err => {
+          console.error('Failed to load purchased products:', err);
+          setPurchasedProducts([]);
+          setReviewProduct('');
+        })
+        .finally(() => setLoadingPurchasedProducts(false));
+    } else {
+      setPurchasedProducts([]);
+      setReviewProduct('');
+    }
+  }, [profile?.id]);
+
   // Lock body scroll when mobile drawer is open
   useEffect(() => {
     if (showFilterDrawer) {
@@ -133,13 +159,22 @@ export default function CommunityPage() {
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) { showToast('Please sign in to post a review.', 'error'); return; }
+    if (!reviewProduct) { showToast('Please select a product you have bought.', 'error'); return; }
     if (!reviewTitle.trim() || !reviewBody.trim()) { showToast('Please fill in all fields.', 'error'); return; }
     setSubmittingReview(true);
     try {
-      await submitReview({ profileId: profile.id, rating: reviewRating, title: reviewTitle, body: reviewBody });
+      await submitReview({
+        profileId: profile.id,
+        productId: reviewProduct,
+        rating: reviewRating,
+        title: reviewTitle,
+        body: reviewBody
+      });
       showToast('Review posted to community!', 'success');
       setShowReviewCompose(false);
-      setReviewTitle(''); setReviewBody(''); setReviewProduct(''); setReviewRating(5);
+      setReviewTitle(''); setReviewBody('');
+      setReviewProduct(purchasedProducts.length > 0 ? purchasedProducts[0].id : '');
+      setReviewRating(5);
       const updated = await getAllReviews();
       setLiveReviews(updated);
     } catch (err: any) {
@@ -182,10 +217,11 @@ export default function CommunityPage() {
         avatar: r.author_avatar || 'AN',
         avatarColor: 'bg-cobalt',
         rating: r.rating,
-        product: r.title,
+        product: (r as any).product_title || 'Catalog Product',
+        title: r.title,
         date: new Date(r.created_at).toLocaleDateString('en-IN'),
         body: r.body,
-        verified: true,
+        verified: !!r.product_id,
         likes: 0,
         isLive: true,
         is_verified_buyer: r.is_verified_buyer,
@@ -660,7 +696,7 @@ export default function CommunityPage() {
                           <span className="inline-flex items-center text-[9px] uppercase tracking-wider font-bold text-cobalt bg-cobalt/5 border border-cobalt/15 px-2 py-0.5 rounded font-mono mb-2">
                             <Cpu className="w-3 h-3 mr-1" />{review.product}
                           </span>
-                          <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] mb-1.5 leading-snug">{review.product !== review.product ? review.product : 'Design Integrity & Performance'}</h4>
+                          <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] mb-1.5 leading-snug">{review.title || 'Design Integrity & Performance'}</h4>
                           <p className="text-xs text-slate-text-secondary leading-relaxed">{review.body}</p>
                         </div>
                       </div>
@@ -954,15 +990,35 @@ export default function CommunityPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Product or Service Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Product or service name (e.g., NEMA 23 Closed-Loop Motor)"
-                  value={reviewProduct}
-                  onChange={e => setReviewProduct(e.target.value)}
-                  className="w-full text-sm p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40"
-                />
+                <label className="block text-[10px] text-slate-text-secondary uppercase">Select Purchased Product *</label>
+                {loadingPurchasedProducts ? (
+                  <div className="w-full text-xs font-mono p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-muted animate-pulse">
+                    Loading your purchase history...
+                  </div>
+                ) : purchasedProducts.length === 0 ? (
+                  <div className="space-y-2">
+                    <div className="w-full text-xs p-3.5 border border-red-200 rounded-xl bg-red-50 text-red-700 font-semibold leading-relaxed">
+                      ⚠️ You have not purchased any mechatronics products yet. Our anti-fake-review policy requires you to select a product from your order history.
+                    </div>
+                    <p className="text-[10px] text-slate-text-muted italic font-normal">
+                      Please visit the Marketplace, make a purchase, and then come back to review it!
+                    </p>
+                  </div>
+                ) : (
+                  <select
+                    required
+                    value={reviewProduct}
+                    onChange={e => setReviewProduct(e.target.value)}
+                    className="w-full text-sm p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40 font-semibold cursor-pointer"
+                  >
+                    <option value="" disabled>-- Select a purchased product --</option>
+                    {purchasedProducts.map((prod: any) => (
+                      <option key={prod.id} value={prod.id}>
+                        {prod.title} ({prod.part_number})
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -985,12 +1041,16 @@ export default function CommunityPage() {
                   placeholder="Share your detailed experience..."
                   value={reviewBody}
                   onChange={e => setReviewBody(e.target.value)}
-                  className="w-full text-sm p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary resize-none focus:outline-none"
+                  className="w-full text-sm p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary resize-none focus:outline-none focus:border-cobalt/40"
                 />
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={submittingReview} className="flex-1 btn-cobalt text-xs font-bold py-3 rounded-xl cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
+                <button
+                  type="submit"
+                  disabled={submittingReview || purchasedProducts.length === 0}
+                  className="flex-1 btn-cobalt text-xs font-bold py-3 rounded-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
                   {submittingReview ? <><RotateCcw className="w-3.5 h-3.5 animate-spin" /> Posting...</> : <><Send className="w-3.5 h-3.5" /> Post Review</>}
                 </button>
               </div>

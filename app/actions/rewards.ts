@@ -505,6 +505,15 @@ export async function createDbOrder(
     throw new Error(`Failed to create order: ${error.message}`);
   }
 
+  // Mark the profile as a verified buyer since they placed a catalog order
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .update({ is_verified_buyer: true })
+    .eq('id', profileId);
+  if (profileError) {
+    console.error('Failed to update verified buyer status on profile:', profileError.message);
+  }
+
   // Decrement inventory stock for each product in the cart
   if (cartItems && cartItems.length > 0) {
     const { error: stockError } = await supabase.rpc('decrement_product_stock', {
