@@ -84,7 +84,7 @@ export default function ProfilePage() {
             checkUnreadChats();
           }
         )
-        .subscribe((status, err) => {
+        .subscribe((status: any, err: any) => {
           if (err) console.error('Global Realtime subscription error:', err);
           else console.log('Global Realtime subscription status:', status);
         });
@@ -352,7 +352,7 @@ export default function ProfilePage() {
     }
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       if (!session) {
         setIsGuest(true);
       } else {
@@ -3202,7 +3202,7 @@ function QuotationChatsTab({
           }
         }
       )
-      .subscribe((status, err) => {
+      .subscribe((status: any, err: any) => {
         if (err) console.error('Active Chat Realtime subscription error:', err);
         else console.log('Active Chat Realtime subscription status:', status);
       });
@@ -3306,7 +3306,7 @@ function QuotationChatsTab({
           table: 'chat_messages',
           filter: `quote_id=eq.${activeThread.quoteId}`,
         },
-        (payload) => {
+        (payload: any) => {
           const newMsg = payload.new as any;
 
           // Determine sender_name

@@ -179,7 +179,7 @@ export async function getPurchasedProducts(profileId: string) {
     return [];
   }
 
-  const orderIds = orders.map(o => o.id);
+  const orderIds = (orders as any[]).map((o: any) => o.id);
 
   // 2. Get all order_items for these orders
   const { data: orderItems, error: itemsError } = await supabase
@@ -191,7 +191,7 @@ export async function getPurchasedProducts(profileId: string) {
     return [];
   }
 
-  const productIds = Array.from(new Set(orderItems.map(item => item.product_id)));
+  const productIds = Array.from(new Set((orderItems as any[]).map((item: any) => item.product_id)));
 
   // 3. Fetch product details from products table
   const { data: products, error: productsError } = await supabase

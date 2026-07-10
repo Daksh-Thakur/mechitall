@@ -310,7 +310,7 @@ export async function getOngoingChats(): Promise<ActionResponse<ChatThread[]>> {
     }
 
     // Step 2: Fetch thread details in parallel
-    const threadPromises = (quotesData || []).map(async (q) => {
+    const threadPromises = (quotesData || []).map(async (q: any) => {
       const sellerProfile = q.seller_profile as any;
       const sellerId = q.seller_id;
 

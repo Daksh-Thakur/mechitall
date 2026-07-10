@@ -403,7 +403,7 @@ export async function getProfileOrders(profileId: string) {
     .select('id, title')
     .eq('buyer_id', profileId);
 
-  const rfqIds = (buyerRfqs || []).map(r => r.id);
+  const rfqIds = (buyerRfqs || []).map((r: any) => r.id);
   
   let generalQuotes: any[] = [];
   let machQuotes: any[] = [];
@@ -422,21 +422,21 @@ export async function getProfileOrders(profileId: string) {
     if (o.id.startsWith('RFQ-')) {
       const orderSuffix = o.id.replace('RFQ-', '').toUpperCase();
       const matchedGeneralQuote = (generalQuotes || []).find(
-        q => q.id.substring(0, 8).toUpperCase() === orderSuffix
+        (q: any) => q.id.substring(0, 8).toUpperCase() === orderSuffix
       );
       if (matchedGeneralQuote) {
         rfqId = matchedGeneralQuote.rfq_id;
-        const rfqObj = (buyerRfqs || []).find(r => r.id === rfqId);
+        const rfqObj = (buyerRfqs || []).find((r: any) => r.id === rfqId);
         if (rfqObj) {
           rfqTitle = `${rfqObj.title} (${o.items_count} Pcs)`;
         }
       } else {
         const matchedMachQuote = (machQuotes || []).find(
-          mq => mq.id.substring(0, 8).toUpperCase() === orderSuffix
+          (mq: any) => mq.id.substring(0, 8).toUpperCase() === orderSuffix
         );
         if (matchedMachQuote) {
           rfqId = matchedMachQuote.rfq_id;
-          const rfqObj = (buyerRfqs || []).find(r => r.id === rfqId);
+          const rfqObj = (buyerRfqs || []).find((r: any) => r.id === rfqId);
           if (rfqObj) {
             rfqTitle = `${rfqObj.title} (${o.items_count} Pcs)`;
           }
@@ -768,7 +768,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     .select('id')
     .eq('seller_profile_id', sellerProfileId);
 
-  const serviceIds = (sellerServices || []).map(s => s.id);
+  const serviceIds = (sellerServices || []).map((s: any) => s.id);
   
   let machQuotes: any[] = [];
   if (serviceIds.length > 0) {
@@ -781,14 +781,14 @@ export async function getSellerDashboardData(sellerProfileId: string) {
 
   // Map order records into "activeJobs" if they are Processing or Shipped
   const activeJobs = (orders || [])
-    .filter(o => o.status === 'Processing' || o.status === 'Shipped')
+    .filter((o: any) => o.status === 'Processing' || o.status === 'Shipped')
     .map((o: any) => {
       let rfqTitle = `Order #${o.id} - ${o.items_count} Units`;
       let rfqId = '';
       if (o.id.startsWith('RFQ-')) {
         const orderSuffix = o.id.replace('RFQ-', '').toUpperCase();
         const matchedGeneralQuote = (myQuotes || []).find(
-          q => q.id.substring(0, 8).toUpperCase() === orderSuffix
+          (q: any) => q.id.substring(0, 8).toUpperCase() === orderSuffix
         );
         if (matchedGeneralQuote) {
           rfqId = matchedGeneralQuote.rfq_id;
@@ -797,7 +797,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
           }
         } else {
           const matchedMachQuote = (machQuotes || []).find(
-            mq => mq.id.substring(0, 8).toUpperCase() === orderSuffix
+            (mq: any) => mq.id.substring(0, 8).toUpperCase() === orderSuffix
           );
           if (matchedMachQuote) {
             rfqId = matchedMachQuote.rfq_id || '';
@@ -821,14 +821,14 @@ export async function getSellerDashboardData(sellerProfileId: string) {
 
   // Map order records into "completedJobs" if they are Completed or Delivered
   const completedJobs = (orders || [])
-    .filter(o => o.status === 'Completed' || o.status === 'Delivered')
+    .filter((o: any) => o.status === 'Completed' || o.status === 'Delivered')
     .map((o: any) => {
       let rfqTitle = `Order #${o.id} - ${o.items_count} Units`;
       let rfqId = '';
       if (o.id.startsWith('RFQ-')) {
         const orderSuffix = o.id.replace('RFQ-', '').toUpperCase();
         const matchedGeneralQuote = (myQuotes || []).find(
-          q => q.id.substring(0, 8).toUpperCase() === orderSuffix
+          (q: any) => q.id.substring(0, 8).toUpperCase() === orderSuffix
         );
         if (matchedGeneralQuote) {
           rfqId = matchedGeneralQuote.rfq_id;
@@ -837,7 +837,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
           }
         } else {
           const matchedMachQuote = (machQuotes || []).find(
-            mq => mq.id.substring(0, 8).toUpperCase() === orderSuffix
+            (mq: any) => mq.id.substring(0, 8).toUpperCase() === orderSuffix
           );
           if (matchedMachQuote) {
             rfqId = matchedMachQuote.rfq_id || '';
@@ -862,18 +862,18 @@ export async function getSellerDashboardData(sellerProfileId: string) {
 
   // Calculate escrow balance (Processing or Shipped orders)
   const escrowBalance = (orders || [])
-    .filter(o => o.status === 'Processing' || o.status === 'Shipped')
-    .reduce((sum, o) => sum + Number(o.total_amount), 0);
+    .filter((o: any) => o.status === 'Processing' || o.status === 'Shipped')
+    .reduce((sum: number, o: any) => sum + Number(o.total_amount), 0);
 
   // Calculate cleared earnings (Completed or Delivered orders)
   const clearedEarnings = (orders || [])
-    .filter(o => o.status === 'Completed' || o.status === 'Delivered')
-    .reduce((sum, o) => sum + Number(o.total_amount), 0);
+    .filter((o: any) => o.status === 'Completed' || o.status === 'Delivered')
+    .reduce((sum: number, o: any) => sum + Number(o.total_amount), 0);
 
   // Calculate monthly earnings based on completed / active mechatronic orders + accepted custom quotes
   const monthlyEarnings = (orders || [])
-    .filter(o => o.status !== 'Cancelled' && o.status !== 'Rejected')
-    .reduce((sum, o) => sum + Number(o.total_amount), 0);
+    .filter((o: any) => o.status !== 'Cancelled' && o.status !== 'Rejected')
+    .reduce((sum: number, o: any) => sum + Number(o.total_amount), 0);
 
   // Calculate dynamic weekly earnings based on calendar
   const now = new Date();

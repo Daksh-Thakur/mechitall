@@ -230,7 +230,7 @@ export async function getIncomingQuotes(sellerProfileId: string) {
     .select('id')
     .eq('seller_profile_id', sellerProfileId);
 
-  const serviceIds = (services || []).map((s) => s.id);
+  const serviceIds = (services || []).map((s: any) => s.id);
   if (serviceIds.length === 0) return [];
 
   const { data: quotes, error } = await supabase
