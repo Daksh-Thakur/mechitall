@@ -67,8 +67,28 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       checkUnreadChats();
-      const interval = setInterval(checkUnreadChats, 15000);
-      return () => clearInterval(interval);
+      
+      const channel = supabase
+        .channel('global-chats-realtime')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+          () => {
+            checkUnreadChats();
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'machining_quotes' },
+          () => {
+            checkUnreadChats();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [profile]);
 
@@ -3150,6 +3170,59 @@ function QuotationChatsTab({
       onClearInitialActiveRfqId();
     }
   }, [initialActiveRfqId, threads]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('active-chat-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+        async (payload: any) => {
+          const newMsg = payload.new;
+          if (activeThread && newMsg.quote_id === activeThread.quoteId) {
+            setMessages((prev) => {
+              if (prev.some(m => m.id === newMsg.id)) return prev;
+              return [...prev, newMsg];
+            });
+            markThreadAsSeen(activeThread.quoteId, newMsg.created_at, activeThread.status);
+          }
+          const res = await getOngoingChats();
+          if (res.success && res.data) {
+            setThreads(res.data);
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'machining_quotes' },
+        async (payload: any) => {
+          const updatedQuote = payload.new;
+          if (activeThread && updatedQuote.id === activeThread.machiningQuote?.id) {
+            setActiveThread((prev) => {
+              if (!prev) return null;
+              return {
+                ...prev,
+                status: updatedQuote.status === 'Accepted' ? 'ACCEPTED' : updatedQuote.status === 'Rejected' ? 'REJECTED' : prev.status,
+                machiningQuote: {
+                  ...prev.machiningQuote!,
+                  ...updatedQuote,
+                  offer_price: updatedQuote.offer_price ? Number(updatedQuote.offer_price) : null,
+                }
+              };
+            });
+          }
+          const res = await getOngoingChats();
+          if (res.success && res.data) {
+            setThreads(res.data);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeThread, supabase]);
 
   const markThreadAsSeen = (threadId: string, lastMessageTime: string | null, status: string) => {
     try {
