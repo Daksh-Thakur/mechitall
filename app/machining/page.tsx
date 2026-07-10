@@ -311,16 +311,16 @@ export default function MachiningMarketplacePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#1b1b1d] font-sans flex flex-col overflow-x-clip">
+    <div className="min-h-screen bg-zinc-900 text-zinc-100 font-sans flex flex-col overflow-x-clip">
       <Navbar />
 
       {/* ─── MOBILE TOP BAR ─── */}
-      <div className="md:hidden sticky top-0 z-40 bg-white border-b border-[#E4E4E7] flex items-center justify-between px-4 h-14">
-        <h1 className="font-['Space_Grotesk'] text-base font-bold text-[#0F172A]">Machining Marketplace</h1>
+      <div className="md:hidden sticky top-0 z-40 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 h-14">
+        <h1 className="font-['Space_Grotesk'] text-base font-bold text-white">Machining</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowFilterDrawer(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E4E4E7] text-[11px] font-mono font-bold uppercase tracking-wider hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-700/60 bg-zinc-800 text-[11px] font-mono font-bold uppercase tracking-wider hover:bg-zinc-700 text-zinc-100 transition-colors cursor-pointer"
           >
             <SlidersVertical className="w-3.5 h-3.5" />
             Filter
@@ -330,29 +330,29 @@ export default function MachiningMarketplacePage() {
 
       <div className="flex flex-1 w-full max-w-[1280px] mx-auto">
         {/* ─── DESKTOP LEFT SIDEBAR ─── */}
-        <aside className="hidden lg:flex w-64 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-[#E4E4E7] bg-[#F8FAFC] flex-col p-6 gap-4 overflow-y-auto">
+        <aside className="hidden lg:flex w-64 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-zinc-800 bg-zinc-900 flex-col p-6 gap-4 overflow-y-auto">
           {/* Mode Switcher */}
-          <div className="pb-4 border-b border-[#E4E4E7] flex flex-col gap-2">
-            <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-[#45464d]">Marketplace Role</label>
+          <div className="pb-4 border-b border-zinc-800 flex flex-col gap-2">
+            <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-zinc-500">Marketplace Role</label>
             {profile ? (
               profile.is_seller ? (
-                <div className="grid grid-cols-2 gap-1 bg-[#E4E4E7]/60 p-1 rounded">
+                <div className="grid grid-cols-2 gap-1 bg-zinc-800 p-1 rounded">
                   <button
                     onClick={() => setActiveView('buyer')}
-                    className={`py-1.5 text-xs font-bold text-center transition-all cursor-pointer ${
+                    className={`py-1.5 text-xs font-bold text-center transition-all cursor-pointer rounded ${
                       activeView === 'buyer'
-                        ? 'bg-[#0F172A] text-white'
-                        : 'text-[#45464d] hover:text-[#0F172A]'
+                        ? 'bg-blue-500 text-zinc-950 font-bold'
+                        : 'text-zinc-400 hover:text-white'
                     }`}
                   >
                     Buyer Hub
                   </button>
                   <button
                     onClick={() => setActiveView('seller')}
-                    className={`py-1.5 text-xs font-bold text-center transition-all cursor-pointer ${
+                    className={`py-1.5 text-xs font-bold text-center transition-all cursor-pointer rounded ${
                       activeView === 'seller'
-                        ? 'bg-[#0F172A] text-white'
-                        : 'text-[#45464d] hover:text-[#0F172A]'
+                        ? 'bg-blue-500 text-zinc-950 font-bold'
+                        : 'text-zinc-400 hover:text-white'
                     }`}
                   >
                     Seller Hub
@@ -360,25 +360,25 @@ export default function MachiningMarketplacePage() {
                 </div>
               ) : (
                 <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded flex flex-col gap-1.5">
-                  <p className="text-[10px] text-amber-800 leading-normal font-semibold">
+                  <p className="text-[10px] text-amber-300 leading-normal font-semibold">
                     Want to list your machining capabilities?
                   </p>
                   <button
                     onClick={() => router.push('/profile')}
-                    className="text-[9px] font-bold text-left text-amber-700 hover:text-amber-900 underline flex items-center gap-0.5"
+                    className="text-[9px] font-bold text-left text-amber-400 hover:text-amber-300 underline flex items-center gap-0.5"
                   >
                     Activate Seller Mode <ArrowRight className="w-2.5 h-2.5" />
                   </button>
                 </div>
               )
             ) : (
-              <div className="p-3 bg-blue-500/5 border border-blue-500/10 rounded flex flex-col gap-1.5">
-                <p className="text-[10px] text-slate-text-muted leading-normal font-semibold">
+              <div className="p-3 bg-zinc-800 border border-zinc-700/60 rounded flex flex-col gap-1.5">
+                <p className="text-[10px] text-zinc-400 leading-normal font-semibold">
                   Sign in to view your quotes or list services.
                 </p>
                 <button
                   onClick={() => router.push('/login')}
-                  className="text-[9px] font-bold text-left text-cobalt hover:text-blue-700 underline flex items-center gap-0.5"
+                  className="text-[9px] font-bold text-left text-blue-400 hover:text-blue-300 underline flex items-center gap-0.5"
                 >
                   Sign In <ArrowRight className="w-2.5 h-2.5" />
                 </button>
@@ -388,36 +388,33 @@ export default function MachiningMarketplacePage() {
 
           {/* Process Navigation */}
           <div className="pb-2">
-            <h2 className="font-['Space_Grotesk'] text-base font-bold text-[#0F172A]">Filter Specs</h2>
-            <p className="font-['Inter'] text-xs text-[#45464d] mt-0.5 opacity-70">Machining Processes</p>
+            <h2 className="font-['Space_Grotesk'] text-base font-bold text-white">Filter Specs</h2>
+            <p className="font-['Inter'] text-xs text-zinc-500 mt-0.5 opacity-70">Machining Processes</p>
           </div>
 
-          <nav className="flex flex-col gap-0.5">
+          <nav className="flex flex-col gap-1">
             {(['All', 'CNC Machining', '3D Printing', 'Sheet Metal', 'Laser Cutting'] as const).map(proc => (
               <button
                 key={proc}
                 onClick={() => setSelectedProcess(proc)}
-                className={`flex items-center gap-3 px-3 py-2.5 text-sm font-['Inter'] text-left transition-all cursor-pointer ${
+                className={`flex items-center gap-3 px-3 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-left transition-all cursor-pointer rounded-md ${
                   selectedProcess === proc
-                    ? 'bg-[#0F172A] text-white font-bold'
-                    : 'text-[#45464d] hover:bg-[#E4E4E7]'
+                    ? 'bg-blue-500/10 text-blue-400 border border-blue-500/25 font-bold'
+                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                 }`}
               >
-                <span className="text-base">
-                  {proc === 'All' ? '⊞' : proc === 'CNC Machining' ? '⚙️' : proc === '3D Printing' ? '🖨️' : proc === 'Sheet Metal' ? '📐' : '⚡'}
-                </span>
                 {proc === 'All' ? 'All Processes' : proc}
               </button>
             ))}
           </nav>
 
           {/* Sort By */}
-          <div className="pt-4 border-t border-[#E4E4E7] flex flex-col gap-3">
-            <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-[#45464d]">Sort By</label>
+          <div className="pt-4 border-t border-zinc-800 flex flex-col gap-3">
+            <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-zinc-500">Sort By</label>
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}
-              className="bg-white border border-[#E4E4E7] px-3 py-2 text-xs font-['Inter'] text-[#45464d] focus:outline-none focus:border-[#06B6D4] transition-colors cursor-pointer font-semibold"
+              className="bg-zinc-800 border border-zinc-700/60 px-3 py-2 text-xs font-['Inter'] text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer font-semibold"
             >
               <option value="featured">Featured</option>
               <option value="price-asc">Price: Low → High</option>
@@ -428,7 +425,7 @@ export default function MachiningMarketplacePage() {
           {/* Reset Filters */}
           <button
             onClick={() => { setSelectedProcess('All'); setSearchQuery(''); setSortBy('featured'); }}
-            className="mt-auto py-2 px-4 border border-[#0F172A] text-[#0F172A] font-bold text-xs font-['Inter'] hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer"
+            className="mt-auto py-2 px-4 border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer font-mono text-xs uppercase font-bold"
           >
             Reset Filters
           </button>
@@ -439,16 +436,16 @@ export default function MachiningMarketplacePage() {
 
           {/* Desktop Blueprint Header Banner */}
           <div
-            className="hidden md:block mb-4 border-l-4 border-[#06B6D4] px-4 py-3 bg-white/60"
+            className="hidden md:block mb-4 border-l-4 border-blue-500 px-4 py-3 bg-zinc-950/40 border border-zinc-800/80 rounded-r-xl"
             style={{
-              backgroundImage: 'linear-gradient(to right, rgba(6,182,212,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(6,182,212,0.05) 1px, transparent 1px)',
+              backgroundImage: 'linear-gradient(to right, rgba(59,130,246,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.02) 1px, transparent 1px)',
               backgroundSize: '24px 24px',
             }}
           >
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="font-['Space_Grotesk'] text-lg font-bold text-[#0F172A]">On-Demand Manufacturing</h1>
-                <p className="font-['Inter'] text-xs text-[#45464d] mt-0.5">
+                <h1 className="font-['Space_Grotesk'] text-lg font-bold text-white">On-Demand Manufacturing</h1>
+                <p className="font-['Inter'] text-xs text-zinc-400 mt-0.5">
                   Connect with verified fabrication facilities, upload CAD files, and receive custom quotes.
                 </p>
               </div>
@@ -456,13 +453,13 @@ export default function MachiningMarketplacePage() {
                 {activeView === 'seller' && (
                   <button
                     onClick={() => setShowListingModal(true)}
-                    className="bg-[#0f172a] text-white hover:bg-[#06b6d4] text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider py-1.5 px-3 transition-colors font-bold flex items-center gap-1 cursor-pointer"
+                    className="bg-blue-500 text-zinc-950 hover:bg-blue-400 text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider py-1.5 px-3 transition-colors font-bold flex items-center gap-1 cursor-pointer rounded"
                   >
                     <Plus className="w-3 h-3" /> List Service
                   </button>
                 )}
-                <span className="px-2 py-1 bg-[#0F172A] text-white text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider flex items-center gap-1 select-none">
-                  ✓ Verified Fabricators
+                <span className="px-2 py-1 bg-blue-500 text-zinc-950 text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider flex items-center gap-1 select-none font-bold rounded">
+                  ✓ Digital Escrow Secured
                 </span>
               </div>
             </div>
@@ -482,49 +479,49 @@ export default function MachiningMarketplacePage() {
                   onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
                   onFocus={() => setShowSuggestions(true)}
                   onKeyDown={e => { if (e.key === 'Enter') { e.currentTarget.blur(); setShowSuggestions(false); } }}
-                  className="w-full bg-white border border-[#E4E4E7] px-10 py-3 pr-28 text-sm font-['Inter'] focus:ring-2 focus:ring-[#06B6D4]/20 focus:border-[#06B6D4] outline-none transition-all placeholder:text-[#76777d]"
+                  className="w-full bg-zinc-800 border border-zinc-700/60 px-10 py-3 pr-28 text-sm font-['Inter'] text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-zinc-500 rounded-xl"
                 />
-                <Search className="w-4 h-4 text-[#45464d] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                   {searchQuery && (
                     <button onClick={() => { setSearchQuery(''); setShowSuggestions(false); }} className="cursor-pointer">
-                      <X className="w-3.5 h-3.5 text-[#76777d] hover:text-red-500 transition-colors" />
+                      <X className="w-3.5 h-3.5 text-zinc-400 hover:text-red-500 transition-colors" />
                     </button>
                   )}
-                  <span className="text-[10px] font-mono bg-[#F8FAFC] px-1.5 py-0.5 border border-[#E4E4E7] text-[#45464d] select-none" title="Matching items">
+                  <span className="text-[10px] font-mono bg-zinc-900 px-1.5 py-0.5 border border-zinc-700/60 text-zinc-400 select-none" title="Matching items">
                     {filteredServices.length}/{services.length}
                   </span>
-                  <span className="hidden md:block text-[10px] font-mono bg-[#F8FAFC] px-1.5 py-0.5 border border-[#E4E4E7] text-[#45464d]">Search</span>
+                  <span className="hidden md:block text-[10px] font-mono bg-zinc-900 px-1.5 py-0.5 border border-zinc-700/60 text-zinc-400">Search</span>
                 </div>
 
                 {/* Autocomplete Suggestions */}
                 {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-[#E4E4E7] shadow-lg overflow-hidden py-1 max-h-72 overflow-y-auto divide-y divide-[#E4E4E7]/50">
+                  <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-zinc-800 border border-zinc-700/65 shadow-2xl overflow-hidden py-1 max-h-72 overflow-y-auto divide-y divide-zinc-700/50 rounded-xl">
                     {suggestions.map(s => (
                       <div
                         key={s.id}
                         onClick={() => { setSearchQuery(s.title); setShowSuggestions(false); }}
-                        className="p-3 hover:bg-[#F8FAFC] flex items-center justify-between gap-3 cursor-pointer transition-colors"
+                        className="p-3 hover:bg-zinc-700/50 flex items-center justify-between gap-3 cursor-pointer transition-colors"
                       >
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs font-semibold text-[#0F172A] truncate">{s.title}</span>
-                            <span className={`text-[8px] uppercase tracking-wider font-bold px-1.5 py-0.5 bg-[#F8FAFC] border border-[#E4E4E7] text-[#45464d] select-none shrink-0`}>
+                            <span className="text-xs font-semibold text-white truncate">{s.title}</span>
+                            <span className={`text-[8px] uppercase tracking-wider font-bold px-1.5 py-0.5 bg-zinc-900 border border-zinc-700/60 text-zinc-450 select-none shrink-0 font-mono`}>
                               {s.process_type}
                             </span>
                           </div>
-                          <span className="text-[10px] text-[#76777d] block mt-0.5">by {s.seller_name}</span>
+                          <span className="text-[10px] text-zinc-400 block mt-0.5">by {s.seller_name}</span>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <div className="text-right">
-                            <span className="block text-xs font-bold text-[#0F172A]">₹{Number(s.base_price).toLocaleString('en-IN')}</span>
-                            <span className="block text-[8px] text-[#76777d]">setup fee</span>
+                            <span className="block text-xs font-bold text-white font-mono">₹{Number(s.base_price).toLocaleString('en-IN')}</span>
+                            <span className="block text-[8px] text-zinc-450 font-mono uppercase">setup fee</span>
                           </div>
                           <button
                             onClick={e => { e.stopPropagation(); setSelectedService(s); setShowSuggestions(false); }}
-                            className="p-1.5 border border-[#E4E4E7] bg-white hover:border-[#06B6D4] transition-all cursor-pointer"
+                            className="p-1.5 border border-zinc-700 bg-zinc-900 hover:border-blue-500 transition-all cursor-pointer rounded text-zinc-450 hover:text-white"
                           >
-                            <Eye className="w-3.5 h-3.5 text-[#45464d]" />
+                            <Eye className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
@@ -534,15 +531,15 @@ export default function MachiningMarketplacePage() {
               </div>
 
               {/* Mobile process pills */}
-              <div className="md:hidden flex gap-1.5 overflow-x-auto no-scrollbar">
+              <div className="md:hidden flex gap-1.5 overflow-x-auto no-scrollbar mb-4">
                 {(['All', 'CNC Machining', '3D Printing', 'Sheet Metal', 'Laser Cutting'] as const).map(proc => (
                   <button
                     key={proc}
                     onClick={() => setSelectedProcess(proc)}
-                    className={`shrink-0 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border transition-all cursor-pointer ${
+                    className={`shrink-0 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-md transition-all cursor-pointer ${
                       selectedProcess === proc
-                        ? 'bg-[#0F172A] text-white border-[#0F172A]'
-                        : 'bg-white text-[#45464d] border-[#E4E4E7] hover:border-[#0F172A]'
+                        ? 'bg-blue-500 text-zinc-950 border-blue-500 font-bold'
+                        : 'bg-zinc-800 text-zinc-450 border-zinc-700/60 hover:border-zinc-500'
                     }`}
                   >
                     {proc}
@@ -550,17 +547,15 @@ export default function MachiningMarketplacePage() {
                 ))}
               </div>
 
-
-
               {/* Grid layout */}
               {loadingServices ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
                   {[1, 2, 3, 4, 5, 6].map(n => (
-                    <div key={n} className="bg-white border border-[#E4E4E7] h-80">
-                      <div className="h-40 bg-[#F8FAFC]" />
+                    <div key={n} className="bg-zinc-800 border border-zinc-700/60 h-80 rounded-xl">
+                      <div className="h-40 bg-zinc-900/50" />
                       <div className="p-5 space-y-3">
-                        <div className="h-3 bg-[#E4E4E7] w-3/4" />
-                        <div className="h-2 bg-[#E4E4E7] w-1/2" />
+                        <div className="h-3 bg-zinc-700 w-3/4" />
+                        <div className="h-2 bg-zinc-700 w-1/2" />
                       </div>
                     </div>
                   ))}
@@ -576,13 +571,13 @@ export default function MachiningMarketplacePage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
-                  <div className="text-4xl opacity-20">⚙️</div>
-                  <p className="text-sm font-bold text-[#0F172A]">No machining services found</p>
-                  <p className="text-xs text-[#45464d]">Try different search terms or clear the process filter.</p>
+                <div className="text-center py-20 border border-dashed border-zinc-850 bg-zinc-900/40 rounded-2xl space-y-4">
+                  <div className="text-4xl opacity-20 text-blue-500">⚙️</div>
+                  <p className="text-sm font-bold text-white">No machining services found</p>
+                  <p className="text-xs text-zinc-400">Try different search terms or clear the process filter.</p>
                   <button
                     onClick={() => { setSearchQuery(''); setSelectedProcess('All'); setSortBy('featured'); }}
-                    className="mt-2 py-2 px-5 border border-[#0F172A] text-[#0F172A] font-bold text-xs hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer"
+                    className="mt-2 py-2 px-5 border border-zinc-750 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer font-mono text-xs uppercase font-bold"
                   >
                     Clear Filters
                   </button>
@@ -591,8 +586,6 @@ export default function MachiningMarketplacePage() {
             </div>
           )}
 
-
-
           {/* ==========================================
               SELLER SUB-VIEWS
               ========================================== */}
@@ -600,47 +593,47 @@ export default function MachiningMarketplacePage() {
             <div className="space-y-4">
               {loadingServices ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-pulse">
-                  {[1, 2, 3].map(n => <div key={n} className="h-44 bg-white border border-[#E4E4E7]" />)}
+                  {[1, 2, 3].map(n => <div key={n} className="h-44 bg-zinc-800 border border-zinc-700/60 rounded-xl" />)}
                 </div>
               ) : myServices.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {myServices.map((service) => (
-                    <div key={service.id} className="bg-white border border-[#E4E4E7] overflow-hidden flex flex-col justify-between hover:border-[#0F172A] transition-all relative">
-                      <div className="h-28 bg-[#F8FAFC] border-b border-[#E4E4E7]/60 flex items-center justify-center relative">
+                    <div key={service.id} className="bg-zinc-800 border border-zinc-700/60 overflow-hidden flex flex-col justify-between hover:border-blue-500 transition-all relative rounded-xl">
+                      <div className="h-28 bg-zinc-900/50 border-b border-zinc-850 flex items-center justify-center relative">
                         <div className={`w-full h-full bg-gradient-to-br ${
                           service.process_type === 'CNC Machining' ? 'from-blue-600/10 to-indigo-600/5'
                           : service.process_type === '3D Printing' ? 'from-violet-500/10 to-purple-500/5'
                           : service.process_type === 'Sheet Metal' ? 'from-amber-500/10 to-orange-500/5'
                           : 'from-red-500/10 to-pink-500/5'
                         } flex items-center justify-center`}>
-                          <Settings className="w-8 h-8 text-[#0F172A] opacity-25" />
+                          <Settings className="w-8 h-8 text-white opacity-25" />
                         </div>
                         <div className="absolute top-2 right-2">
-                          <span className="bg-[#0F172A] text-white text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider font-semibold">
+                          <span className="bg-zinc-900 text-zinc-400 text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider font-semibold border border-zinc-750 rounded">
                             {service.lead_time}
                           </span>
                         </div>
                         <div className="absolute top-2 left-2">
                           <span className={`text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider border font-semibold ${
-                            service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-750 border-blue-500/20'
-                            : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-750 border-violet-500/20'
-                            : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-750 border-amber-500/20'
-                            : 'bg-red-500/10 text-red-750 border-red-500/20'
+                            service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                            : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+                            : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                            : 'bg-red-500/10 text-red-400 border-red-500/20'
                           }`}>
                             {service.process_type}
                           </span>
                         </div>
                       </div>
                       <div className="p-5 flex flex-col flex-1">
-                        <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] leading-tight mb-2">
+                        <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-white leading-tight mb-2">
                           {service.title}
                         </h4>
-                        <p className="text-xs text-[#45464d] line-clamp-2 mb-4 leading-relaxed">{service.description}</p>
-                        <div className="flex items-center justify-between pt-4 border-t border-[#E4E4E7] mt-auto">
+                        <p className="text-xs text-zinc-400 line-clamp-2 mb-4 leading-relaxed">{service.description}</p>
+                        <div className="flex items-center justify-between pt-4 border-t border-zinc-700/50 mt-auto">
                           <span className="font-['Space_Grotesk'] text-sm font-bold text-coral">
                             ₹{Number(service.base_price).toLocaleString('en-IN')}
                           </span>
-                          <span className="text-[9px] font-bold text-emerald-600 bg-emerald-500/8 border border-emerald-500/15 px-2 py-0.5 rounded uppercase tracking-wide">
+                          <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-400/20 px-2 py-0.5 rounded uppercase tracking-wide">
                             Active
                           </span>
                         </div>
@@ -649,18 +642,17 @@ export default function MachiningMarketplacePage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
-                  <Package className="w-12 h-12 text-[#76777d]/20 mx-auto" />
-                  <h3 className="text-sm font-bold text-[#0F172A]">No capabilities listed yet</h3>
-                  <p className="text-xs text-[#45464d]">List your manufacturing services so buyers can submit CAD files for quoting.</p>
-                  <button onClick={() => setShowListingModal(true)} className="mt-2 py-2.5 px-5 border border-[#0F172A] text-[#0F172A] font-bold text-xs hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer inline-flex items-center gap-1.5 bg-[#0f172a] text-white">
+                <div className="text-center py-20 border border-dashed border-zinc-850 bg-zinc-900/40 rounded-2xl space-y-4">
+                  <Package className="w-12 h-12 text-zinc-500/20 mx-auto" />
+                  <h3 className="text-sm font-bold text-white">No capabilities listed yet</h3>
+                  <p className="text-xs text-zinc-400">List your manufacturing services so buyers can submit CAD files for quoting.</p>
+                  <button onClick={() => setShowListingModal(true)} className="mt-2 py-2.5 px-5 bg-blue-500 text-zinc-950 font-bold text-xs hover:bg-blue-400 transition-colors cursor-pointer inline-flex items-center gap-1.5 rounded-lg">
                     <Plus className="w-3.5 h-3.5" /> List Service Capability
                   </button>
                 </div>
               )}
             </div>
           )}
-
 
         </main>
       </div>
@@ -671,20 +663,20 @@ export default function MachiningMarketplacePage() {
       {/* Backdrop */}
       <div
         onClick={() => setShowFilterDrawer(false)}
-        className={`md:hidden fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm z-50 transition-opacity duration-300 ${showFilterDrawer ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        className={`md:hidden fixed inset-0 bg-zinc-950/80 backdrop-blur-sm z-50 transition-opacity duration-300 ${showFilterDrawer ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
       />
       {/* Drawer panel */}
       <aside
-        className={`md:hidden fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white shadow-2xl z-[60] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${showFilterDrawer ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`md:hidden fixed top-0 right-0 h-full w-[85%] max-w-sm bg-zinc-900 shadow-2xl z-[60] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${showFilterDrawer ? 'translate-x-0' : 'translate-x-full'} text-zinc-100 border-l border-zinc-800`}
       >
         {/* Drawer header */}
-        <div className="p-5 border-b border-[#E4E4E7] flex justify-between items-center bg-[#F8FAFC]">
-          <h2 className="font-['Space_Grotesk'] text-base font-semibold text-[#0F172A] flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4" />
+        <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
+          <h2 className="font-['Space_Grotesk'] text-base font-semibold text-white flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-blue-500" />
             Marketplace Filters
           </h2>
-          <button onClick={() => setShowFilterDrawer(false)} className="p-1.5 hover:bg-[#E4E4E7] transition-colors cursor-pointer">
-            <X className="w-4 h-4 text-[#45464d]" />
+          <button onClick={() => setShowFilterDrawer(false)} className="p-1.5 hover:bg-zinc-800 transition-colors cursor-pointer text-zinc-450 hover:text-white rounded">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -693,24 +685,24 @@ export default function MachiningMarketplacePage() {
           {/* Mode Selector for sellers */}
           {profile?.is_seller && (
             <section>
-              <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">View Mode</h3>
+              <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-zinc-500 mb-4">View Mode</h3>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => { setActiveView('buyer'); setShowFilterDrawer(false); }}
-                  className={`px-3 py-2.5 border text-xs font-bold transition-all cursor-pointer text-center ${
+                  className={`px-3 py-2.5 border text-xs font-bold transition-all cursor-pointer text-center rounded-md ${
                     activeView === 'buyer'
-                      ? 'bg-[#0F172A] text-white border-[#0F172A]'
-                      : 'border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d]'
+                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/25'
+                      : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:bg-zinc-800'
                   }`}
                 >
                   Buyer Hub
                 </button>
                 <button
                   onClick={() => { setActiveView('seller'); setShowFilterDrawer(false); }}
-                  className={`px-3 py-2.5 border text-xs font-bold transition-all cursor-pointer text-center ${
+                  className={`px-3 py-2.5 border text-xs font-bold transition-all cursor-pointer text-center rounded-md ${
                     activeView === 'seller'
-                      ? 'bg-[#0F172A] text-white border-[#0F172A]'
-                      : 'border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d]'
+                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/25'
+                      : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:bg-zinc-800'
                   }`}
                 >
                   Seller Hub
@@ -721,16 +713,16 @@ export default function MachiningMarketplacePage() {
 
           {/* Process Category */}
           <section>
-            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">Process</h3>
+            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Process</h3>
             <div className="grid grid-cols-2 gap-2">
               {(['All', 'CNC Machining', '3D Printing', 'Sheet Metal', 'Laser Cutting'] as const).map(proc => (
                 <button
                   key={proc}
                   onClick={() => { setSelectedProcess(proc); setShowFilterDrawer(false); }}
-                  className={`px-3 py-2.5 border text-xs font-['JetBrains_Mono'] text-left transition-colors cursor-pointer ${
+                  className={`px-3 py-2.5 border text-xs font-['JetBrains_Mono'] text-left transition-colors cursor-pointer rounded-md ${
                     selectedProcess === proc
-                      ? 'bg-[#0F172A] text-white border-[#0F172A]'
-                      : 'border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d]'
+                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/25'
+                      : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
                   }`}
                 >
                   {proc}
@@ -741,11 +733,11 @@ export default function MachiningMarketplacePage() {
 
           {/* Sort By */}
           <section>
-            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">Sort By</h3>
+            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Sort By</h3>
             <select
               value={sortBy}
               onChange={e => { setSortBy(e.target.value); setShowFilterDrawer(false); }}
-              className="w-full bg-white border border-[#E4E4E7] px-3 py-2.5 text-xs font-['Inter'] text-[#45464d] focus:outline-none focus:border-[#06B6D4] transition-colors cursor-pointer font-semibold"
+              className="w-full bg-zinc-800 border border-zinc-700/60 px-3 py-2.5 text-xs font-['Inter'] text-zinc-200 focus:outline-none focus:border-blue-500 transition-colors cursor-pointer font-semibold rounded-md"
             >
               <option value="featured">Featured</option>
               <option value="price-asc">Price: Low → High</option>
@@ -760,18 +752,18 @@ export default function MachiningMarketplacePage() {
           ========================================== */}
       {selectedService && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E4E4E7] rounded w-full max-w-lg shadow-xl p-5 space-y-4 animate-slide-in">
-            <div className="flex justify-between items-start border-b border-[#E4E4E7] pb-3">
+          <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl w-full max-w-lg shadow-xl p-5 space-y-4 animate-slide-in text-zinc-100">
+            <div className="flex justify-between items-start border-b border-zinc-700/50 pb-3">
               <div>
                 <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase tracking-wider ${PROCESS_COLORS[selectedService.process_type] || ''}`}>
                   {selectedService.process_type}
                 </span>
-                <h3 className="text-base font-bold text-[#0F172A] uppercase font-['Space_Grotesk'] tracking-tight mt-1">{selectedService.title}</h3>
-                <p className="text-[10px] text-[#76777d] uppercase font-bold font-mono">by {selectedService.seller_name}</p>
+                <h3 className="text-base font-bold text-white uppercase font-['Space_Grotesk'] tracking-tight mt-1">{selectedService.title}</h3>
+                <p className="text-[10px] text-zinc-400 uppercase font-bold font-mono">by {selectedService.seller_name}</p>
               </div>
               <button
                 onClick={() => { setSelectedService(null); setUploadedFile(null); }}
-                className="text-[#76777d] hover:text-[#0F172A] cursor-pointer p-1.5 rounded border border-[#E4E4E7] hover:bg-[#F8FAFC] transition-colors"
+                className="text-zinc-400 hover:text-white cursor-pointer p-1.5 rounded border border-zinc-700 bg-zinc-900 hover:bg-zinc-750 transition-colors"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -780,7 +772,7 @@ export default function MachiningMarketplacePage() {
             <form onSubmit={handleQuoteSubmit} className="space-y-4">
               {/* Drop Zone */}
               <div>
-                <label className="block text-[10px] font-bold text-[#76777d] uppercase mb-1.5 font-mono">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase mb-1.5 font-mono">
                   Upload Design File (STEP, STL, IGES, DXF)
                 </label>
                 {!uploadedFile ? (
@@ -791,32 +783,32 @@ export default function MachiningMarketplacePage() {
                     onClick={() => fileInputRef.current?.click()}
                     className={`border border-dashed rounded p-6 text-center cursor-pointer transition-all ${
                       isDragging 
-                        ? 'border-[#06b6d4] bg-[#06b6d4]/5' 
-                        : 'border-[#E4E4E7] bg-[#F8FAFC]/50 hover:border-[#06b6d4] hover:bg-[#F8FAFC]'
+                        ? 'border-blue-500 bg-blue-500/5' 
+                        : 'border-zinc-700 bg-zinc-900/50 hover:border-blue-500 hover:bg-zinc-900'
                     }`}
                   >
-                    <Upload className={`w-6 h-6 mx-auto mb-2 transition-colors ${isDragging ? 'text-[#06b6d4]' : 'text-[#76777d]/60'}`} />
-                    <p className="text-xs font-bold text-[#0F172A]">
+                    <Upload className={`w-6 h-6 mx-auto mb-2 transition-colors ${isDragging ? 'text-blue-500' : 'text-zinc-500'}`} />
+                    <p className="text-xs font-bold text-white">
                       {isDragging ? 'Drop to upload' : 'Drag & drop your design file'}
                     </p>
-                    <p className="text-[10px] text-[#76777d] mt-0.5">or <span className="text-[#06b6d4] font-bold">browse files</span></p>
-                    <p className="text-[8px] text-[#76777d]/75 mt-1.5 font-mono uppercase tracking-wider">STEP · STL · IGES · DXF · OBJ · PDF</p>
+                    <p className="text-[10px] text-zinc-450 mt-0.5">or <span className="text-blue-400 font-bold">browse files</span></p>
+                    <p className="text-[8px] text-zinc-500 mt-1.5 font-mono uppercase tracking-wider">STEP · STL · IGES · DXF · OBJ · PDF</p>
                   </div>
                 ) : (
-                  <div className="border border-[#E4E4E7] rounded p-3 bg-white flex items-center justify-between gap-3">
+                  <div className="border border-zinc-700 rounded p-3 bg-zinc-900 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 rounded bg-[#06b6d4]/8 border border-[#06b6d4]/20 flex items-center justify-center shrink-0">
-                        <File className="w-4 h-4 text-[#06b6d4]" />
+                      <div className="w-8 h-8 rounded bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                        <File className="w-4 h-4 text-blue-400" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-[#0F172A] truncate">{uploadedFile.name}</p>
-                        <p className="text-[10px] text-[#76777d] font-mono">{formatFileSize(uploadedFile.size)}</p>
+                        <p className="text-xs font-bold text-white truncate">{uploadedFile.name}</p>
+                        <p className="text-[10px] text-zinc-400 font-mono">{formatFileSize(uploadedFile.size)}</p>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => setUploadedFile(null)}
-                      className="text-[#76777d] hover:text-red-500 cursor-pointer shrink-0 transition-colors p-1"
+                      className="text-zinc-400 hover:text-red-400 cursor-pointer shrink-0 transition-colors p-1"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -831,22 +823,22 @@ export default function MachiningMarketplacePage() {
                 />
               </div>
  
-              <div className="bg-[#F8FAFC] border border-[#E4E4E7] p-3.5 rounded text-[10px] text-[#45464d] leading-relaxed">
-                <div className="text-[#06b6d4] flex items-center gap-1.5 mb-1 font-bold font-mono uppercase tracking-wider">
+              <div className="bg-zinc-950/40 border border-zinc-750/50 p-3.5 rounded text-[10px] text-zinc-400 leading-relaxed">
+                <div className="text-blue-400 flex items-center gap-1.5 mb-1 font-bold font-mono uppercase tracking-wider">
                   <Info className="w-3.5 h-3.5" /> Request Process
                 </div>
                 Your design model will be shared securely with this manufacturer. They will analyze geometric tolerances, recommend optimal materials, and send you a mechatronic RFQ quote.
               </div>
  
               {uploadProgress !== null && (
-                <div className="space-y-1.5 bg-slate-50 border border-slate-250/60 p-3 rounded-lg">
-                  <div className="flex justify-between text-[10px] font-bold text-[#06b6d4] uppercase tracking-wider font-mono">
+                <div className="space-y-1.5 bg-zinc-900 border border-zinc-700/60 p-3 rounded-lg">
+                  <div className="flex justify-between text-[10px] font-bold text-blue-400 uppercase tracking-wider font-mono">
                     <span>Uploading Design Model</span>
                     <span>{uploadProgress}%</span>
                   </div>
-                  <div className="w-full bg-[#E4E4E7] h-2 rounded-full overflow-hidden">
+                  <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-[#06b6d4] transition-all duration-300"
+                      className="h-full bg-blue-500 transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     ></div>
                   </div>
@@ -856,7 +848,7 @@ export default function MachiningMarketplacePage() {
               <button
                 type="submit"
                 disabled={submittingQuote || !uploadedFile}
-                className="w-full bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 disabled:opacity-50"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-zinc-950 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 disabled:opacity-50"
               >
                 {submittingQuote ? (
                   <><RotateCcw className="w-3.5 h-3.5 animate-spin" /> {uploadProgress !== null ? `Uploading Design (${uploadProgress}%)...` : 'Submitting Request...'}</>
@@ -874,40 +866,40 @@ export default function MachiningMarketplacePage() {
           ========================================== */}
       {showListingModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E4E4E7] rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-5 animate-slide-in max-h-[90vh] overflow-y-auto">
+          <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-5 animate-slide-in max-h-[90vh] overflow-y-auto text-zinc-100">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="text-base font-black text-slate-text-primary">List New Machining Service</h3>
-                <p className="text-[10px] text-slate-text-muted font-semibold">Fill in your capability details</p>
+                <h3 className="text-base font-black text-white font-['Space_Grotesk']">List New Machining Service</h3>
+                <p className="text-[10px] text-zinc-400 font-semibold font-sans">Fill in your capability details</p>
               </div>
               <button
                 onClick={() => setShowListingModal(false)}
-                className="text-slate-text-muted hover:text-slate-text-primary cursor-pointer p-1 rounded-lg hover:bg-slate-bg transition-colors"
+                className="text-zinc-400 hover:text-white cursor-pointer p-1 rounded-lg hover:bg-zinc-700 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleListServiceSubmit} className="space-y-4 text-xs font-bold">
+            <form onSubmit={handleListServiceSubmit} className="space-y-4 text-xs font-bold font-mono">
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Service Title *</label>
+                <label className="block text-[10px] text-zinc-400 uppercase font-bold">Service Title *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. 5-Axis Precision Aluminum Milling"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40 transition-colors"
+                  className="w-full p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white focus:outline-none focus:border-blue-500/50 transition-colors font-sans font-semibold text-xs"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block text-[10px] text-slate-text-secondary uppercase">Process Type *</label>
+                  <label className="block text-[10px] text-zinc-400 uppercase font-bold">Process Type *</label>
                   <select
                     value={newProcess}
                     onChange={(e) => setNewProcess(e.target.value as any)}
-                    className="w-full p-3 border border-slate-border rounded-xl bg-white text-slate-text-primary focus:outline-none focus:border-cobalt/40"
+                    className="w-full p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white focus:outline-none focus:border-blue-500/50 font-sans text-xs font-medium cursor-pointer"
                   >
                     <option>CNC Machining</option>
                     <option>3D Printing</option>
@@ -917,68 +909,68 @@ export default function MachiningMarketplacePage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-[10px] text-slate-text-secondary uppercase">Base Setup Price (₹) *</label>
+                  <label className="block text-[10px] text-zinc-400 uppercase font-bold">Base Setup Price (₹) *</label>
                   <input
                     type="number"
                     required
                     min={1}
                     value={newBasePrice}
                     onChange={(e) => setNewBasePrice(Number(e.target.value))}
-                    className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40"
+                    className="w-full p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white focus:outline-none focus:border-blue-500/50 text-xs font-mono font-bold"
                   />
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Lead Time *</label>
+                <label className="block text-[10px] text-zinc-400 uppercase font-bold">Lead Time *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. 4 business days"
                   value={newLeadTime}
                   onChange={(e) => setNewLeadTime(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40"
+                  className="w-full p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white focus:outline-none focus:border-blue-500/50 font-sans font-semibold text-xs"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Material Options <span className="normal-case text-slate-text-muted">(comma-separated)</span></label>
+                <label className="block text-[10px] text-zinc-400 uppercase font-bold">Material Options <span className="normal-case text-zinc-500">(comma-separated)</span></label>
                 <input
                   type="text"
                   placeholder="e.g. Aluminium 6061, Stainless Steel 316, Brass"
                   value={newMaterials}
                   onChange={(e) => setNewMaterials(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40"
+                  className="w-full p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white focus:outline-none focus:border-blue-500/50 font-sans font-semibold text-xs"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Finish Options <span className="normal-case text-slate-text-muted">(comma-separated)</span></label>
+                <label className="block text-[10px] text-zinc-400 uppercase font-bold">Finish Options <span className="normal-case text-zinc-500">(comma-separated)</span></label>
                 <input
                   type="text"
                   placeholder="e.g. As-Machined, Bead Blasted, Anodized"
                   value={newFinishes}
                   onChange={(e) => setNewFinishes(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40"
+                  className="w-full p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white focus:outline-none focus:border-blue-500/50 font-sans font-semibold text-xs"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Service Description *</label>
+                <label className="block text-[10px] text-zinc-400 uppercase font-bold">Service Description *</label>
                 <textarea
                   rows={3}
                   required
                   placeholder="Explain your capabilities, tolerances, equipment, and quality standards..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full p-3 border border-slate-border rounded-xl bg-[#F8FAFC] text-slate-text-primary resize-none focus:outline-none focus:border-cobalt/40"
+                  className="w-full p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white resize-none focus:outline-none focus:border-blue-500/50 font-sans font-medium text-xs"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={listingService}
-                className="w-full btn-cobalt py-3.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-zinc-950 py-3.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {listingService ? (
                   <><RotateCcw className="w-4 h-4 animate-spin" /> Publishing...</>
@@ -1025,30 +1017,30 @@ function ServiceCard({ service, onGetQuote }: ServiceCardProps) {
       {/* ─── DESKTOP CARD (portrait) ─── */}
       <div
         onClick={() => onGetQuote(service)}
-        className="hidden md:flex flex-col bg-white border border-[#E4E4E7] overflow-hidden cursor-pointer group
-          transition-all duration-205 hover:border-[#06B6D4] relative"
-        style={{ boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)', transition: 'transform 0.2s ease, border-color 0.2s ease' }}
+        className="hidden md:flex flex-col bg-zinc-800 border border-zinc-700/60 overflow-hidden cursor-pointer group
+          transition-all duration-205 hover:border-blue-500 relative rounded-xl"
+        style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -2px rgba(0,0,0,0.2)', transition: 'transform 0.2s ease, border-color 0.2s ease' }}
         onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-4px)')}
         onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
       >
         {/* Visual representation / icon header */}
-        <div className="h-40 bg-[#F8FAFC] overflow-hidden relative border-b border-[#E4E4E7]/60">
+        <div className="h-40 bg-zinc-900/50 overflow-hidden relative border-b border-zinc-850">
           <div className={`w-full h-full bg-gradient-to-br ${gradientClass} group-hover:scale-105 transition-transform duration-500 flex items-center justify-center`}>
-            <ProcessIcon className="w-12 h-12 text-[#0F172A] opacity-25 group-hover:rotate-12 transition-transform duration-500" />
+            <ProcessIcon className="w-12 h-12 text-white opacity-25 group-hover:rotate-12 transition-transform duration-500" />
           </div>
           {/* Lead time badge */}
           <div className="absolute top-2 right-2">
-            <span className="bg-[#0F172A] text-white text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider flex items-center gap-1 font-bold">
+            <span className="bg-zinc-900 text-zinc-400 text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider flex items-center gap-1 font-bold border border-zinc-750 rounded">
               <Clock className="w-2.5 h-2.5" /> {service.lead_time}
             </span>
           </div>
           {/* Process type badge */}
           <div className="absolute top-2 left-2">
             <span className={`text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider border font-bold ${
-              service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-700 border-blue-500/20'
-              : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-700 border-violet-500/20'
-              : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-700 border-amber-500/20'
-              : 'bg-red-500/10 text-red-700 border-red-500/20'
+              service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+              : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+              : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+              : 'bg-red-500/10 text-red-400 border-red-500/20'
             }`}>
               {service.process_type}
             </span>
@@ -1056,28 +1048,28 @@ function ServiceCard({ service, onGetQuote }: ServiceCardProps) {
         </div>
 
         {/* Body */}
-        <div className="p-5 flex flex-col flex-1">
+        <div className="p-5 flex flex-col flex-1 text-zinc-100">
           <div className="mb-3">
-            <h3 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] leading-tight group-hover:text-[#06B6D4] transition-colors line-clamp-1">
+            <h3 className="font-['Space_Grotesk'] text-sm font-semibold text-white leading-tight group-hover:text-blue-400 transition-colors line-clamp-1">
               {service.title}
             </h3>
-            <p className="text-[10px] text-slate-text-muted mt-0.5 font-semibold">by {service.seller_name}</p>
+            <p className="text-[10px] text-zinc-400 mt-0.5 font-semibold">by {service.seller_name}</p>
           </div>
 
-          <p className="text-xs text-[#45464d] line-clamp-2 leading-relaxed mb-4">{service.description}</p>
+          <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed mb-4">{service.description}</p>
 
           {/* Specs / Capability grid */}
-          <div className="grid grid-cols-2 gap-y-2.5 mb-4 border-t border-[#E4E4E7]/60 pt-3">
+          <div className="grid grid-cols-2 gap-y-2.5 mb-4 border-t border-zinc-750/60 pt-3">
             <div>
-              <p className="font-['JetBrains_Mono'] text-[9px] text-[#76777d] uppercase tracking-wider mb-0.5">Materials</p>
-              <p className="font-['Inter'] text-xs text-[#1b1b1d] truncate pr-2 font-semibold" title={service.material_capabilities.join(', ')}>
+              <p className="font-['JetBrains_Mono'] text-[9px] text-zinc-500 uppercase tracking-wider mb-0.5">Materials</p>
+              <p className="font-['Inter'] text-xs text-zinc-300 truncate pr-2 font-semibold" title={service.material_capabilities.join(', ')}>
                 {service.material_capabilities.slice(0, 2).join(', ')}
                 {service.material_capabilities.length > 2 && '...'}
               </p>
             </div>
             <div>
-              <p className="font-['JetBrains_Mono'] text-[9px] text-[#76777d] uppercase tracking-wider mb-0.5">Finishes</p>
-              <p className="font-['Inter'] text-xs text-[#1b1b1d] truncate pr-2 font-semibold" title={service.finish_options.join(', ')}>
+              <p className="font-['JetBrains_Mono'] text-[9px] text-zinc-500 uppercase tracking-wider mb-0.5">Finishes</p>
+              <p className="font-['Inter'] text-xs text-zinc-300 truncate pr-2 font-semibold" title={service.finish_options.join(', ')}>
                 {service.finish_options.slice(0, 2).join(', ')}
                 {service.finish_options.length > 2 && '...'}
               </p>
@@ -1085,16 +1077,16 @@ function ServiceCard({ service, onGetQuote }: ServiceCardProps) {
           </div>
 
           {/* Setup Fee + CTA */}
-          <div className="flex items-center justify-between pt-4 border-t border-[#E4E4E7] mt-auto">
+          <div className="flex items-center justify-between pt-4 border-t border-zinc-750/60 mt-auto">
             <div>
-              <p className="text-[9px] font-['Inter'] text-[#45464d] uppercase tracking-wider mb-0.5">Setup Fee</p>
-              <p className="font-['Space_Grotesk'] text-sm font-bold text-[#0F172A]">
+              <p className="text-[9px] font-['Inter'] text-zinc-400 uppercase tracking-wider mb-0.5">Setup Fee</p>
+              <p className="font-['Space_Grotesk'] text-sm font-bold text-white font-mono">
                 ₹{Number(service.base_price).toLocaleString('en-IN')}
               </p>
             </div>
             <button
               onClick={e => { e.stopPropagation(); onGetQuote(service); }}
-              className="px-3.5 py-2 bg-[#0F172A] text-white hover:bg-[#06B6D4] transition-colors flex items-center justify-center gap-1.5 font-bold text-xs font-['Inter'] cursor-pointer"
+              className="px-3.5 py-2 bg-blue-500 text-zinc-950 hover:bg-blue-600 transition-colors flex items-center justify-center gap-1.5 font-bold text-xs font-['Inter'] cursor-pointer rounded-lg"
             >
               <span>Get Quote</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -1106,19 +1098,19 @@ function ServiceCard({ service, onGetQuote }: ServiceCardProps) {
       {/* ─── MOBILE CARD (horizontal) ─── */}
       <div
         onClick={() => onGetQuote(service)}
-        className="md:hidden flex bg-white border border-[#E4E4E7] overflow-hidden cursor-pointer product-card-mobile active:scale-[0.98] transition-transform w-full"
+        className="md:hidden flex bg-zinc-800 border border-zinc-700/60 overflow-hidden cursor-pointer product-card-mobile active:scale-[0.98] transition-transform w-full rounded-xl"
       >
         {/* Left: visual 1/3 */}
-        <div className="w-1/3 relative bg-[#F8FAFC] border-r border-[#E4E4E7] shrink-0">
+        <div className="w-1/3 relative bg-zinc-900/50 border-r border-zinc-800 shrink-0">
           <div className={`w-full h-full min-h-[120px] bg-gradient-to-br ${gradientClass} flex items-center justify-center`}>
-            <ProcessIcon className="w-8 h-8 text-[#0F172A] opacity-20" />
+            <ProcessIcon className="w-8 h-8 text-white opacity-20" />
           </div>
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            <span className="bg-[#0F172A] text-white text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider">
+            <span className="bg-zinc-900 text-zinc-400 border border-zinc-750 text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider rounded">
               {service.process_type.slice(0, 4).toUpperCase()}
             </span>
-            <span className="bg-[#10B981] text-white text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider">
+            <span className="bg-emerald-400 text-zinc-950 text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider font-bold rounded">
               {service.lead_time.split(' ')[0]} DAYS
             </span>
           </div>
@@ -1128,28 +1120,28 @@ function ServiceCard({ service, onGetQuote }: ServiceCardProps) {
         <div className="w-2/3 p-3 flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-start mb-0.5">
-              <span className="font-['JetBrains_Mono'] text-[9px] text-[#45464d] uppercase tracking-widest truncate max-w-[100px] font-bold">
+              <span className="font-['JetBrains_Mono'] text-[9px] text-zinc-400 uppercase tracking-widest truncate max-w-[100px] font-bold">
                 by {service.seller_name}
               </span>
-              <span className="font-['JetBrains_Mono'] text-[10px] font-semibold text-[#0F172A]">
+              <span className="font-['JetBrains_Mono'] text-[10px] font-semibold text-white">
                 ₹{Number(service.base_price).toLocaleString('en-IN')}
               </span>
             </div>
-            <h3 className="font-['Space_Grotesk'] text-xs font-semibold text-[#0F172A] leading-tight mb-2">
+            <h3 className="font-['Space_Grotesk'] text-xs font-semibold text-white leading-tight mb-2">
               {service.title}
             </h3>
 
             {/* Spec grid */}
             <div className="grid grid-cols-2 gap-y-1.5 mb-3">
               <div>
-                <p className="font-['JetBrains_Mono'] text-[8px] text-[#45464d] uppercase">Materials</p>
-                <p className="font-['JetBrains_Mono'] text-[9px] font-semibold text-[#1b1b1d] truncate">
+                <p className="font-['JetBrains_Mono'] text-[8px] text-zinc-400 uppercase">Materials</p>
+                <p className="font-['JetBrains_Mono'] text-[9px] font-semibold text-zinc-300 truncate">
                   {service.material_capabilities.slice(0, 2).join(', ')}
                 </p>
               </div>
               <div>
-                <p className="font-['JetBrains_Mono'] text-[8px] text-[#45464d] uppercase">Finishes</p>
-                <p className="font-['JetBrains_Mono'] text-[9px] font-semibold text-[#1b1b1d] truncate">
+                <p className="font-['JetBrains_Mono'] text-[8px] text-zinc-400 uppercase">Finishes</p>
+                <p className="font-['JetBrains_Mono'] text-[9px] font-semibold text-zinc-300 truncate">
                   {service.finish_options.slice(0, 2).join(', ')}
                 </p>
               </div>
@@ -1157,10 +1149,10 @@ function ServiceCard({ service, onGetQuote }: ServiceCardProps) {
           </div>
 
           {/* Bottom: actions */}
-          <div className="flex items-center justify-end pt-2 border-t border-[#E4E4E7]/50">
+          <div className="flex items-center justify-end pt-2 border-t border-zinc-700/50">
             <button
               onClick={e => { e.stopPropagation(); onGetQuote(service); }}
-              className="bg-[#0F172A] text-white px-2.5 py-1 text-[10px] font-bold flex items-center gap-1 active:scale-95 transition-transform cursor-pointer"
+              className="bg-blue-500 text-zinc-950 px-2.5 py-1 text-[10px] font-bold flex items-center gap-1 active:scale-95 transition-transform cursor-pointer rounded"
             >
               <span>Get Quote</span>
               <ArrowRight className="w-3 h-3" />

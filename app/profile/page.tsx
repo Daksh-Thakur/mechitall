@@ -548,14 +548,14 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="flex flex-col min-h-screen bg-slate-bg font-sans">
+      <div className="flex flex-col min-h-screen bg-zinc-900 font-sans">
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 text-center">
           {hasTimedOut ? (
-            <div className="space-y-4 max-w-md bg-white p-8 rounded-2xl border border-slate-border shadow-xl">
+            <div className="space-y-4 max-w-md bg-zinc-800 p-8 rounded-2xl border border-zinc-700/60 shadow-xl">
               <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto animate-bounce" />
-              <h3 className="text-base font-extrabold text-slate-text-primary tracking-tight">Database Sync Timeout</h3>
-              <p className="text-xs text-slate-text-muted font-semibold leading-relaxed">
+              <h3 className="text-base font-extrabold text-white tracking-tight">Database Sync Timeout</h3>
+              <p className="text-xs text-zinc-400 font-semibold leading-relaxed">
                 We are having trouble connecting to your Supabase profiles table. If you have not executed the database migrations yet, please copy the SQL code block from your implementation plan and run it in the Supabase SQL Editor.
               </p>
               <button
@@ -568,7 +568,7 @@ export default function ProfilePage() {
           ) : (
             <div className="flex flex-col items-center gap-3">
               <RefreshCw className="w-8 h-8 text-cobalt animate-spin" />
-              <span className="text-xs font-bold text-slate-text-muted animate-pulse">Syncing user profile...</span>
+              <span className="text-xs font-bold text-zinc-400 animate-pulse">Syncing user profile...</span>
             </div>
           )}
         </div>
@@ -582,12 +582,12 @@ export default function ProfilePage() {
   const boltsProgressPercent = Math.min(100, (profile.wallet_balance / 500) * 100);
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-bg font-sans">
+    <div className="flex flex-col min-h-screen bg-zinc-900 font-sans">
       <Navbar />
 
       {/* Buyer Mobile Top Navigation Menu */}
       {!profile.is_seller && (
-        <div className="md:hidden sticky top-14 left-0 right-0 bg-[#0B1528]/95 backdrop-blur-md border-b border-slate-850 flex justify-around py-2.5 z-40 shadow-md px-2">
+        <div className="md:hidden sticky top-14 left-0 right-0 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 flex justify-around py-2.5 z-40 shadow-md px-2">
           {[
             { tab: 'orders', label: 'Orders', icon: ShoppingBag },
             { tab: 'rewards', label: 'Rewards', icon: Gift },
@@ -617,7 +617,7 @@ export default function ProfilePage() {
 
       {/* Seller Mobile Top Navigation Menu */}
       {profile.is_seller && (
-        <div className="md:hidden sticky top-14 left-0 right-0 bg-[#0B1528]/95 backdrop-blur-md border-b border-slate-850 flex justify-around py-2.5 z-40 shadow-md px-2">
+        <div className="md:hidden sticky top-14 left-0 right-0 bg-zinc-900/95 backdrop-blur-md border-b border-zinc-800 flex justify-around py-2.5 z-40 shadow-md px-2">
           {[
             { tab: 'seller_rfqs', label: 'Dashboard', icon: LayoutDashboard },
             { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
@@ -650,12 +650,12 @@ export default function ProfilePage() {
         {/* Sidebar Nav */}
         {profile.is_seller ? (
           /* Seller Sidebar Nav */
-          <aside className="w-full md:w-3/12 flex flex-col justify-between bg-transparent md:bg-white text-slate-800 rounded-none md:rounded border-0 md:border border-transparent md:border-[#E4E4E7] p-0 md:p-6 shadow-none md:shadow-sm h-fit md:h-[600px] shrink-0">
+          <aside className="w-full md:w-3/12 flex flex-col justify-between bg-transparent md:bg-zinc-800 text-zinc-200 rounded-none md:rounded border-0 md:border border-transparent md:border-zinc-700/60 p-0 md:p-6 shadow-none md:shadow-sm h-fit md:h-[600px] shrink-0">
             <div className="space-y-6 hidden md:block">
               {/* Header Seller Hub Card */}
-              <div className="pb-4 border-b border-[#E4E4E7]">
+              <div className="pb-4 border-b border-zinc-700/60">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2 font-mono">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2 font-mono">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#06B6D4] animate-pulse"></span>
                     Seller Hub
                   </h3>
@@ -665,7 +665,7 @@ export default function ProfilePage() {
                     </span>
                   )}
                 </div>
-                <span className="block text-[8px] font-bold text-[#76777d] mt-2 uppercase tracking-widest font-mono">
+                <span className="block text-[8px] font-bold text-zinc-500 mt-2 uppercase tracking-widest font-mono">
                   Precision Partner
                 </span>
               </div>
@@ -685,10 +685,10 @@ export default function ProfilePage() {
                     onClick={() => setActiveTab(tab as any)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === tab
                         ? 'bg-[#0f172a] text-white shadow-md'
-                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                        : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                       }`}
                   >
-                    <Icon className={`w-4 h-4 shrink-0 ${activeTab === tab ? 'text-[#06B6D4]' : 'text-[#76777d]'}`} />
+                    <Icon className={`w-4 h-4 shrink-0 ${activeTab === tab ? 'text-[#06B6D4]' : 'text-zinc-500'}`} />
                     <span>{label}</span>
                     {tab === 'chats' && unreadChatsCount > 0 && (
                       <span className="ml-auto w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
@@ -708,11 +708,11 @@ export default function ProfilePage() {
             </div>
 
             {/* Exit/Deactivate Seller Mode */}
-            <div className="pt-0 md:pt-4 md:border-t border-[#E4E4E7]">
+            <div className="pt-0 md:pt-4 md:border-t border-zinc-700/60">
               <button
                 disabled={togglingSeller}
                 onClick={handleToggleSellerMode}
-                className="w-full py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer border border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d] hover:text-[#0f172a] transition-all bg-[#F8FAFC]/50"
+                className="w-full py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer border border-zinc-700/60 hover:bg-zinc-900 text-zinc-400 hover:text-white transition-all bg-zinc-900/50"
               >
                 <ArrowLeftRight className="w-4 h-4 shrink-0" />
                 <span>Switch to Customer Mode</span>
@@ -721,10 +721,10 @@ export default function ProfilePage() {
           </aside>
         ) : (
           /* Sidebar Nav */
-          <aside className="w-full md:w-3/12 flex flex-col justify-between bg-transparent md:bg-white rounded-none md:rounded border-0 md:border border-transparent md:border-[#E4E4E7] p-0 md:p-6 shadow-none md:shadow-sm h-fit">
+          <aside className="w-full md:w-3/12 flex flex-col justify-between bg-transparent md:bg-zinc-800 rounded-none md:rounded border-0 md:border border-transparent md:border-zinc-700/60 p-0 md:p-6 shadow-none md:shadow-sm h-fit">
             <div className="space-y-6 hidden md:block">
               {/* Header User Card */}
-              <div className="text-center space-y-3 pb-6 border-b border-[#E4E4E7]">
+              <div className="text-center space-y-3 pb-6 border-b border-zinc-700/60">
                 <div className="relative inline-flex items-center justify-center w-16 h-16 rounded bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow font-mono">
                   {profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0]}
                   {profile.is_verified_buyer && (
@@ -734,7 +734,7 @@ export default function ProfilePage() {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-[#0F172A] tracking-tight truncate font-['Space_Grotesk']">Hello, {profile.full_name.split(' ')[0]}</h3>
+                  <h3 className="text-sm font-bold text-white tracking-tight truncate font-['Space_Grotesk']">Hello, {profile.full_name.split(' ')[0]}</h3>
                   <div className="flex flex-col items-center gap-1 mt-1.5">
                     <span className="inline-block text-[8px] font-mono uppercase tracking-wider font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded">
                       {profile.loyalty_tier}
@@ -754,7 +754,7 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab('orders')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'orders'
                       ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <ShoppingBag className="w-4 h-4 shrink-0" />
@@ -765,7 +765,7 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab('rewards')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'rewards'
                       ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <Gift className="w-4 h-4 shrink-0" />
@@ -776,14 +776,14 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab('wishlist')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'wishlist'
                       ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <Heart className="w-4 h-4 shrink-0" />
                   <span>Wishlist</span>
                   {wishlist.length > 0 && (
                     <span className={`ml-auto text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${activeTab === 'wishlist'
-                        ? 'bg-white/20 text-white'
+                        ? 'bg-zinc-800/20 text-white'
                         : 'bg-cobalt/10 text-cobalt border border-cobalt/20'
                       }`}>
                       {wishlist.length}
@@ -795,7 +795,7 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab('settings')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'settings'
                       ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <Settings className="w-4 h-4 shrink-0" />
@@ -806,7 +806,7 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab('address')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'address'
                       ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <MapPin className="w-4 h-4 shrink-0" />
@@ -817,7 +817,7 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab('support')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'support'
                       ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <MessageSquare className="w-4 h-4 shrink-0" />
@@ -828,7 +828,7 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab('chats')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'chats'
                       ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <MessageSquare className="w-4 h-4 shrink-0" />
@@ -841,12 +841,12 @@ export default function ProfilePage() {
             </div>
 
             {/* Switch/Activate Seller Mode */}
-            <div className="pt-0 md:pt-6 md:border-t border-[#E4E4E7] md:mt-8 space-y-2">
-              <div className="hidden md:flex justify-between items-center text-[10px] font-bold text-[#76777d] font-mono uppercase tracking-wider">
+            <div className="pt-0 md:pt-6 md:border-t border-zinc-700/60 md:mt-8 space-y-2">
+              <div className="hidden md:flex justify-between items-center text-[10px] font-bold text-zinc-500 font-mono uppercase tracking-wider">
                 <span>Seller Account</span>
                 <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${profile.seller_kyc_completed
                     ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
-                    : 'bg-[#F8FAFC] text-[#76777d] border border-[#E4E4E7]'
+                    : 'bg-zinc-900 text-zinc-500 border border-zinc-700/60'
                   }`}>
                   {profile.seller_kyc_completed ? 'Active' : 'Inactive'}
                 </span>
@@ -856,7 +856,7 @@ export default function ProfilePage() {
                 onClick={handleToggleSellerMode}
                 className={`w-full transition-all py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${profile.is_seller
                     ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
-                    : 'border border-[#E4E4E7] text-[#45464d] hover:text-[#0f172a] hover:border-[#0f172a] bg-[#F8FAFC]'
+                    : 'border border-zinc-700/60 text-zinc-400 hover:text-white hover:border-[#0f172a] bg-zinc-900'
                   }`}
               >
                 <ArrowLeftRight className="w-4 h-4 shrink-0" />
@@ -892,12 +892,12 @@ export default function ProfilePage() {
                     <div
                       key={idx}
                       className={`border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all ${stat.isDark
-                          ? 'bg-[#0B1528] border-slate-850 text-white'
-                          : 'bg-white border-slate-border text-slate-text-primary'
+                          ? 'bg-[#0B1528] border-zinc-800 text-white'
+                          : 'bg-zinc-800 border-zinc-700/60 text-white'
                         }`}
                     >
                       <div className="space-y-1">
-                        <span className={`block text-[8px] font-black uppercase tracking-wider ${stat.isDark ? 'text-slate-400' : 'text-slate-text-muted'}`}>{stat.label}</span>
+                        <span className={`block text-[8px] font-black uppercase tracking-wider ${stat.isDark ? 'text-slate-400' : 'text-zinc-400'}`}>{stat.label}</span>
                         <span className="block text-xl font-black leading-tight">{stat.value}</span>
                       </div>
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${stat.color} shrink-0`}>
@@ -915,11 +915,11 @@ export default function ProfilePage() {
                 <div className="lg:w-8/12 space-y-6">
 
                   {/* ACTIVE RFQS FOR REVIEW */}
-                  <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-4">
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-border">
+                  <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-zinc-700/60">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-[#007084]" />
-                        <h4 className="text-sm font-black text-slate-text-primary uppercase tracking-tight">Active RFQs for Review</h4>
+                        <h4 className="text-sm font-black text-white uppercase tracking-tight">Active RFQs for Review</h4>
                       </div>
                       <Link href="/machining" className="text-xs font-bold text-[#007084] hover:underline">
                         View All Requests
@@ -929,17 +929,17 @@ export default function ProfilePage() {
                     <div className="flex gap-4 overflow-x-auto md:grid md:grid-cols-2 md:overflow-x-visible no-scrollbar pb-3 md:pb-0 snap-x snap-mandatory">
                       {loadingSeller ? (
                         <div className="w-full py-8 text-center animate-pulse">
-                          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
+                          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-400/30" />
                         </div>
                       ) : !sellerData || sellerData.openRfqs.length === 0 ? (
-                        <div className="w-full text-center py-8 text-xs font-bold text-slate-text-muted">
+                        <div className="w-full text-center py-8 text-xs font-bold text-zinc-400">
                           No active RFQs for review at the moment.
                         </div>
                       ) : (
                         sellerData.openRfqs.map((rfq, idx) => (
                           <div
                             key={rfq.id}
-                            className="snap-center shrink-0 w-[270px] md:w-auto border border-slate-border/70 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-border transition-colors bg-white shadow-sm space-y-4"
+                            className="snap-center shrink-0 w-[270px] md:w-auto border border-zinc-700/60/70 rounded-2xl p-4 flex flex-col justify-between hover:border-zinc-700/60 transition-colors bg-zinc-800 shadow-sm space-y-4"
                           >
                             <div className="space-y-3">
                               {/* Header Badge & Code */}
@@ -954,17 +954,17 @@ export default function ProfilePage() {
                               </div>
 
                               {/* Title */}
-                              <h5 className="text-xs font-black text-slate-text-primary line-clamp-1 leading-snug">{rfq.title}</h5>
+                              <h5 className="text-xs font-black text-white line-clamp-1 leading-snug">{rfq.title}</h5>
 
                               {/* Specs Grid */}
-                              <div className="grid grid-cols-2 gap-4 border-t border-b border-slate-border/30 py-3.5">
+                              <div className="grid grid-cols-2 gap-4 border-t border-b border-zinc-700/60/30 py-3.5">
                                 <div>
                                   <span className="block text-[8px] font-black uppercase text-slate-400">Material</span>
-                                  <span className="text-[10px] font-black text-slate-text-secondary truncate block">{rfq.material_preference || 'Ti-6Al-4V'}</span>
+                                  <span className="text-[10px] font-black text-zinc-350 truncate block">{rfq.material_preference || 'Ti-6Al-4V'}</span>
                                 </div>
                                 <div>
                                   <span className="block text-[8px] font-black uppercase text-slate-400">Quantity</span>
-                                  <span className="text-[10px] font-black text-slate-text-secondary truncate block">{rfq.quantity} Units</span>
+                                  <span className="text-[10px] font-black text-zinc-350 truncate block">{rfq.quantity} Units</span>
                                 </div>
                               </div>
                             </div>
@@ -984,11 +984,11 @@ export default function ProfilePage() {
                   </div>
 
                   {/* PRODUCTION PIPELINE */}
-                  <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-4">
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-border">
+                  <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-zinc-700/60">
                       <div className="flex items-center gap-2">
                         <Cpu className="w-4 h-4 text-[#007084]" />
-                        <h4 className="text-sm font-black text-slate-text-primary uppercase tracking-tight">Production Pipeline</h4>
+                        <h4 className="text-sm font-black text-white uppercase tracking-tight">Production Pipeline</h4>
                       </div>
                       <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald rounded border border-emerald-500/20">
                         {sellerData ? sellerData.activeJobs.length : '0'} Active Jobs
@@ -998,10 +998,10 @@ export default function ProfilePage() {
                     <div className="space-y-3">
                       {loadingSeller ? (
                         <div className="py-8 text-center animate-pulse">
-                          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
+                          <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-400/30" />
                         </div>
                       ) : !sellerData || sellerData.activeJobs.length === 0 ? (
-                        <div className="text-center py-8 text-xs font-bold text-slate-text-muted">
+                        <div className="text-center py-8 text-xs font-bold text-zinc-400">
                           No active production jobs in the pipeline.
                         </div>
                       ) : (
@@ -1009,11 +1009,11 @@ export default function ProfilePage() {
                           const isShipped = job.status === 'Shipped';
                           const progress = isShipped ? 80 : 40;
                           return (
-                            <div key={job.id} className="bg-white border border-slate-border/70 rounded-2xl p-4 space-y-4 hover:border-slate-border transition-colors shadow-sm">
+                            <div key={job.id} className="bg-zinc-800 border border-zinc-700/60/70 rounded-2xl p-4 space-y-4 hover:border-zinc-700/60 transition-colors shadow-sm">
                               <div className="flex justify-between items-start gap-4">
                                 <div>
                                   <span className="block text-[8px] font-black text-slate-400 font-mono">ORDER-{job.id.substring(0, 8).toUpperCase()}</span>
-                                  <h5 className="text-xs font-black text-slate-text-primary mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</h5>
+                                  <h5 className="text-xs font-black text-white mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</h5>
                                 </div>
                                 <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${isShipped
                                     ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
@@ -1026,9 +1026,9 @@ export default function ProfilePage() {
                               <div className="space-y-1.5">
                                 <div className="flex justify-between text-[8px] font-black uppercase text-slate-400 tracking-wider">
                                   <span>Progress</span>
-                                  <span className="font-mono font-black text-[9px] text-slate-text-secondary">{progress}%</span>
+                                  <span className="font-mono font-black text-[9px] text-zinc-350">{progress}%</span>
                                 </div>
-                                <div className="w-full bg-slate-bg border border-slate-border/50 h-2 rounded-full overflow-hidden">
+                                <div className="w-full bg-zinc-900 border border-zinc-700/60/50 h-2 rounded-full overflow-hidden">
                                   <div
                                     className={`h-full rounded-full transition-all ${isShipped ? 'bg-amber-500' : 'bg-sky-500'}`}
                                     style={{ width: `${progress}%` }}
@@ -1056,11 +1056,11 @@ export default function ProfilePage() {
                   </div>
 
                   {/* DISPATCHED ORDERS */}
-                  <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-4">
-                    <div className="flex justify-between items-center pb-3 border-b border-slate-border">
+                  <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-zinc-700/60">
                       <div className="flex items-center gap-2">
                         <ShoppingBag className="w-4 h-4 text-[#007084]" />
-                        <h4 className="text-sm font-black text-slate-text-primary uppercase tracking-tight">Dispatched Orders</h4>
+                        <h4 className="text-sm font-black text-white uppercase tracking-tight">Dispatched Orders</h4>
                       </div>
                       <button onClick={() => showToast('Opening shipment manager...', 'success')} className="text-xs font-bold text-[#007084] hover:underline cursor-pointer">
                         Track All Shipments
@@ -1070,7 +1070,7 @@ export default function ProfilePage() {
                     <div className="overflow-x-auto no-scrollbar">
                       <table className="w-full border-collapse text-left">
                         <thead>
-                          <tr className="border-b border-slate-border/50 text-[8px] uppercase tracking-wider font-black text-slate-400">
+                          <tr className="border-b border-zinc-700/60/50 text-[8px] uppercase tracking-wider font-black text-slate-400">
                             <th className="pb-2.5">Order ID</th>
                             <th className="pb-2.5 px-3">Carrier</th>
                             <th className="pb-2.5 text-right">Status</th>
@@ -1080,12 +1080,12 @@ export default function ProfilePage() {
                           {loadingSeller ? (
                             <tr>
                               <td colSpan={3} className="py-8 text-center animate-pulse">
-                                <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
+                                <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-400/30" />
                               </td>
                             </tr>
                           ) : !sellerData || sellerData.completedJobs.length === 0 ? (
                             <tr>
-                              <td colSpan={3} className="py-8 text-center text-xs font-bold text-slate-text-muted">
+                              <td colSpan={3} className="py-8 text-center text-xs font-bold text-zinc-400">
                                 No recently completed/delivered orders.
                               </td>
                             </tr>
@@ -1094,10 +1094,10 @@ export default function ProfilePage() {
                               const isCompleted = job.status === 'Completed';
                               return (
                                 <tr key={job.id} className="text-xs">
-                                  <td className="py-3 font-mono font-black text-slate-text-primary">
+                                  <td className="py-3 font-mono font-black text-white">
                                     #{job.id.substring(0, 12).toUpperCase()}
                                   </td>
-                                  <td className="py-3 px-3 font-bold text-slate-text-secondary">
+                                  <td className="py-3 px-3 font-bold text-zinc-350">
                                     Standard Delivery
                                   </td>
                                   <td className="py-3 text-right">
@@ -1122,9 +1122,9 @@ export default function ProfilePage() {
                 <div className="lg:w-4/12 space-y-6">
 
                   {/* EARNINGS VELOCITY */}
-                  <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-5">
-                    <div className="pb-3 border-b border-slate-border">
-                      <h4 className="text-xs font-black text-slate-text-muted uppercase tracking-wider">Earnings Velocity</h4>
+                  <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-5">
+                    <div className="pb-3 border-b border-zinc-700/60">
+                      <h4 className="text-xs font-black text-zinc-400 uppercase tracking-wider">Earnings Velocity</h4>
                     </div>
 
                     {/* Visual Bar Chart */}
@@ -1157,7 +1157,7 @@ export default function ProfilePage() {
                                     }`}
                                   style={{ height: `${height}px` }}
                                 ></div>
-                                <span className={`text-[9px] font-black uppercase tracking-wider ${isActive ? 'text-[#007084]' : 'text-slate-text-muted'}`}>
+                                <span className={`text-[9px] font-black uppercase tracking-wider ${isActive ? 'text-[#007084]' : 'text-zinc-400'}`}>
                                   {bar.label}
                                 </span>
                               </div>
@@ -1166,9 +1166,9 @@ export default function ProfilePage() {
                         })()}
                       </div>
 
-                      <div className="border-t border-slate-border pt-3.5 flex items-center justify-between text-xs">
-                        <span className="font-bold text-slate-text-muted">Projected Month End</span>
-                        <span className="font-black text-slate-text-primary text-sm">
+                      <div className="border-t border-zinc-700/60 pt-3.5 flex items-center justify-between text-xs">
+                        <span className="font-bold text-zinc-400">Projected Month End</span>
+                        <span className="font-black text-white text-sm">
                           {sellerData ? `₹${((sellerData.monthlyEarnings * 1.2) / 100000).toFixed(1)}L` : '₹0.0L'}
                         </span>
                       </div>
@@ -1193,13 +1193,13 @@ export default function ProfilePage() {
                   </div>
 
                   {/* ISO 9001:2015 Certification */}
-                  <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm flex items-start gap-4">
+                  <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-5 shadow-sm flex items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-100 text-[#007084] flex items-center justify-center shrink-0 shadow-sm">
                       <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
                     </div>
                     <div className="space-y-0.5">
-                      <h4 className="text-xs font-black text-slate-text-primary">ISO 9001:2015 Compliance</h4>
-                      <p className="text-[10px] text-slate-text-muted font-bold leading-normal">
+                      <h4 className="text-xs font-black text-white">ISO 9001:2015 Compliance</h4>
+                      <p className="text-[10px] text-zinc-400 font-bold leading-normal">
                         Certified Operations since 2021. Complies with global precision aerospace &amp; industrial machining guidelines.
                       </p>
                     </div>
@@ -1216,23 +1216,23 @@ export default function ProfilePage() {
           {profile.is_seller && activeTab === 'seller_orders' && (
             <div className="space-y-6">
               {/* Header */}
-              <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm">
-                <h2 className="text-base font-bold text-[#0F172A] tracking-tight uppercase font-['Space_Grotesk']">Seller Orders Manager</h2>
-                <p className="text-xs text-[#76777d] mt-1 font-semibold">
+              <div className="bg-zinc-800 border border-zinc-700/60 rounded p-6 shadow-sm">
+                <h2 className="text-base font-bold text-white tracking-tight uppercase font-['Space_Grotesk']">Seller Orders Manager</h2>
+                <p className="text-xs text-zinc-500 mt-1 font-semibold">
                   Track, ship, and complete purchase orders submitted by customers for custom machining contracts or catalog mechatronic parts.
                 </p>
               </div>
 
               {loadingSellerOrders ? (
-                <div className="bg-white border border-[#E4E4E7] p-12 text-center rounded space-y-3">
+                <div className="bg-zinc-800 border border-zinc-700/60 p-12 text-center rounded space-y-3">
                   <RefreshCw className="w-8 h-8 text-cobalt animate-spin mx-auto" />
-                  <p className="text-xs font-bold text-slate-text-muted animate-pulse">Loading orders queue...</p>
+                  <p className="text-xs font-bold text-zinc-400 animate-pulse">Loading orders queue...</p>
                 </div>
               ) : sellerOrders.length === 0 ? (
-                <div className="bg-white border border-[#E4E4E7] rounded p-12 text-center py-20 space-y-3 shadow-sm">
-                  <ShoppingBag className="w-12 h-12 text-slate-text-muted/20 mx-auto" />
-                  <h4 className="text-sm font-bold text-[#0F172A] font-['Space_Grotesk']">No orders received yet</h4>
-                  <p className="text-xs text-[#76777d] max-w-sm mx-auto font-medium">
+                <div className="bg-zinc-800 border border-zinc-700/60 rounded p-12 text-center py-20 space-y-3 shadow-sm">
+                  <ShoppingBag className="w-12 h-12 text-zinc-400/20 mx-auto" />
+                  <h4 className="text-sm font-bold text-white font-['Space_Grotesk']">No orders received yet</h4>
+                  <p className="text-xs text-zinc-500 max-w-sm mx-auto font-medium">
                     When buyers checkout your mechatronics parts or accept your custom machining quotes, their purchase orders will appear here.
                   </p>
                 </div>
@@ -1249,7 +1249,7 @@ export default function ProfilePage() {
                     const isUpdating = updatingOrderId === order.id;
 
                     return (
-                      <div key={order.id} className="bg-white border border-[#E4E4E7] p-6 rounded shadow-sm hover:border-slate-300 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                      <div key={order.id} className="bg-zinc-800 border border-zinc-700/60 p-6 rounded shadow-sm hover:border-slate-300 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                         <div className="space-y-2">
                           <div className="flex items-center gap-3">
                             <span className="text-xs font-mono font-bold text-cobalt bg-cobalt/5 border border-cobalt/15 px-2.5 py-1 rounded">
@@ -1268,14 +1268,14 @@ export default function ProfilePage() {
                           </div>
 
                           <div className="space-y-1">
-                            <h4 className="text-xs font-black text-slate-text-primary">
-                              Buyer: <span className="text-slate-text-secondary">{order.buyer_name}</span>
-                              <span className="text-[10px] text-slate-text-muted font-normal font-mono ml-2">({order.buyer_email})</span>
+                            <h4 className="text-xs font-black text-white">
+                              Buyer: <span className="text-zinc-350">{order.buyer_name}</span>
+                              <span className="text-[10px] text-zinc-400 font-normal font-mono ml-2">({order.buyer_email})</span>
                             </h4>
-                            <p className="text-[11px] text-slate-text-muted font-semibold">
-                              Total Amount: <span className="text-[#0F172A] font-extrabold">₹{Number(order.total_amount).toLocaleString('en-IN')}</span> | Items: <span className="font-bold">{order.items_count}</span>
+                            <p className="text-[11px] text-zinc-400 font-semibold">
+                              Total Amount: <span className="text-white font-extrabold">₹{Number(order.total_amount).toLocaleString('en-IN')}</span> | Items: <span className="font-bold">{order.items_count}</span>
                             </p>
-                            <p className="text-[10px] text-slate-text-muted font-mono">
+                            <p className="text-[10px] text-zinc-400 font-mono">
                               Ordered on: {new Date(order.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                             </p>
                           </div>
@@ -1313,10 +1313,10 @@ export default function ProfilePage() {
           {profile.is_seller && activeTab === 'seller_listings' && (
             <div className="space-y-6 pb-20 md:pb-0">
               {/* Header */}
-              <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="bg-zinc-800 border border-zinc-700/60 rounded p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                  <h2 className="text-base font-bold text-[#0F172A] tracking-tight uppercase font-['Space_Grotesk']">My Listed Products &amp; Services</h2>
-                  <p className="text-xs text-[#76777d] mt-1 font-semibold">
+                  <h2 className="text-base font-bold text-white tracking-tight uppercase font-['Space_Grotesk']">My Listed Products &amp; Services</h2>
+                  <p className="text-xs text-zinc-500 mt-1 font-semibold">
                     Manage your active inventory listings, wholesale pricing tiers, and custom fabrication offerings.
                   </p>
                 </div>
@@ -1329,50 +1329,50 @@ export default function ProfilePage() {
               </div>
 
               {loadingSeller && !sellerData ? (
-                <div className="bg-white border border-[#E4E4E7] p-12 text-center rounded space-y-3">
+                <div className="bg-zinc-800 border border-zinc-700/60 p-12 text-center rounded space-y-3">
                   <RefreshCw className="w-8 h-8 text-cobalt animate-spin mx-auto" />
-                  <p className="text-xs font-bold text-slate-text-muted animate-pulse">Loading active inventory...</p>
+                  <p className="text-xs font-bold text-zinc-400 animate-pulse">Loading active inventory...</p>
                 </div>
               ) : (
                 /* Listings Grid */
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Product Listings Card */}
-                  <div className="bg-white border border-[#E4E4E7] rounded p-5 shadow-sm space-y-4">
-                    <div className="flex justify-between items-center pb-3 border-b border-[#E4E4E7]">
+                  <div className="bg-zinc-800 border border-zinc-700/60 rounded p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-zinc-700/60">
                       <div className="flex items-center gap-2">
                         <Package className="w-4 h-4 text-cobalt" />
-                        <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#0f172a]">
+                        <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white">
                           Catalog Products ({sellerData ? sellerData.products.length : 0})
                         </h3>
                       </div>
-                      <span className="text-[9px] font-mono font-bold text-[#76777d] uppercase">Stock Active</span>
+                      <span className="text-[9px] font-mono font-bold text-zinc-500 uppercase">Stock Active</span>
                     </div>
 
                     <div className="space-y-3">
                       {!sellerData || sellerData.products.length === 0 ? (
-                        <p className="text-center py-6 text-xs text-slate-text-muted font-semibold">No catalog products listed yet.</p>
+                        <p className="text-center py-6 text-xs text-zinc-400 font-semibold">No catalog products listed yet.</p>
                       ) : (
                         sellerData.products.map((item) => {
                           const isDeleting = deletingProductId === item.id;
                           return (
-                            <div key={item.id} className="flex justify-between items-center p-3 border border-[#E4E4E7] bg-[#F8FAFC]/50 rounded text-xs font-medium gap-3">
+                            <div key={item.id} className="flex justify-between items-center p-3 border border-zinc-700/60 bg-zinc-900/50 rounded text-xs font-medium gap-3">
                               <div className="flex gap-3 items-center min-w-0 flex-1">
                                 {item.image_data || item.imageData ? (
-                                  <img src={item.image_data || item.imageData} alt={item.title} className="w-8 h-8 object-cover rounded border bg-white shrink-0" />
+                                  <img src={item.image_data || item.imageData} alt={item.title} className="w-8 h-8 object-cover rounded border bg-zinc-800 shrink-0" />
                                 ) : (
-                                  <div className="w-8 h-8 bg-white flex items-center justify-center rounded border shrink-0">
-                                    <Package className="w-3.5 h-3.5 text-[#76777d]" />
+                                  <div className="w-8 h-8 bg-zinc-800 flex items-center justify-center rounded border shrink-0">
+                                    <Package className="w-3.5 h-3.5 text-zinc-500" />
                                   </div>
                                 )}
                                 <div className="space-y-0.5 min-w-0 flex-1">
-                                  <span className="block text-[8px] font-mono text-[#76777d] uppercase tracking-wider truncate">{item.part_number || item.sku}</span>
-                                  <span className="block font-semibold text-[#0f172a] truncate">{item.title}</span>
+                                  <span className="block text-[8px] font-mono text-zinc-500 uppercase tracking-wider truncate">{item.part_number || item.sku}</span>
+                                  <span className="block font-semibold text-white truncate">{item.title}</span>
                                 </div>
                               </div>
                               <div className="text-right shrink-0 flex items-center gap-4">
                                 <div>
                                   <span className="block font-bold text-coral">₹{Number(item.price).toLocaleString('en-IN')}</span>
-                                  <span className="block text-[8px] font-mono font-bold text-[#76777d] uppercase">{item.stock} units</span>
+                                  <span className="block text-[8px] font-mono font-bold text-zinc-500 uppercase">{item.stock} units</span>
                                 </div>
                                 <button
                                   onClick={() => handleDeleteProduct(item.id)}
@@ -1391,44 +1391,44 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Service Listings Card */}
-                  <div className="bg-white border border-[#E4E4E7] rounded p-5 shadow-sm space-y-4">
-                    <div className="flex justify-between items-center pb-3 border-b border-[#E4E4E7]">
+                  <div className="bg-zinc-800 border border-zinc-700/60 rounded p-5 shadow-sm space-y-4">
+                    <div className="flex justify-between items-center pb-3 border-b border-zinc-700/60">
                       <div className="flex items-center gap-2">
                         <Settings className="w-4 h-4 text-[#06B6D4]" />
-                        <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#0f172a]">
+                        <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white">
                           Catalog Services ({sellerData ? sellerData.services.length : 0})
                         </h3>
                       </div>
-                      <span className="text-[9px] font-mono font-bold text-[#76777d] uppercase">Online</span>
+                      <span className="text-[9px] font-mono font-bold text-zinc-500 uppercase">Online</span>
                     </div>
 
                     <div className="space-y-3">
                       {!sellerData || sellerData.services.length === 0 ? (
-                        <p className="text-center py-6 text-xs text-slate-text-muted font-semibold">No catalog services listed yet.</p>
+                        <p className="text-center py-6 text-xs text-zinc-400 font-semibold">No catalog services listed yet.</p>
                       ) : (
                         sellerData.services.map((item) => {
                           const isDeleting = deletingCatalogServiceId === item.id;
                           return (
-                            <div key={item.id} className="flex justify-between items-center p-3 border border-[#E4E4E7] bg-[#F8FAFC]/50 rounded text-xs font-medium gap-3">
+                            <div key={item.id} className="flex justify-between items-center p-3 border border-zinc-700/60 bg-zinc-900/50 rounded text-xs font-medium gap-3">
                               <div className="flex items-center gap-3 min-w-0 flex-1">
                                 {item.image_data ? (
-                                  <div className="w-8 h-8 rounded border border-[#E4E4E7] overflow-hidden bg-white shrink-0">
+                                  <div className="w-8 h-8 rounded border border-zinc-700/60 overflow-hidden bg-zinc-800 shrink-0">
                                     <img src={item.image_data} alt={item.title} className="w-full h-full object-cover" />
                                   </div>
                                 ) : (
-                                  <div className="w-8 h-8 rounded border border-[#E4E4E7] bg-white text-[#76777d] flex items-center justify-center shrink-0">
+                                  <div className="w-8 h-8 rounded border border-zinc-700/60 bg-zinc-800 text-zinc-500 flex items-center justify-center shrink-0">
                                     <Settings className="w-4 h-4 text-zinc-400" />
                                   </div>
                                 )}
                                 <div className="space-y-0.5 min-w-0 flex-1">
-                                  <span className="block font-semibold text-[#0f172a] truncate">{item.title}</span>
-                                  <span className="block text-[8px] font-mono text-[#76777d] uppercase tracking-wider">{item.lead_time || '3-5 Days Lead'}</span>
+                                  <span className="block font-semibold text-white truncate">{item.title}</span>
+                                  <span className="block text-[8px] font-mono text-zinc-500 uppercase tracking-wider">{item.lead_time || '3-5 Days Lead'}</span>
                                 </div>
                               </div>
                               <div className="text-right shrink-0 flex items-center gap-4">
                                 <div>
                                   <span className="block font-bold text-[#06B6D4]">₹{Number(item.base_price).toLocaleString('en-IN')}/hr</span>
-                                  <span className="block text-[8px] font-mono font-bold text-[#76777d] uppercase">Active</span>
+                                  <span className="block text-[8px] font-mono font-bold text-zinc-500 uppercase">Active</span>
                                 </div>
                                 <button
                                   onClick={() => handleDeleteService(item.id)}
@@ -1453,10 +1453,10 @@ export default function ProfilePage() {
           {profile.is_seller && activeTab === 'seller_capabilities' && (
             <div className="space-y-6">
               {/* Header */}
-              <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="bg-zinc-800 border border-zinc-700/60 rounded p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                  <h2 className="text-base font-bold text-[#0F172A] tracking-tight uppercase font-['Space_Grotesk']">Machine Capabilities Registry</h2>
-                  <p className="text-xs text-[#76777d] mt-1 font-semibold">
+                  <h2 className="text-base font-bold text-white tracking-tight uppercase font-['Space_Grotesk']">Machine Capabilities Registry</h2>
+                  <p className="text-xs text-zinc-500 mt-1 font-semibold">
                     Manage your listed mechatronics fabrication systems, CNC machines, and 3D printing envelopes.
                   </p>
                 </div>
@@ -1469,20 +1469,20 @@ export default function ProfilePage() {
               </div>
 
               {loadingSeller && !sellerData ? (
-                <div className="bg-white border border-[#E4E4E7] p-12 text-center rounded space-y-3">
+                <div className="bg-zinc-800 border border-zinc-700/60 p-12 text-center rounded space-y-3">
                   <RefreshCw className="w-8 h-8 text-cobalt animate-spin mx-auto" />
-                  <p className="text-xs font-bold text-slate-text-muted animate-pulse">Loading machine registry...</p>
+                  <p className="text-xs font-bold text-zinc-400 animate-pulse">Loading machine registry...</p>
                 </div>
               ) : !sellerData || sellerData.capabilities.length === 0 ? (
-                <div className="bg-white border border-[#E4E4E7] rounded p-12 text-center py-20 space-y-3 shadow-sm">
-                  <Cpu className="w-12 h-12 text-slate-text-muted/20 mx-auto" />
-                  <h4 className="text-sm font-bold text-[#0F172A] font-['Space_Grotesk'] font-black">No machine capabilities registered</h4>
-                  <p className="text-xs text-[#76777d] max-w-sm mx-auto font-semibold">
+                <div className="bg-zinc-800 border border-zinc-700/60 rounded p-12 text-center py-20 space-y-3 shadow-sm">
+                  <Cpu className="w-12 h-12 text-zinc-400/20 mx-auto" />
+                  <h4 className="text-sm font-bold text-white font-['Space_Grotesk'] font-black">No machine capabilities registered</h4>
+                  <p className="text-xs text-zinc-500 max-w-sm mx-auto font-semibold">
                     Register your CNC mills, SLS printers, or laser cutters to start receiving high-value mechatronics quote contracts.
                   </p>
                   <button
                     onClick={openAddListingModal}
-                    className="mt-2 py-2 px-5 border border-[#0F172A] text-[#0F172A] hover:bg-[#0F172A] hover:text-white font-bold text-xs transition-colors cursor-pointer"
+                    className="mt-2 py-2 px-5 border border-[#0F172A] text-white hover:bg-[#0F172A] hover:text-white font-bold text-xs transition-colors cursor-pointer"
                   >
                     Add Your First Capability
                   </button>
@@ -1492,14 +1492,14 @@ export default function ProfilePage() {
                   {sellerData.capabilities.map(cap => {
                     const isDeleting = deletingServiceId === cap.id;
                     return (
-                      <div key={cap.id} className="bg-white border border-[#E4E4E7] p-5 rounded shadow-sm hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
+                      <div key={cap.id} className="bg-zinc-800 border border-zinc-700/60 p-5 rounded shadow-sm hover:border-slate-300 transition-all flex flex-col justify-between space-y-4">
                         <div className="space-y-3">
                           <div className="flex justify-between items-start gap-3">
                             <div>
                               <span className="inline-block text-[9px] font-mono font-bold uppercase tracking-wider bg-sky-500/8 text-sky-600 border border-sky-500/15 px-2 py-0.5 rounded mb-1">
                                 {cap.process_type}
                               </span>
-                              <h4 className="text-sm font-black text-slate-text-primary leading-tight font-['Space_Grotesk']">
+                              <h4 className="text-sm font-black text-white leading-tight font-['Space_Grotesk']">
                                 {cap.title}
                               </h4>
                             </div>
@@ -1508,23 +1508,23 @@ export default function ProfilePage() {
                             </span>
                           </div>
 
-                          <p className="text-[11px] text-slate-text-muted leading-relaxed font-semibold">
+                          <p className="text-[11px] text-zinc-400 leading-relaxed font-semibold">
                             {cap.description}
                           </p>
 
-                          <div className="space-y-1.5 pt-2 border-t border-[#E4E4E7]/65 text-[10px]">
+                          <div className="space-y-1.5 pt-2 border-t border-zinc-700/60/65 text-[10px]">
                             {cap.material_capabilities?.length > 0 && (
-                              <p className="text-slate-text-secondary font-semibold">
-                                <span className="text-slate-text-muted font-bold">Materials:</span> {cap.material_capabilities.join(', ')}
+                              <p className="text-zinc-350 font-semibold">
+                                <span className="text-zinc-400 font-bold">Materials:</span> {cap.material_capabilities.join(', ')}
                               </p>
                             )}
                             {cap.finish_options?.length > 0 && (
-                              <p className="text-slate-text-secondary font-semibold">
-                                <span className="text-slate-text-muted font-bold">Finishes:</span> {cap.finish_options.join(', ')}
+                              <p className="text-zinc-350 font-semibold">
+                                <span className="text-zinc-400 font-bold">Finishes:</span> {cap.finish_options.join(', ')}
                               </p>
                             )}
-                            <p className="text-slate-text-secondary font-semibold">
-                              <span className="text-slate-text-muted font-bold">Lead Time:</span> {cap.lead_time || '3-5 Days'}
+                            <p className="text-zinc-350 font-semibold">
+                              <span className="text-zinc-400 font-bold">Lead Time:</span> {cap.lead_time || '3-5 Days'}
                             </p>
                           </div>
                         </div>
@@ -1554,10 +1554,10 @@ export default function ProfilePage() {
           {profile.is_seller && activeTab === 'seller_earnings' && (
             <div className="space-y-6">
               {/* Header */}
-              <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="bg-zinc-800 border border-zinc-700/60 rounded p-6 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                  <h2 className="text-base font-bold text-[#0F172A] tracking-tight uppercase font-['Space_Grotesk']">Seller Earnings Dashboard</h2>
-                  <p className="text-xs text-[#76777d] mt-1 font-semibold">
+                  <h2 className="text-base font-bold text-white tracking-tight uppercase font-['Space_Grotesk']">Seller Earnings Dashboard</h2>
+                  <p className="text-xs text-zinc-500 mt-1 font-semibold">
                     Monitor your weekly sales velocity, track pending payouts, and view completed custom order ledger history.
                   </p>
                 </div>
@@ -1568,47 +1568,47 @@ export default function ProfilePage() {
               </div>
 
               {loadingSeller && !sellerData ? (
-                <div className="bg-white border border-[#E4E4E7] p-12 text-center rounded space-y-3">
+                <div className="bg-zinc-800 border border-zinc-700/60 p-12 text-center rounded space-y-3">
                   <RefreshCw className="w-8 h-8 text-cobalt animate-spin mx-auto" />
-                  <p className="text-xs font-bold text-slate-text-muted animate-pulse">Loading financial summary...</p>
+                  <p className="text-xs font-bold text-zinc-400 animate-pulse">Loading financial summary...</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Left Column - Metrics */}
                   <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white border border-[#E4E4E7] p-6 rounded shadow-sm space-y-4">
-                      <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">
+                    <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded shadow-sm space-y-4">
+                      <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono">
                         Active Job Escrow
                       </span>
                       <div className="space-y-1">
-                        <span className="text-3xl font-black text-[#0f172a] block tracking-tight">
+                        <span className="text-3xl font-black text-white block tracking-tight">
                           ₹{sellerData ? Number((sellerData as any).escrowBalance || 0).toLocaleString('en-IN') : '0'}
                         </span>
-                        <span className="text-[10px] text-slate-text-muted font-bold block">
+                        <span className="text-[10px] text-zinc-400 font-bold block">
                           Escrow funds from active contracts
                         </span>
                       </div>
                     </div>
 
-                    <div className="bg-white border border-[#E4E4E7] p-6 rounded shadow-sm space-y-4">
-                      <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono text-emerald-600">
+                    <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded shadow-sm space-y-4">
+                      <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono text-emerald-600">
                         Cleared Earnings
                       </span>
                       <div className="space-y-1">
                         <span className="text-3xl font-black text-emerald-600 block tracking-tight">
                           ₹{sellerData ? Number((sellerData as any).clearedEarnings || 0).toLocaleString('en-IN') : '0'}
                         </span>
-                        <span className="text-[10px] text-slate-text-muted font-bold block">
+                        <span className="text-[10px] text-zinc-400 font-bold block">
                           Released funds available for payout
                         </span>
                       </div>
                     </div>
 
-                    <div className="bg-white border border-[#E4E4E7] p-6 rounded shadow-sm space-y-3">
-                      <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">
+                    <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded shadow-sm space-y-3">
+                      <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono">
                         Payout Preferences
                       </span>
-                      <div className="space-y-1 bg-[#F8FAFC]/70 border border-[#E4E4E7]/40 p-3 rounded text-[11px] font-semibold text-slate-text-secondary">
+                      <div className="space-y-1 bg-zinc-900/70 border border-zinc-700/60/40 p-3 rounded text-[11px] font-semibold text-zinc-350">
                         <p className="flex justify-between">
                           <span>Bank Account:</span>
                           <span className="text-slate-900 font-bold">•••• 4820</span>
@@ -1628,8 +1628,8 @@ export default function ProfilePage() {
                   {/* Right Column - Chart and Ledger */}
                   <div className="lg:col-span-2 space-y-6">
                     {/* Velocity Chart */}
-                    <div className="bg-white border border-[#E4E4E7] p-6 rounded shadow-sm space-y-4">
-                      <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">
+                    <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded shadow-sm space-y-4">
+                      <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono">
                         Weekly Sales Velocity
                       </span>
 
@@ -1639,11 +1639,11 @@ export default function ProfilePage() {
                           const barHeight = Math.max(8, (item.amount / maxVal) * 100);
                           return (
                             <div key={idx} className="flex flex-col items-center gap-2 w-12 group">
-                              <span className="text-[9px] font-bold text-slate-text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="text-[9px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
                                 ₹{item.amount.toLocaleString('en-IN')}
                               </span>
                               <div className="w-8 bg-[#E2E8F0] hover:bg-cobalt rounded-t-sm transition-all duration-200" style={{ height: `${barHeight}%` }} />
-                              <span className="text-[9px] font-mono font-bold text-slate-text-muted block mt-1">
+                              <span className="text-[9px] font-mono font-bold text-zinc-400 block mt-1">
                                 {item.label}
                               </span>
                             </div>
@@ -1653,15 +1653,15 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Job Ledger */}
-                    <div className="bg-white border border-[#E4E4E7] rounded shadow-sm overflow-hidden">
-                      <div className="px-5 py-4 border-b border-[#E4E4E7]">
-                        <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">
+                    <div className="bg-zinc-800 border border-zinc-700/60 rounded shadow-sm overflow-hidden">
+                      <div className="px-5 py-4 border-b border-zinc-700/60">
+                        <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono">
                           Recent Contracts Ledger
                         </span>
                       </div>
 
                       {!sellerData || (sellerData.activeJobs.length === 0 && sellerData.completedJobs.length === 0) ? (
-                        <div className="p-8 text-center text-xs font-semibold text-slate-text-muted">
+                        <div className="p-8 text-center text-xs font-semibold text-zinc-400">
                           No recent custom jobs completed or active.
                         </div>
                       ) : (
@@ -1671,13 +1671,13 @@ export default function ProfilePage() {
                             .map(job => {
                               const isCleared = job.status === 'Completed' || job.status === 'Delivered';
                               return (
-                                <div key={job.id} className="p-4 flex justify-between items-center hover:bg-[#F8FAFC]/50 transition-all font-semibold">
+                                <div key={job.id} className="p-4 flex justify-between items-center hover:bg-zinc-900/50 transition-all font-semibold">
                                   <div>
-                                    <span className="block text-[#0f172a] font-bold">{job.rfq?.title || 'Custom Machining Contract'}</span>
-                                    <span className="block text-[10px] text-slate-text-muted font-mono mt-0.5">RFQ ID: {job.rfq_id?.slice(0, 8).toUpperCase() || 'N/A'}</span>
+                                    <span className="block text-white font-bold">{job.rfq?.title || 'Custom Machining Contract'}</span>
+                                    <span className="block text-[10px] text-zinc-400 font-mono mt-0.5">RFQ ID: {job.rfq_id?.slice(0, 8).toUpperCase() || 'N/A'}</span>
                                   </div>
                                   <div className="text-right">
-                                    <span className="block text-[#0f172a] font-black">₹{Number(job.total_cost).toLocaleString('en-IN')}</span>
+                                    <span className="block text-white font-black">₹{Number(job.total_cost).toLocaleString('en-IN')}</span>
                                     <span className={`block text-[9px] font-mono uppercase tracking-wider font-bold ${isCleared ? 'text-emerald-600' : 'text-slate-500'
                                       }`}>
                                       {isCleared ? 'Cleared' : 'Escrow Active'}
@@ -1701,43 +1701,43 @@ export default function ProfilePage() {
             <div className="space-y-6">
 
               {/* Profile Overview Banner */}
-              <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center gap-6 justify-between">
+              <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center gap-6 justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cobalt/20 to-cobalt/5 border border-cobalt/25 flex items-center justify-center font-extrabold text-cobalt">
                     <User className="w-6 h-6" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-base font-black text-slate-text-primary leading-none">{profile.full_name}</h2>
+                      <h2 className="text-base font-black text-white leading-none">{profile.full_name}</h2>
                       <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald rounded border border-emerald-500/20">
                         Verified Customer
                       </span>
                     </div>
-                    <span className="block text-[11px] text-slate-text-muted font-bold font-mono mt-1.5">{profile.email || 'guest@mechitall.io'}</span>
+                    <span className="block text-[11px] text-zinc-400 font-bold font-mono mt-1.5">{profile.email || 'guest@mechitall.io'}</span>
                   </div>
                 </div>
 
                 {/* Stats grid */}
                 <div className="flex items-center gap-8 text-center">
                   <div>
-                    <span className="block text-[8px] uppercase tracking-wider text-slate-text-muted font-bold">Total Orders</span>
-                    <span className="text-xl font-mono font-black text-slate-text-primary">{orders.length}</span>
+                    <span className="block text-[8px] uppercase tracking-wider text-zinc-400 font-bold">Total Orders</span>
+                    <span className="text-xl font-mono font-black text-white">{orders.length}</span>
                   </div>
-                  <div className="border-l border-slate-border h-8"></div>
+                  <div className="border-l border-zinc-700/60 h-8"></div>
                   <div>
-                    <span className="block text-[8px] uppercase tracking-wider text-slate-text-muted font-bold">Active Shipments</span>
+                    <span className="block text-[8px] uppercase tracking-wider text-zinc-400 font-bold">Active Shipments</span>
                     <span className="text-xl font-mono font-black text-cobalt">{activeShipmentsCount}</span>
                   </div>
-                  <div className="border-l border-slate-border h-8"></div>
+                  <div className="border-l border-zinc-700/60 h-8"></div>
                   <div>
-                    <span className="block text-[8px] uppercase tracking-wider text-slate-text-muted font-bold">Wishlist Items</span>
-                    <span className="text-xl font-mono font-black text-slate-text-primary">{wishlist.length}</span>
+                    <span className="block text-[8px] uppercase tracking-wider text-zinc-400 font-bold">Wishlist Items</span>
+                    <span className="text-xl font-mono font-black text-white">{wishlist.length}</span>
                   </div>
                 </div>
               </div>
 
               {/* Bolts Wallet Card */}
-              <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm relative overflow-hidden text-[#0F172A] flex flex-col md:flex-row justify-between gap-6">
+              <div className="bg-zinc-800 border border-zinc-700/60 rounded p-6 shadow-sm relative overflow-hidden text-white flex flex-col md:flex-row justify-between gap-6">
                 <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] opacity-60 pointer-events-none"></div>
 
                 <div className="space-y-4 z-10 flex-1">
@@ -1763,13 +1763,13 @@ export default function ProfilePage() {
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-xs font-mono font-extrabold tracking-wider text-[#0F172A]">BOLTS WALLET</h3>
-                      <span className="block text-[8px] text-[#76777d] font-bold font-mono uppercase tracking-wider">Nuts &amp; Bolts Reward Program</span>
+                      <h3 className="text-xs font-mono font-extrabold tracking-wider text-white">BOLTS WALLET</h3>
+                      <span className="block text-[8px] text-zinc-500 font-bold font-mono uppercase tracking-wider">Nuts &amp; Bolts Reward Program</span>
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <span className="text-[10px] text-[#76777d] font-bold uppercase tracking-wider block font-mono">Current Balance</span>
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block font-mono">Current Balance</span>
                     <div className="flex items-baseline gap-1.5">
                       <span className="text-3xl font-mono font-black text-amber-600">{profile.wallet_balance}</span>
                       <span className="text-[10px] text-amber-600 font-extrabold uppercase tracking-wider font-mono">BOLTS</span>
@@ -1780,14 +1780,14 @@ export default function ProfilePage() {
                 {/* Progress bar + Action */}
                 <div className="z-10 md:w-5/12 flex flex-col justify-between text-xs space-y-4">
                   <div className="space-y-2">
-                    <div className="flex justify-between font-bold text-[9px] uppercase text-[#76777d] font-mono tracking-wider">
+                    <div className="flex justify-between font-bold text-[9px] uppercase text-zinc-500 font-mono tracking-wider">
                       <span>Redemption Limit</span>
                       <span>100 Bolts / Order</span>
                     </div>
-                    <div className="w-full bg-[#F8FAFC] h-2 rounded border border-[#E4E4E7] overflow-hidden">
+                    <div className="w-full bg-zinc-900 h-2 rounded border border-zinc-700/60 overflow-hidden">
                       <div className="bg-gradient-to-r from-amber-500 to-amber-600 h-full rounded" style={{ width: `${boltsProgressPercent}%` }}></div>
                     </div>
-                    <span className="block text-[8px] text-[#76777d] font-bold font-mono uppercase tracking-wide">
+                    <span className="block text-[8px] text-zinc-500 font-bold font-mono uppercase tracking-wide">
                       *10 Bolts = ₹1.00 store credit. 45-day window applies.
                     </span>
                   </div>
@@ -1806,13 +1806,13 @@ export default function ProfilePage() {
               {/* Recent Purchases List */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">Recent Purchases</h3>
-                  <span className="text-xs font-bold text-slate-text-muted">Total orders: {orders.length}</span>
+                  <h3 className="text-sm font-black text-white tracking-tight uppercase">Recent Purchases</h3>
+                  <span className="text-xs font-bold text-zinc-400">Total orders: {orders.length}</span>
                 </div>
 
                 {loadingOrders ? (
-                  <div className="py-16 text-center bg-white border border-slate-border rounded-2xl animate-pulse">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
+                  <div className="py-16 text-center bg-zinc-800 border border-zinc-700/60 rounded-2xl animate-pulse">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-400/30" />
                   </div>
                 ) : orders.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1822,11 +1822,11 @@ export default function ProfilePage() {
                         <div
                           key={ord.id}
                           onClick={() => setSelectedOrder(ord)}
-                          className={`bg-white border rounded-xl p-4 shadow-sm space-y-3 cursor-pointer transition-all ${isSelected ? 'border-cobalt ring-2 ring-cobalt/25' : 'border-slate-border hover:border-slate-text-secondary/20'
+                          className={`bg-zinc-800 border rounded-xl p-4 shadow-sm space-y-3 cursor-pointer transition-all ${isSelected ? 'border-cobalt ring-2 ring-cobalt/25' : 'border-zinc-700/60 hover:border-slate-text-secondary/20'
                             }`}
                         >
                           <div className="flex justify-between items-start">
-                            <span className="font-mono text-[10px] font-black text-slate-text-primary">{ord.id}</span>
+                            <span className="font-mono text-[10px] font-black text-white">{ord.id}</span>
                             <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${ord.status === 'Delivered' || ord.status === 'Completed'
                                 ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
                                 : ord.status === 'Shipped'
@@ -1837,21 +1837,21 @@ export default function ProfilePage() {
                             </span>
                           </div>
 
-                          <div className="space-y-1 text-slate-text-secondary text-xs">
+                          <div className="space-y-1 text-zinc-350 text-xs">
                             {ord.rfq_title && (
-                              <h4 className="text-[10px] font-black text-slate-text-primary mb-1.5 line-clamp-1">{ord.rfq_title}</h4>
+                              <h4 className="text-[10px] font-black text-white mb-1.5 line-clamp-1">{ord.rfq_title}</h4>
                             )}
                             <div className="flex justify-between">
-                              <span className="text-[10px] text-slate-text-muted">Items Count</span>
-                              <span className="font-bold text-slate-text-primary">{ord.items_count} units</span>
+                              <span className="text-[10px] text-zinc-400">Items Count</span>
+                              <span className="font-bold text-white">{ord.items_count} units</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[10px] text-slate-text-muted">Order Total</span>
+                              <span className="text-[10px] text-zinc-400">Order Total</span>
                               <span className="font-extrabold text-coral">₹{Number(ord.total_amount).toFixed(2)}</span>
                             </div>
                           </div>
 
-                          <div className="w-full bg-slate-bg h-1.5 rounded-full overflow-hidden border border-slate-border/50">
+                          <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-700/60/50">
                             <div className={`h-full rounded-full ${ord.status === 'Delivered' || ord.status === 'Completed'
                                 ? 'bg-emerald w-full'
                                 : ord.status === 'Shipped'
@@ -1864,10 +1864,10 @@ export default function ProfilePage() {
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-12 border border-dashed border-slate-border bg-white rounded-2xl">
-                    <ShoppingBag className="w-10 h-10 text-slate-text-muted/30 mx-auto mb-2" />
-                    <p className="text-xs font-bold text-slate-text-primary">No purchases placed yet.</p>
-                    <p className="text-[10px] text-slate-text-muted mt-1">Configure parts or checkout catalog items to list purchases here.</p>
+                  <div className="text-center py-12 border border-dashed border-zinc-700/60 bg-zinc-800 rounded-2xl">
+                    <ShoppingBag className="w-10 h-10 text-zinc-400/30 mx-auto mb-2" />
+                    <p className="text-xs font-bold text-white">No purchases placed yet.</p>
+                    <p className="text-[10px] text-zinc-400 mt-1">Configure parts or checkout catalog items to list purchases here.</p>
                   </div>
                 )}
               </div>
@@ -1875,7 +1875,7 @@ export default function ProfilePage() {
               {/* Saved For Later (Wishlist) Carousel */}
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-black text-slate-text-primary tracking-tight uppercase">Saved for Later</h3>
+                  <h3 className="text-sm font-black text-white tracking-tight uppercase">Saved for Later</h3>
                   <button onClick={() => setActiveTab('wishlist')} className="text-xs font-bold text-cobalt hover:opacity-80 transition-opacity">
                     Manage Wishlist
                   </button>
@@ -1884,16 +1884,16 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {dbProducts.filter(p => wishlist.includes(p.id)).length > 0 ? (
                     dbProducts.filter(p => wishlist.includes(p.id)).map((item) => (
-                      <div key={item.id} className="bg-white border border-slate-border rounded-xl p-4 shadow-sm flex flex-col justify-between h-48 hover:shadow-md transition-shadow relative">
+                      <div key={item.id} className="bg-zinc-800 border border-zinc-700/60 rounded-xl p-4 shadow-sm flex flex-col justify-between h-48 hover:shadow-md transition-shadow relative">
                         <button
                           onClick={() => toggleWishlist(item.id)}
-                          className="absolute top-2 right-2 p-1 text-slate-text-muted hover:text-rose-500 transition-colors cursor-pointer"
+                          className="absolute top-2 right-2 p-1 text-zinc-400 hover:text-rose-500 transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                         <div className="space-y-1">
-                          <span className="block text-[8px] uppercase tracking-wider font-extrabold text-slate-text-muted">{item.category}</span>
-                          <h4 className="text-xs font-black text-slate-text-primary line-clamp-1 leading-tight">{item.title}</h4>
+                          <span className="block text-[8px] uppercase tracking-wider font-extrabold text-zinc-400">{item.category}</span>
+                          <h4 className="text-xs font-black text-white line-clamp-1 leading-tight">{item.title}</h4>
                           <span className="block text-xs font-extrabold text-coral pt-1">₹{item.price.toFixed(2)}</span>
                         </div>
 
@@ -1910,10 +1910,10 @@ export default function ProfilePage() {
                     ))
                   ) : (
                     dbProducts.slice(0, 3).map((item) => (
-                      <div key={item.id} className="bg-white border border-slate-border rounded-xl p-4 shadow-sm flex flex-col justify-between h-48 hover:shadow-md transition-shadow">
+                      <div key={item.id} className="bg-zinc-800 border border-zinc-700/60 rounded-xl p-4 shadow-sm flex flex-col justify-between h-48 hover:shadow-md transition-shadow">
                         <div className="space-y-1">
-                          <span className="block text-[8px] uppercase tracking-wider font-extrabold text-slate-text-muted">{item.category}</span>
-                          <h4 className="text-xs font-black text-slate-text-primary line-clamp-1 leading-tight">{item.title}</h4>
+                          <span className="block text-[8px] uppercase tracking-wider font-extrabold text-zinc-400">{item.category}</span>
+                          <h4 className="text-xs font-black text-white line-clamp-1 leading-tight">{item.title}</h4>
                           <span className="block text-xs font-extrabold text-coral pt-1">₹{item.price.toFixed(2)}</span>
                         </div>
 
@@ -1930,19 +1930,19 @@ export default function ProfilePage() {
                     ))
                   )}
 
-                  <Link href="/products" className="bg-slate-bg/30 border border-dashed border-slate-border rounded-xl p-4 flex flex-col items-center justify-center text-center hover:bg-slate-bg/50 transition-colors h-48 group">
-                    <Plus className="w-6 h-6 text-slate-text-muted group-hover:scale-110 transition-transform mb-2" />
-                    <span className="text-xs font-extrabold text-slate-text-primary leading-tight">Continue Shopping</span>
-                    <span className="text-[9px] text-slate-text-muted leading-tight mt-0.5">Browse latest arrivals</span>
+                  <Link href="/products" className="bg-zinc-900/30 border border-dashed border-zinc-700/60 rounded-xl p-4 flex flex-col items-center justify-center text-center hover:bg-zinc-900/50 transition-colors h-48 group">
+                    <Plus className="w-6 h-6 text-zinc-400 group-hover:scale-110 transition-transform mb-2" />
+                    <span className="text-xs font-extrabold text-white leading-tight">Continue Shopping</span>
+                    <span className="text-[9px] text-zinc-400 leading-tight mt-0.5">Browse latest arrivals</span>
                   </Link>
                 </div>
               </div>
 
               {/* Shipment Tracking details progress timeline */}
               {selectedOrder && (
-                <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm space-y-5">
-                  <div className="flex justify-between items-center pb-3 border-b border-slate-border/50">
-                    <span className="text-xs font-black text-slate-text-primary uppercase tracking-tight flex items-center gap-1.5">
+                <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm space-y-5">
+                  <div className="flex justify-between items-center pb-3 border-b border-zinc-700/60/50">
+                    <span className="text-xs font-black text-white uppercase tracking-tight flex items-center gap-1.5">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-cobalt">
                         <rect x="1" y="3" width="15" height="13" />
                         <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
@@ -1958,7 +1958,7 @@ export default function ProfilePage() {
 
                   {/* Horizontal visual progress meter */}
                   <div className="relative pt-6 pb-2">
-                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-bg -translate-y-1/2 rounded-full overflow-hidden border border-slate-border/50">
+                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-zinc-900 -translate-y-1/2 rounded-full overflow-hidden border border-zinc-700/60/50">
                       <div className={`h-full rounded-full bg-cobalt transition-all duration-500 ${selectedOrder.status === 'Completed'
                           ? 'w-full'
                           : selectedOrder.status === 'Delivered'
@@ -1969,64 +1969,64 @@ export default function ProfilePage() {
                         }`}></div>
                     </div>
 
-                    <div className="relative flex justify-between text-center text-[10px] font-bold text-slate-text-secondary z-10">
+                    <div className="relative flex justify-between text-center text-[10px] font-bold text-zinc-350 z-10">
                       <div className="space-y-1">
                         <div className="w-6 h-6 rounded-full bg-cobalt text-white flex items-center justify-center mx-auto border-2 border-white shadow-md">✓</div>
                         <span className="block font-bold">Order Placed</span>
-                        <span className="block text-[8px] text-slate-text-muted">Oct 24, 09:00</span>
+                        <span className="block text-[8px] text-zinc-400">Oct 24, 09:00</span>
                       </div>
 
                       <div className="space-y-1">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status !== 'Processing' && selectedOrder.status !== 'idle'
                             ? 'bg-cobalt text-white'
-                            : 'bg-white text-slate-text-muted border-slate-border'
+                            : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
                           }`}>
                           {selectedOrder.status === 'Processing' ? '●' : '✓'}
                         </div>
                         <span className="block font-bold">Processing</span>
-                        <span className="block text-[8px] text-slate-text-muted">Oct 24, 14:30</span>
+                        <span className="block text-[8px] text-zinc-400">Oct 24, 14:30</span>
                       </div>
 
                       <div className="space-y-1">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Shipped' || selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
                             ? 'bg-cobalt text-white'
-                            : 'bg-white text-slate-text-muted border-slate-border'
+                            : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
                           }`}>
                           {selectedOrder.status === 'Shipped' ? '●' : selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed' ? '✓' : '3'}
                         </div>
                         <span className="block font-bold">Shipped</span>
-                        <span className="block text-[8px] text-slate-text-muted">Oct 25, 08:00</span>
+                        <span className="block text-[8px] text-zinc-400">Oct 25, 08:00</span>
                       </div>
 
                       <div className="space-y-1">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
                             ? 'bg-cobalt text-white'
-                            : 'bg-white text-slate-text-muted border-slate-border'
+                            : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
                           }`}>
                           {selectedOrder.status === 'Delivered' ? '●' : selectedOrder.status === 'Completed' ? '✓' : '4'}
                         </div>
                         <span className="block font-bold">Out for Delivery</span>
-                        <span className="block text-[8px] text-slate-text-muted">At 11:35 AM</span>
+                        <span className="block text-[8px] text-zinc-400">At 11:35 AM</span>
                       </div>
 
                       <div className="space-y-1">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Completed'
                             ? 'bg-emerald text-white'
-                            : 'bg-white text-slate-text-muted border-slate-border'
+                            : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
                           }`}>
                           {selectedOrder.status === 'Completed' ? '✓' : '5'}
                         </div>
                         <span className="block font-bold">Delivered</span>
-                        <span className="block text-[8px] text-slate-text-muted">Pending</span>
+                        <span className="block text-[8px] text-zinc-400">Pending</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Action Section for Delivery Simulation and Escrow / Bolts Release */}
-                  <div className="pt-4 border-t border-slate-border/50 flex flex-wrap items-center justify-between gap-4">
+                  <div className="pt-4 border-t border-zinc-700/60/50 flex flex-wrap items-center justify-between gap-4">
                     <div>
-                      <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">Sandbox Actions</span>
-                      <p className="text-[10px] text-slate-text-muted mt-0.5">Manage order sandbox simulation and claim rewards proof.</p>
+                      <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono">Sandbox Actions</span>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">Manage order sandbox simulation and claim rewards proof.</p>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -2096,7 +2096,7 @@ export default function ProfilePage() {
                       {(selectedOrder.status === 'Completed' || selectedOrder.status === 'completed') && (
                         <div className="flex items-center gap-4">
                           {selectedOrder.unboxing_photo_url && (
-                            <div className="relative w-10 h-10 rounded border border-slate-border overflow-hidden bg-slate-bg shadow-sm">
+                            <div className="relative w-10 h-10 rounded border border-zinc-700/60 overflow-hidden bg-zinc-900 shadow-sm">
                               <img
                                 src={selectedOrder.unboxing_photo_url}
                                 alt="Unboxing proof"
@@ -2109,7 +2109,7 @@ export default function ProfilePage() {
                               <CheckCircle2 className="w-3.5 h-3.5" />
                               Escrow Released (PayU)
                             </span>
-                            <span className="text-[8px] font-mono text-slate-text-muted block uppercase tracking-wider">
+                            <span className="text-[8px] font-mono text-zinc-400 block uppercase tracking-wider">
                               Nodal Payout Confirmed
                             </span>
                           </div>
@@ -2124,23 +2124,23 @@ export default function ProfilePage() {
 
           {/* TAB 2: REWARDS & OFFERS */}
           {activeTab === 'rewards' && (
-            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="text-base font-black text-slate-text-primary tracking-tight uppercase">Loyalty Ledger</h2>
-                <p className="text-xs text-slate-text-muted leading-relaxed font-semibold">
+                <h2 className="text-base font-black text-white tracking-tight uppercase">Loyalty Ledger</h2>
+                <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
                   Detailed ledger history logs of your earned and spent Nuts &amp; Bolts loyalty tokens.
                 </p>
               </div>
 
               {loadingTx ? (
                 <div className="py-12 text-center animate-pulse">
-                  <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
+                  <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-400/30" />
                 </div>
               ) : transactions.length > 0 ? (
-                <div className="border border-slate-border rounded-xl overflow-hidden shadow-sm">
+                <div className="border border-zinc-700/60 rounded-xl overflow-hidden shadow-sm">
                   <table className="w-full text-left text-xs font-bold border-collapse">
                     <thead>
-                      <tr className="bg-slate-bg border-b border-slate-border text-[10px] uppercase text-slate-text-muted tracking-wider">
+                      <tr className="bg-zinc-900 border-b border-zinc-700/60 text-[10px] uppercase text-zinc-400 tracking-wider">
                         <th className="p-3">Transaction details</th>
                         <th className="p-3">Reference Order</th>
                         <th className="p-3">Amount</th>
@@ -2148,17 +2148,17 @@ export default function ProfilePage() {
                         <th className="p-3">Date</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-border/50 text-slate-text-secondary">
+                    <tbody className="divide-y divide-slate-border/50 text-zinc-350">
                       {transactions.map((tx) => (
-                        <tr key={tx.id} className="hover:bg-slate-bg/30">
-                          <td className="p-3 font-bold text-slate-text-primary">{tx.description}</td>
+                        <tr key={tx.id} className="hover:bg-zinc-900/30">
+                          <td className="p-3 font-bold text-white">{tx.description}</td>
                           <td className="p-3 font-mono text-[10px]">{tx.order_id || '—'}</td>
                           <td className="p-3">
                             <span className={tx.amount > 0 ? "text-emerald" : "text-rose-500"}>
                               {tx.amount > 0 ? `+${tx.amount}` : tx.amount} Bolts
                             </span>
                           </td>
-                          <td className="p-3 font-medium text-slate-text-muted text-[10px]">
+                          <td className="p-3 font-medium text-zinc-400 text-[10px]">
                             {tx.expires_at ? new Date(tx.expires_at).toLocaleDateString() : 'Never'}
                           </td>
                           <td className="p-3 font-medium text-[10px]">
@@ -2170,9 +2170,9 @@ export default function ProfilePage() {
                   </table>
                 </div>
               ) : (
-                <div className="text-center py-12 border border-dashed border-slate-border rounded-2xl bg-slate-bg/20">
-                  <Gift className="w-8 h-8 text-slate-text-muted/30 mx-auto mb-2" />
-                  <p className="text-xs font-bold text-slate-text-primary">No rewards logs listed.</p>
+                <div className="text-center py-12 border border-dashed border-zinc-700/60 rounded-2xl bg-zinc-900/20">
+                  <Gift className="w-8 h-8 text-zinc-400/30 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-white">No rewards logs listed.</p>
                 </div>
               )}
             </div>
@@ -2180,10 +2180,10 @@ export default function ProfilePage() {
 
           {/* TAB 3: WISHLIST */}
           {activeTab === 'wishlist' && (
-            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="text-base font-black text-slate-text-primary tracking-tight uppercase">My Wishlist</h2>
-                <p className="text-xs text-slate-text-muted leading-relaxed font-semibold">
+                <h2 className="text-base font-black text-white tracking-tight uppercase">My Wishlist</h2>
+                <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
                   Items you saved for later purchase or comparison checks.
                 </p>
               </div>
@@ -2191,14 +2191,14 @@ export default function ProfilePage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {dbProducts.filter(p => wishlist.includes(p.id)).length > 0 ? (
                   dbProducts.filter(p => wishlist.includes(p.id)).map((item) => (
-                    <div key={item.id} className="bg-white border border-slate-border rounded-xl p-5 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow">
+                    <div key={item.id} className="bg-zinc-800 border border-zinc-700/60 rounded-xl p-5 shadow-sm flex flex-col justify-between relative group hover:shadow-md transition-shadow">
                       <div className="space-y-2">
-                        <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-slate-bg text-slate-text-muted w-fit block">{item.category}</span>
-                        <h3 className="text-sm font-black text-slate-text-primary leading-tight line-clamp-1">{item.title}</h3>
-                        <p className="text-xs text-slate-text-muted line-clamp-2">{item.description}</p>
+                        <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-zinc-900 text-zinc-400 w-fit block">{item.category}</span>
+                        <h3 className="text-sm font-black text-white leading-tight line-clamp-1">{item.title}</h3>
+                        <p className="text-xs text-zinc-400 line-clamp-2">{item.description}</p>
                       </div>
 
-                      <div className="pt-4 border-t border-slate-border/50 mt-4 flex items-center justify-between gap-2">
+                      <div className="pt-4 border-t border-zinc-700/60/50 mt-4 flex items-center justify-between gap-2">
                         <span className="text-sm font-black text-coral">₹{item.price.toFixed(2)}</span>
                         <div className="flex gap-2">
                           <button
@@ -2222,10 +2222,10 @@ export default function ProfilePage() {
                     </div>
                   ))
                 ) : (
-                  <div className="col-span-full text-center py-16 border border-dashed border-slate-border rounded-2xl bg-slate-bg/10">
-                    <Heart className="w-10 h-10 text-slate-text-muted/30 mx-auto mb-2 animate-pulse" />
-                    <p className="text-xs font-bold text-slate-text-primary">Your wishlist is empty.</p>
-                    <p className="text-[10px] text-slate-text-muted mt-1 leading-normal">
+                  <div className="col-span-full text-center py-16 border border-dashed border-zinc-700/60 rounded-2xl bg-zinc-900/10">
+                    <Heart className="w-10 h-10 text-zinc-400/30 mx-auto mb-2 animate-pulse" />
+                    <p className="text-xs font-bold text-white">Your wishlist is empty.</p>
+                    <p className="text-[10px] text-zinc-400 mt-1 leading-normal">
                       Tap the heart icon on any product in the Parts Catalog to save items here!
                     </p>
                   </div>
@@ -2236,30 +2236,30 @@ export default function ProfilePage() {
 
           {/* TAB 4: ACCOUNT SETTINGS */}
           {activeTab === 'settings' && (
-            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="text-base font-black text-slate-text-primary tracking-tight uppercase">Account Settings</h2>
-                <p className="text-xs text-slate-text-muted leading-relaxed font-semibold">
+                <h2 className="text-base font-black text-white tracking-tight uppercase">Account Settings</h2>
+                <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
                   Update your contact details and edit your shopper account parameters.
                 </p>
               </div>
 
               <form onSubmit={handleUpdateNameSubmit} className="space-y-4 max-w-md">
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-slate-text-secondary uppercase tracking-wider">
+                  <label className="block text-[11px] font-bold text-zinc-350 uppercase tracking-wider">
                     Email Address
                   </label>
                   <input
                     type="text"
                     disabled
                     value={profile.email || 'guest@mechitall.io'}
-                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/50 text-slate-text-muted focus:outline-none cursor-not-allowed"
+                    className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/50 text-zinc-400 focus:outline-none cursor-not-allowed"
                   />
-                  <span className="block text-[9px] text-slate-text-muted font-bold">Email address updates require secondary authorization.</span>
+                  <span className="block text-[9px] text-zinc-400 font-bold">Email address updates require secondary authorization.</span>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-slate-text-secondary uppercase tracking-wider">
+                  <label className="block text-[11px] font-bold text-zinc-350 uppercase tracking-wider">
                     Full Name
                   </label>
                   <input
@@ -2268,7 +2268,7 @@ export default function ProfilePage() {
                     onChange={(e) => setEditName(e.target.value)}
                     disabled={isUpdatingName}
                     placeholder="Elias Thorne"
-                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-cobalt transition-colors"
+                    className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-cobalt transition-colors"
                   />
                 </div>
 
@@ -2285,11 +2285,11 @@ export default function ProfilePage() {
 
           {/* TAB 5: ADDRESS BOOK */}
           {activeTab === 'address' && (
-            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm space-y-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-base font-black text-slate-text-primary tracking-tight uppercase">Address Book</h2>
-                  <p className="text-xs text-slate-text-muted leading-relaxed font-semibold">
+                  <h2 className="text-base font-black text-white tracking-tight uppercase">Address Book</h2>
+                  <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
                     Manage your delivery locations and billing addresses.
                   </p>
                 </div>
@@ -2302,16 +2302,16 @@ export default function ProfilePage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="border border-slate-border rounded-xl p-4 space-y-3 relative">
-                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded text-[8px] font-black uppercase bg-slate-bg text-slate-text-muted border">Default</span>
+                <div className="border border-zinc-700/60 rounded-xl p-4 space-y-3 relative">
+                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded text-[8px] font-black uppercase bg-zinc-900 text-zinc-400 border">Default</span>
                   <div className="space-y-1">
-                    <span className="block text-xs font-black text-slate-text-primary">Elias Thorne</span>
-                    <span className="block text-[11px] text-slate-text-secondary font-semibold">
+                    <span className="block text-xs font-black text-white">Elias Thorne</span>
+                    <span className="block text-[11px] text-zinc-350 font-semibold">
                       12, Industrial Development Block C<br />
                       Peenya Phase 1, Bangalore<br />
                       Karnataka - 560058, India
                     </span>
-                    <span className="block text-[10px] text-slate-text-muted font-bold font-mono pt-1">Phone: +91 98450 12345</span>
+                    <span className="block text-[10px] text-zinc-400 font-bold font-mono pt-1">Phone: +91 98450 12345</span>
                   </div>
                 </div>
               </div>
@@ -2320,23 +2320,23 @@ export default function ProfilePage() {
 
           {/* TAB 6: CUSTOMER SUPPORT */}
           {activeTab === 'support' && (
-            <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm space-y-6">
               <div>
-                <h2 className="text-base font-black text-slate-text-primary tracking-tight uppercase">Customer Support</h2>
-                <p className="text-xs text-slate-text-muted leading-relaxed font-semibold">
+                <h2 className="text-base font-black text-white tracking-tight uppercase">Customer Support</h2>
+                <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
                   Get support for customized orders, CAD checks, or rewards settlements.
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div className="flex gap-3 p-4 bg-slate-bg border border-slate-border rounded-xl">
+                  <div className="flex gap-3 p-4 bg-zinc-900 border border-zinc-700/60 rounded-xl">
                     <div className="w-10 h-10 rounded-lg bg-cobalt/10 text-cobalt flex items-center justify-center shrink-0">
                       <MessageSquare className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-slate-text-primary">Direct Ticket Desk</h4>
-                      <p className="text-[10px] text-slate-text-muted mt-0.5 font-semibold">Raise tickets for manual engineering inspection or billing audits.</p>
+                      <h4 className="text-xs font-black text-white">Direct Ticket Desk</h4>
+                      <p className="text-[10px] text-zinc-400 mt-0.5 font-semibold">Raise tickets for manual engineering inspection or billing audits.</p>
                       <button onClick={() => showToast('Chat channels will open in a separate drawer.', 'success')} className="mt-2 text-[10px] font-extrabold text-cobalt hover:opacity-80 transition-opacity">Start chat session →</button>
                     </div>
                   </div>
@@ -2344,12 +2344,12 @@ export default function ProfilePage() {
 
                 <form onSubmit={(e) => { e.preventDefault(); showToast('Support ticket raised successfully.', 'success'); }} className="space-y-3">
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Subject</label>
-                    <input type="text" placeholder="e.g. NEMA 23 CAD model dimensions" className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-cobalt" />
+                    <label className="block text-[10px] font-bold text-zinc-350 uppercase">Subject</label>
+                    <input type="text" placeholder="e.g. NEMA 23 CAD model dimensions" className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-cobalt" />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Message details</label>
-                    <textarea rows={3} placeholder="Please specify your request details..." className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-cobalt resize-none"></textarea>
+                    <label className="block text-[10px] font-bold text-zinc-350 uppercase">Message details</label>
+                    <textarea rows={3} placeholder="Please specify your request details..." className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-cobalt resize-none"></textarea>
                   </div>
                   <button type="submit" className="w-full btn-cobalt py-3 rounded-lg text-xs font-bold cursor-pointer">Submit Ticket</button>
                 </form>
@@ -2379,13 +2379,13 @@ export default function ProfilePage() {
       {showAddListingModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm" onClick={() => setShowAddListingModal(false)} />
-          <div className="bg-white border border-[#E4E4E7] rounded-xl p-6 md:p-8 max-w-2xl w-full shadow-2xl relative z-10 animate-slide-in space-y-4 font-mono text-left">
-            <div className="flex justify-between items-start pb-3 border-b border-[#E4E4E7]">
+          <div className="bg-zinc-800 border border-zinc-700/60 rounded-xl p-6 md:p-8 max-w-2xl w-full shadow-2xl relative z-10 animate-slide-in space-y-4 font-mono text-left">
+            <div className="flex justify-between items-start pb-3 border-b border-zinc-700/60">
               <div className="space-y-0.5">
-                <span className="text-[9px] font-bold text-[#76777d] uppercase tracking-wider">Seller Workspace</span>
-                <h3 className="text-base font-bold text-[#0F172A] uppercase font-['Space_Grotesk']">Create Technical Listing</h3>
+                <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Seller Workspace</span>
+                <h3 className="text-base font-bold text-white uppercase font-['Space_Grotesk']">Create Technical Listing</h3>
               </div>
-              <button onClick={() => setShowAddListingModal(false)} className="p-1.5 rounded hover:bg-[#F8FAFC] border border-[#E4E4E7] text-[#76777d] cursor-pointer">
+              <button onClick={() => setShowAddListingModal(false)} className="p-1.5 rounded hover:bg-zinc-900 border border-zinc-700/60 text-zinc-500 cursor-pointer">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -2543,12 +2543,12 @@ export default function ProfilePage() {
                 {/* LEFT COLUMN: Basic Info & Tech Specifications */}
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Listing Type</label>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase">Listing Type</label>
                     <select
                       name="type"
                       value={listingType}
                       onChange={(e) => setListingType(e.target.value as any)}
-                      className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none focus:border-[#06b6d4]"
+                      className="w-full text-xs font-bold p-2 border border-zinc-700/60 bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]"
                     >
                       <option value="Product">Catalog Product</option>
                       <option value="Service">Custom Machining Service</option>
@@ -2558,23 +2558,23 @@ export default function ProfilePage() {
                   {listingType === 'Product' ? (
                     <>
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Part Number / SKU *</label>
-                        <input required type="text" name="sku" placeholder="e.g. ACT-NEMA34-CL" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Part Number / SKU *</label>
+                        <input required type="text" name="sku" placeholder="e.g. ACT-NEMA34-CL" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Title / Name *</label>
-                        <input required type="text" name="title" placeholder="e.g. NEMA 34 Stepper Motor" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Title / Name *</label>
+                        <input required type="text" name="title" placeholder="e.g. NEMA 34 Stepper Motor" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Category *</label>
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase">Category *</label>
                           <select
                             name="category"
                             value={selectedCategory}
                             onChange={(e) => setSelectedCategory(e.target.value)}
-                            className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none focus:border-[#06b6d4] rounded"
+                            className="w-full text-xs font-bold p-2 border border-zinc-700/60 bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4] rounded"
                           >
                             <option value="Actuators">Actuators</option>
                             <option value="Sensors">Sensors</option>
@@ -2586,27 +2586,27 @@ export default function ProfilePage() {
                           </select>
                         </div>
                         <div className="space-y-1">
-                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Stock Qty *</label>
-                          <input required type="number" name="stock" placeholder="e.g. 10" min={0} className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase">Stock Qty *</label>
+                          <input required type="number" name="stock" placeholder="e.g. 10" min={0} className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                         </div>
                       </div>
 
                       {selectedCategory === 'Other' && (
                         <div className="space-y-1 animate-slide-in">
-                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Enter Custom Category *</label>
-                          <input required type="text" name="customCategory" placeholder="e.g. Pneumatics" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase">Enter Custom Category *</label>
+                          <input required type="text" name="customCategory" placeholder="e.g. Pneumatics" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                         </div>
                       )}
 
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Unit Price (INR) *</label>
-                        <input required type="number" name="price" placeholder="e.g. 24500" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Unit Price (INR) *</label>
+                        <input required type="number" name="price" placeholder="e.g. 24500" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       {/* Technical Specifications */}
                       <div className="space-y-1.5 pt-1">
                         <div className="flex items-center justify-between">
-                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Tech Specifications (Key-Value)</label>
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase">Tech Specifications (Key-Value)</label>
                           <button
                             type="button"
                             onClick={() => setCustomSpecs([...customSpecs, { id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(), key: '', value: '' }])}
@@ -2626,7 +2626,7 @@ export default function ProfilePage() {
                                   const val = e.target.value;
                                   setCustomSpecs(prev => prev.map(s => s.id === spec.id ? { ...s, key: val } : s));
                                 }}
-                                className="w-[45%] text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none"
+                                className="w-[45%] text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none"
                               />
                               <input
                                 type="text"
@@ -2636,12 +2636,12 @@ export default function ProfilePage() {
                                   const val = e.target.value;
                                   setCustomSpecs(prev => prev.map(s => s.id === spec.id ? { ...s, value: val } : s));
                                 }}
-                                className="w-[45%] text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none"
+                                className="w-[45%] text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none"
                               />
                               <button
                                 type="button"
                                 onClick={() => setCustomSpecs(prev => prev.filter(s => s.id !== spec.id))}
-                                className="p-1 rounded hover:bg-[#F8FAFC] border border-[#E4E4E7] text-red-500 cursor-pointer"
+                                className="p-1 rounded hover:bg-zinc-900 border border-zinc-700/60 text-red-500 cursor-pointer"
                                 title="Remove Specification"
                               >
                                 <X className="w-3.5 h-3.5" />
@@ -2654,17 +2654,17 @@ export default function ProfilePage() {
                   ) : (
                     <>
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Service Title *</label>
-                        <input required type="text" name="title" placeholder="e.g. 5-Axis CNC Machining" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Service Title *</label>
+                        <input required type="text" name="title" placeholder="e.g. 5-Axis CNC Machining" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Process Type *</label>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Process Type *</label>
                         <select
                           name="processType"
                           value={selectedProcessType}
                           onChange={(e) => setSelectedProcessType(e.target.value)}
-                          className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none focus:border-[#06b6d4] rounded"
+                          className="w-full text-xs font-bold p-2 border border-zinc-700/60 bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4] rounded"
                         >
                           <option value="CNC Machining">CNC Machining</option>
                           <option value="3D Printing">3D Printing</option>
@@ -2676,19 +2676,19 @@ export default function ProfilePage() {
 
                       {selectedProcessType === 'Other' && (
                         <div className="space-y-1 animate-slide-in">
-                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Enter Custom Process Type *</label>
-                          <input required type="text" name="customProcessType" placeholder="e.g. Waterjet Cutting" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase">Enter Custom Process Type *</label>
+                          <input required type="text" name="customProcessType" placeholder="e.g. Waterjet Cutting" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                         </div>
                       )}
 
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Base Cost / Setup Fee (INR) *</label>
-                        <input required type="number" name="price" placeholder="e.g. 7500" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Base Cost / Setup Fee (INR) *</label>
+                        <input required type="number" name="price" placeholder="e.g. 7500" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Estimated Lead Time *</label>
-                        <input required type="text" name="leadTime" placeholder="e.g. 3-5 Days" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Estimated Lead Time *</label>
+                        <input required type="text" name="leadTime" placeholder="e.g. 3-5 Days" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
                     </>
                   )}
@@ -2700,13 +2700,13 @@ export default function ProfilePage() {
                     <>
                       {/* Image Upload Area */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Product Images (.jpg, .png, .svg) *</label>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Product Images (.jpg, .png, .svg) *</label>
                         <div
                           onDragEnter={(e) => handleDrag(e, 'image')}
                           onDragOver={(e) => handleDrag(e, 'image')}
                           onDragLeave={(e) => handleDrag(e, 'image')}
                           onDrop={(e) => handleDrop(e, 'image')}
-                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveImage ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveImage ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-zinc-700/60 hover:border-[#76777d]'
                             }`}
                         >
                           <input
@@ -2720,15 +2720,15 @@ export default function ProfilePage() {
                             }}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
-                          <Upload className="w-5 h-5 text-[#76777d]" />
-                          <span className="text-[10px] text-[#45464d] font-bold leading-tight">
+                          <Upload className="w-5 h-5 text-zinc-500" />
+                          <span className="text-[10px] text-zinc-400 font-bold leading-tight">
                             {imagePreviews.length > 0 ? `Selected ${imagePreviews.length} Image(s)` : 'Drag & Drop or Click to Upload Images (Multiple)'}
                           </span>
                         </div>
                         {imagePreviews.length > 0 && (
                           <div className="mt-1.5 flex flex-wrap gap-2">
                             {imagePreviews.map((src, index) => (
-                              <div key={index} className="relative w-10 h-10 border border-[#E4E4E7] overflow-hidden rounded group">
+                              <div key={index} className="relative w-10 h-10 border border-zinc-700/60 overflow-hidden rounded group">
                                 <img src={src} alt="Preview" className="w-full h-full object-cover" />
                                 <button
                                   type="button"
@@ -2748,13 +2748,13 @@ export default function ProfilePage() {
 
                       {/* Datasheet Upload Area */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Technical Datasheet (PDF)</label>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Technical Datasheet (PDF)</label>
                         <div
                           onDragEnter={(e) => handleDrag(e, 'datasheet')}
                           onDragOver={(e) => handleDrag(e, 'datasheet')}
                           onDragLeave={(e) => handleDrag(e, 'datasheet')}
                           onDrop={(e) => handleDrop(e, 'datasheet')}
-                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveDatasheet ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveDatasheet ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-zinc-700/60 hover:border-[#76777d]'
                             }`}
                         >
                           <input
@@ -2767,8 +2767,8 @@ export default function ProfilePage() {
                             }}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
-                          <FileText className="w-4 h-4 text-[#76777d]" />
-                          <span className="text-[10px] text-[#45464d] font-bold leading-tight">
+                          <FileText className="w-4 h-4 text-zinc-500" />
+                          <span className="text-[10px] text-zinc-400 font-bold leading-tight">
                             {datasheetFile ? `Uploaded: ${datasheetFile.name}` : 'Drag & Drop or Click to Upload PDF'}
                           </span>
                         </div>
@@ -2788,13 +2788,13 @@ export default function ProfilePage() {
 
                       {/* CAD Model Upload Area */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">3D CAD Model (STEP, STP, IGES)</label>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">3D CAD Model (STEP, STP, IGES)</label>
                         <div
                           onDragEnter={(e) => handleDrag(e, 'cad')}
                           onDragOver={(e) => handleDrag(e, 'cad')}
                           onDragLeave={(e) => handleDrag(e, 'cad')}
                           onDrop={(e) => handleDrop(e, 'cad')}
-                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveCad ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveCad ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-zinc-700/60 hover:border-[#76777d]'
                             }`}
                         >
                           <input
@@ -2807,8 +2807,8 @@ export default function ProfilePage() {
                             }}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
-                          <Settings className="w-4 h-4 text-[#76777d]" />
-                          <span className="text-[10px] text-[#45464d] font-bold leading-tight">
+                          <Settings className="w-4 h-4 text-zinc-500" />
+                          <span className="text-[10px] text-zinc-400 font-bold leading-tight">
                             {cadFile ? `Uploaded: ${cadFile.name}` : 'Drag & Drop or Click to Upload CAD'}
                           </span>
                         </div>
@@ -2828,19 +2828,19 @@ export default function ProfilePage() {
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Ingress Rating</label>
-                          <input type="text" name="ipRating" placeholder="e.g. IP65" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase">Ingress Rating</label>
+                          <input type="text" name="ipRating" placeholder="e.g. IP65" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                         </div>
                         <div className="space-y-1">
-                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">MTBF Lifespan</label>
-                          <input type="text" name="mtbf" placeholder="e.g. 50,000 Hours" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase">MTBF Lifespan</label>
+                          <input type="text" name="mtbf" placeholder="e.g. 50,000 Hours" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                         </div>
                       </div>
 
                       {/* Volume Pricing Tiers */}
                       <div className="space-y-2 pt-1">
                         <div className="flex items-center justify-between">
-                          <label className="block text-[10px] font-bold text-[#76777d] uppercase">Enable Bulk Pricing</label>
+                          <label className="block text-[10px] font-bold text-zinc-500 uppercase">Enable Bulk Pricing</label>
                           <label className="relative inline-flex items-center cursor-pointer select-none">
                             <input
                               type="checkbox"
@@ -2848,18 +2848,18 @@ export default function ProfilePage() {
                               onChange={(e) => setEnableBulkPricing(e.target.checked)}
                               className="sr-only peer"
                             />
-                            <div className="w-8 h-4 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#06b6d4]"></div>
+                            <div className="w-8 h-4 bg-zinc-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-zinc-800 after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#06b6d4]"></div>
                           </label>
                         </div>
                         {enableBulkPricing && (
-                          <div className="space-y-2 border border-[#E4E4E7] p-2.5 rounded bg-[#F8FAFC] animate-slide-in">
+                          <div className="space-y-2 border border-zinc-700/60 p-2.5 rounded bg-zinc-900 animate-slide-in">
                             <div className="flex gap-2 items-center">
-                              <span className="text-[10px] text-[#76777d] font-bold font-mono w-[60px]">10+ Qty:</span>
-                              <input required type="number" name="tierPrice1" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                              <span className="text-[10px] text-zinc-500 font-bold font-mono w-[60px]">10+ Qty:</span>
+                              <input required type="number" name="tierPrice1" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none" />
                             </div>
                             <div className="flex gap-2 items-center">
-                              <span className="text-[10px] text-[#76777d] font-bold font-mono w-[60px]">50+ Qty:</span>
-                              <input required type="number" name="tierPrice2" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" />
+                              <span className="text-[10px] text-zinc-500 font-bold font-mono w-[60px]">50+ Qty:</span>
+                              <input required type="number" name="tierPrice2" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none" />
                             </div>
                           </div>
                         )}
@@ -2868,24 +2868,24 @@ export default function ProfilePage() {
                   ) : (
                     <>
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Material Capabilities (Comma-separated) *</label>
-                        <input required type="text" name="materials" placeholder="e.g. Aluminum 6061, Brass, Steel 1018, Delrin" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Material Capabilities (Comma-separated) *</label>
+                        <input required type="text" name="materials" placeholder="e.g. Aluminum 6061, Brass, Steel 1018, Delrin" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Finishing Options (Comma-separated) *</label>
-                        <input required type="text" name="finishes" placeholder="e.g. Anodized (Black/Clear), Bead Blasted, Raw" className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4]" />
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Finishing Options (Comma-separated) *</label>
+                        <input required type="text" name="finishes" placeholder="e.g. Anodized (Black/Clear), Bead Blasted, Raw" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       {/* Image Upload Area for Service */}
                       <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-[#76777d] uppercase">Service Images (.jpg, .png, .svg)</label>
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase">Service Images (.jpg, .png, .svg)</label>
                         <div
                           onDragEnter={(e) => handleDrag(e, 'image')}
                           onDragOver={(e) => handleDrag(e, 'image')}
                           onDragLeave={(e) => handleDrag(e, 'image')}
                           onDrop={(e) => handleDrop(e, 'image')}
-                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveImage ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveImage ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-zinc-700/60 hover:border-[#76777d]'
                             }`}
                         >
                           <input
@@ -2899,15 +2899,15 @@ export default function ProfilePage() {
                             }}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
-                          <Upload className="w-5 h-5 text-[#76777d]" />
-                          <span className="text-[10px] text-[#45464d] font-bold leading-tight">
+                          <Upload className="w-5 h-5 text-zinc-500" />
+                          <span className="text-[10px] text-zinc-400 font-bold leading-tight">
                             {imagePreviews.length > 0 ? `Selected ${imagePreviews.length} Image(s)` : 'Drag & Drop or Click to Upload Images (Multiple)'}
                           </span>
                         </div>
                         {imagePreviews.length > 0 && (
                           <div className="mt-1.5 flex flex-wrap gap-2">
                             {imagePreviews.map((src, index) => (
-                              <div key={index} className="relative w-10 h-10 border border-[#E4E4E7] overflow-hidden rounded group">
+                              <div key={index} className="relative w-10 h-10 border border-zinc-700/60 overflow-hidden rounded group">
                                 <img src={src} alt="Preview" className="w-full h-full object-cover" />
                                 <button
                                   type="button"
@@ -2928,14 +2928,14 @@ export default function ProfilePage() {
                   )}
 
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-[#76777d] uppercase">Description / Scope of Service</label>
-                    <textarea rows={listingType === 'Service' ? 5 : 2} name="description" placeholder="Specify technical details, machine tools, dimensional limits..." className="w-full text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none focus:border-[#06b6d4] resize-none" />
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase">Description / Scope of Service</label>
+                    <textarea rows={listingType === 'Service' ? 5 : 2} name="description" placeholder="Specify technical details, machine tools, dimensional limits..." className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4] resize-none" />
                   </div>
                 </div>
 
               </div>
 
-              <div className="flex gap-3 pt-3 border-t border-[#E4E4E7]">
+              <div className="flex gap-3 pt-3 border-t border-zinc-700/60">
                 <button
                   type="submit"
                   disabled={publishingListing}
@@ -2950,7 +2950,7 @@ export default function ProfilePage() {
                     <span>Publish</span>
                   )}
                 </button>
-                <button type="button" onClick={() => setShowAddListingModal(false)} className="flex-1 border border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#76777d] py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center">
+                <button type="button" onClick={() => setShowAddListingModal(false)} className="flex-1 border border-zinc-700/60 hover:bg-zinc-900 text-zinc-500 py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center">
                   Cancel
                 </button>
               </div>
@@ -2969,13 +2969,13 @@ export default function ProfilePage() {
           ></div>
 
           {/* Modal Container */}
-          <div className="bg-white/95 backdrop-blur-lg border border-slate-200/50 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative z-10 animate-fade-in-down max-h-[90vh] overflow-y-auto no-scrollbar space-y-6">
+          <div className="bg-zinc-800/95 backdrop-blur-lg border border-slate-200/50 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl relative z-10 animate-fade-in-down max-h-[90vh] overflow-y-auto no-scrollbar space-y-6">
             <div className="text-center space-y-2">
               <div className="w-12 h-12 rounded-2xl bg-[#0B1528]/10 text-[#0B1528] flex items-center justify-center mx-auto shadow-sm">
                 <Cpu className="w-6 h-6 stroke-[2]" />
               </div>
-              <h3 className="text-lg font-black text-slate-text-primary tracking-tight uppercase">Seller Registration &amp; KYC</h3>
-              <p className="text-xs text-slate-text-muted max-w-sm mx-auto leading-relaxed font-semibold">
+              <h3 className="text-lg font-black text-white tracking-tight uppercase">Seller Registration &amp; KYC</h3>
+              <p className="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed font-semibold">
                 Please complete your shop verification details to register as a custom fabrication seller on MechItAll.
               </p>
             </div>
@@ -3014,44 +3014,44 @@ export default function ProfilePage() {
             }} className="space-y-4 text-left">
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Company / Shop Name *</label>
+                <label className="block text-[10px] font-bold text-zinc-350 uppercase">Company / Shop Name *</label>
                 <input
                   type="text"
                   name="companyName"
                   required
                   placeholder="e.g. Precision CNC Lab Ltd."
-                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]"
+                  className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#007084]"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Tax Identification ID (GSTIN/EIN) *</label>
+                <label className="block text-[10px] font-bold text-zinc-350 uppercase">Tax Identification ID (GSTIN/EIN) *</label>
                 <input
                   type="text"
                   name="taxId"
                   required
                   placeholder="e.g. 27AAAAA1111A1Z1"
-                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]"
+                  className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#007084]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Machine Count</label>
+                  <label className="block text-[10px] font-bold text-zinc-350 uppercase">Machine Count</label>
                   <input
                     type="number"
                     name="machineCount"
                     min={0}
                     defaultValue={1}
-                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]"
+                    className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#007084]"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Primary Capability *</label>
+                  <label className="block text-[10px] font-bold text-zinc-350 uppercase">Primary Capability *</label>
                   <select
                     name="primaryCapability"
                     required
-                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]"
+                    className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#007084]"
                   >
                     <option value="CNC Machining">CNC Machining</option>
                     <option value="3D Printing">3D Printing</option>
@@ -3062,13 +3062,13 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Business Address *</label>
+                <label className="block text-[10px] font-bold text-zinc-350 uppercase">Business Address *</label>
                 <textarea
                   name="businessAddress"
                   required
                   rows={2}
                   placeholder="Street, City, Zip Code..."
-                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084] resize-none"
+                  className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#007084] resize-none"
                 ></textarea>
               </div>
 
@@ -3076,7 +3076,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowKYCModal(false)}
-                  className="flex-1 py-3 rounded-lg border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary cursor-pointer transition-colors"
+                  className="flex-1 py-3 rounded-lg border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
@@ -3690,12 +3690,12 @@ function QuotationChatsTab({
   };
 
   return (
-    <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm min-h-[600px] flex flex-col md:flex-row gap-6">
+    <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm min-h-[600px] flex flex-col md:flex-row gap-6">
       {/* Threads List Sidebar */}
-      <div className={`md:w-5/12 flex flex-col gap-4 border-r border-slate-border/50 pr-0 md:pr-6 ${activeThread ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`md:w-5/12 flex flex-col gap-4 border-r border-zinc-700/60/50 pr-0 md:pr-6 ${activeThread ? 'hidden md:flex' : 'flex'}`}>
         <div className="space-y-1">
-          <h2 className="text-base font-black text-slate-text-primary tracking-tight uppercase">Quotation Negotiations</h2>
-          <p className="text-xs text-slate-text-muted leading-relaxed font-semibold">
+          <h2 className="text-base font-black text-white tracking-tight uppercase">Quotation Negotiations</h2>
+          <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
             Secure chats for open machining quotes and dispute resolution records.
           </p>
         </div>
@@ -3703,7 +3703,7 @@ function QuotationChatsTab({
         <div className="flex-1 overflow-y-auto max-h-[500px] space-y-2 mt-2">
           {loading ? (
             <div className="py-20 text-center">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto text-slate-text-muted/30" />
+              <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-400/30" />
             </div>
           ) : threads.length > 0 ? (
             threads.map((t) => {
@@ -3725,11 +3725,11 @@ function QuotationChatsTab({
                         : 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
                       : activeThread?.quoteId === t.quoteId
                         ? 'border-cobalt bg-cobalt/5 ring-1 ring-cobalt/10'
-                        : 'border-slate-border hover:bg-slate-bg/50'
+                        : 'border-zinc-700/60 hover:bg-zinc-900/50'
                     }`}
                 >
                   <div className="flex justify-between items-start gap-2">
-                    <h4 className="text-xs font-black text-slate-text-primary line-clamp-1 flex-1 flex items-center gap-1.5">
+                    <h4 className="text-xs font-black text-white line-clamp-1 flex-1 flex items-center gap-1.5">
                       {isUnread && (
                         <span className="w-1.5 h-1.5 rounded-full bg-[#06B6D4] animate-pulse shrink-0"></span>
                       )}
@@ -3751,18 +3751,18 @@ function QuotationChatsTab({
                       )}
                     </div>
                   </div>
-                  <div className="flex justify-between items-center text-[10px] text-slate-text-muted">
+                  <div className="flex justify-between items-center text-[10px] text-zinc-400">
                     <div className="flex items-center gap-1.5 font-mono">
                       <span className="text-[#007084] font-black">#CHAT-{t.quoteId.substring(0, 8).toUpperCase()}</span>
                       <span className="text-slate-400">|</span>
-                      <span className="font-bold text-slate-text-secondary">With: {t.otherParticipantName}</span>
+                      <span className="font-bold text-zinc-350">With: {t.otherParticipantName}</span>
                     </div>
                     {t.lastMessageTime && (
                       <span className="font-mono text-[9px]">{new Date(t.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     )}
                   </div>
                   {t.lastMessageText && (
-                    <p className="text-[11px] text-slate-text-muted font-medium line-clamp-1 italic bg-slate-bg/30 px-2 py-1 rounded">
+                    <p className="text-[11px] text-zinc-400 font-medium line-clamp-1 italic bg-zinc-900/30 px-2 py-1 rounded">
                       "{t.lastMessageText}"
                     </p>
                   )}
@@ -3770,28 +3770,28 @@ function QuotationChatsTab({
               );
             })
           ) : (
-            <div className="py-20 text-center border border-dashed border-slate-border rounded-xl">
-              <MessageSquare className="w-8 h-8 text-slate-text-muted/30 mx-auto mb-2" />
-              <p className="text-xs font-bold text-slate-text-primary">No active chats found</p>
-              <p className="text-[10px] text-slate-text-muted mt-1 leading-normal px-6">Ongoing negotiations will appear here once quote requests are submitted.</p>
+            <div className="py-20 text-center border border-dashed border-zinc-700/60 rounded-xl">
+              <MessageSquare className="w-8 h-8 text-zinc-400/30 mx-auto mb-2" />
+              <p className="text-xs font-bold text-white">No active chats found</p>
+              <p className="text-[10px] text-zinc-400 mt-1 leading-normal px-6">Ongoing negotiations will appear here once quote requests are submitted.</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Message Chat Panel */}
-      <div id="chat-messages-panel" className={`flex-1 flex flex-col min-h-[500px] justify-between ${!activeThread ? 'hidden md:flex items-center justify-center text-center bg-slate-bg/10 rounded-2xl border border-dashed border-slate-border/50 p-6' : 'flex'}`}>
+      <div id="chat-messages-panel" className={`flex-1 flex flex-col min-h-[500px] justify-between ${!activeThread ? 'hidden md:flex items-center justify-center text-center bg-zinc-900/10 rounded-2xl border border-dashed border-zinc-700/60/50 p-6' : 'flex'}`}>
         {activeThread ? (
           <>
             {/* Thread Header */}
-            <div className="pb-4 border-b border-slate-border flex items-center justify-between gap-4">
+            <div className="pb-4 border-b border-zinc-700/60 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <button onClick={() => setActiveThread(null)} className="md:hidden p-1 rounded-lg border border-slate-border hover:bg-slate-bg cursor-pointer">
+                <button onClick={() => setActiveThread(null)} className="md:hidden p-1 rounded-lg border border-zinc-700/60 hover:bg-zinc-900 cursor-pointer">
                   <ChevronRight className="w-4 h-4 rotate-180" />
                 </button>
                 <div>
-                  <h3 className="text-sm font-black text-slate-text-primary leading-tight">{activeThread.rfqTitle}</h3>
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-text-muted mt-0.5">
+                  <h3 className="text-sm font-black text-white leading-tight">{activeThread.rfqTitle}</h3>
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 mt-0.5">
                     <span className="font-mono text-[#007084] font-black">#CHAT-{activeThread.quoteId.substring(0, 8).toUpperCase()}</span>
                     <span>•</span>
                     <span>Participant: {activeThread.otherParticipantName}</span>
@@ -3850,24 +3850,24 @@ function QuotationChatsTab({
             </div>
 
             {/* Messages Log */}
-            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 my-4 space-y-3 max-h-[360px] bg-slate-bg/30 rounded-xl border border-slate-border/30">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 my-4 space-y-3 max-h-[360px] bg-zinc-900/30 rounded-xl border border-zinc-700/60/30">
               {loadingMessages ? (
                 <div className="py-20 text-center">
-                  <RefreshCw className="w-5 h-5 animate-spin mx-auto text-slate-text-muted/30" />
+                  <RefreshCw className="w-5 h-5 animate-spin mx-auto text-zinc-400/30" />
                 </div>
               ) : messages.length > 0 ? (
                 messages.map((m) => {
                   const isOwnMessage = m.sender_id === profile.id;
                   return (
                     <div key={m.id} className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'self-end ml-auto items-end' : 'self-start mr-auto items-start'}`}>
-                      <span className="text-[9px] font-bold text-slate-text-muted mb-0.5 px-1">{m.sender_name}</span>
+                      <span className="text-[9px] font-bold text-zinc-400 mb-0.5 px-1">{m.sender_name}</span>
                       <div className={`p-3 rounded-xl border text-xs font-semibold leading-relaxed ${isOwnMessage
                           ? 'bg-cobalt text-white border-cobalt shadow-sm'
-                          : 'bg-white text-slate-text-primary border-slate-border shadow-sm'
+                          : 'bg-zinc-800 text-white border-zinc-700/60 shadow-sm'
                         }`}>
                         <p>{m.message_text}</p>
                         {m.file_attachment_path && (
-                          <div className={`mt-2 p-2 rounded-lg border flex items-center gap-2 ${isOwnMessage ? 'bg-white/10 border-white/20' : 'bg-slate-bg border-slate-border'}`}>
+                          <div className={`mt-2 p-2 rounded-lg border flex items-center gap-2 ${isOwnMessage ? 'bg-zinc-800/10 border-white/20' : 'bg-zinc-900 border-zinc-700/60'}`}>
                             <FileText className="w-4 h-4 shrink-0" />
                             <div className="min-w-0 flex-1">
                               <span className="block text-[10px] font-black truncate">{m.file_attachment_path.split('/').pop()}</span>
@@ -3884,7 +3884,7 @@ function QuotationChatsTab({
                                   showToast('Failed to open attachment link.', 'error');
                                 }
                               }}
-                              className={`p-1 rounded hover:bg-black/10 text-xs cursor-pointer ${isOwnMessage ? 'text-white' : 'text-slate-text-secondary'}`}
+                              className={`p-1 rounded hover:bg-black/10 text-xs cursor-pointer ${isOwnMessage ? 'text-white' : 'text-zinc-350'}`}
                               title="Download Attachment"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
@@ -3892,7 +3892,7 @@ function QuotationChatsTab({
                           </div>
                         )}
                       </div>
-                      <span className="text-[8px] text-slate-text-muted mt-0.5 px-1 font-mono">
+                      <span className="text-[8px] text-zinc-400 mt-0.5 px-1 font-mono">
                         {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -3900,7 +3900,7 @@ function QuotationChatsTab({
                 })
               ) : (
                 <div className="py-20 text-center">
-                  <p className="text-xs text-slate-text-muted font-bold italic">No messages sent yet. Send a message to start negotiation.</p>
+                  <p className="text-xs text-zinc-400 font-bold italic">No messages sent yet. Send a message to start negotiation.</p>
                 </div>
               )}
             </div>
@@ -3909,11 +3909,11 @@ function QuotationChatsTab({
             {activeThread.machiningQuote &&
               activeThread.status !== 'ACCEPTED' &&
               (activeThread.machiningQuote.status as string) !== 'Accepted' && (
-                <div className="mx-4 mb-4 p-4 rounded-xl border bg-slate-bg/40 border-slate-border/60 space-y-3">
-                  <div className="flex justify-between items-center pb-2 border-b border-slate-border/50">
+                <div className="mx-4 mb-4 p-4 rounded-xl border bg-zinc-900/40 border-zinc-700/60/60 space-y-3">
+                  <div className="flex justify-between items-center pb-2 border-b border-zinc-700/60/50">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-text-primary">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-white">
                         Quote Request Status: {activeThread.machiningQuote.status}
                       </span>
                     </div>
@@ -3939,11 +3939,11 @@ function QuotationChatsTab({
                     <form onSubmit={handleOfferSubmit} className="space-y-3 text-xs font-bold">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="space-y-1">
-                          <label className="block text-[8px] text-slate-text-secondary uppercase">Material</label>
+                          <label className="block text-[8px] text-zinc-350 uppercase">Material</label>
                           <select
                             value={offerMaterial}
                             onChange={(e) => setOfferMaterial(e.target.value)}
-                            className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                            className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
                           >
                             {(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m) => (
                               <option key={m} value={m}>{m}</option>
@@ -3952,11 +3952,11 @@ function QuotationChatsTab({
                         </div>
 
                         <div className="space-y-1">
-                          <label className="block text-[8px] text-slate-text-secondary uppercase">Finish</label>
+                          <label className="block text-[8px] text-zinc-350 uppercase">Finish</label>
                           <select
                             value={offerFinish}
                             onChange={(e) => setOfferFinish(e.target.value)}
-                            className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                            className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
                           >
                             {(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f) => (
                               <option key={f} value={f}>{f}</option>
@@ -3965,19 +3965,19 @@ function QuotationChatsTab({
                         </div>
 
                         <div className="space-y-1">
-                          <label className="block text-[8px] text-slate-text-secondary uppercase">Qty (Units)</label>
+                          <label className="block text-[8px] text-zinc-350 uppercase">Qty (Units)</label>
                           <input
                             type="number"
                             required
                             min={1}
                             value={offerQuantity}
                             onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
-                            className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                            className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
                           />
                         </div>
 
                         <div className="space-y-1">
-                          <label className="block text-[8px] text-slate-text-secondary uppercase">Total Price (₹)</label>
+                          <label className="block text-[8px] text-zinc-350 uppercase">Total Price (₹)</label>
                           <input
                             type="number"
                             required
@@ -3985,19 +3985,19 @@ function QuotationChatsTab({
                             value={offerPrice || ''}
                             placeholder="0"
                             onChange={(e) => setOfferPrice(Number(e.target.value))}
-                            className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                            className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
                           />
                         </div>
                       </div>
 
                       <div className="space-y-1">
-                        <label className="block text-[8px] text-slate-text-secondary uppercase">Notes / Inspection Feedback</label>
+                        <label className="block text-[8px] text-zinc-350 uppercase">Notes / Inspection Feedback</label>
                         <input
                           type="text"
                           placeholder="Detail tolerancing check, recommended tooling modifications, etc..."
                           value={sellerNotes}
                           onChange={(e) => setSellerNotes(e.target.value)}
-                          className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                          className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
                         />
                       </div>
 
@@ -4022,11 +4022,11 @@ function QuotationChatsTab({
                     /* Offer / Counter-Offer Negotiation Details */
                     <div className="space-y-4">
                       {/* Offer Details Card */}
-                      <div className="bg-white border border-slate-border/60 p-4 rounded-xl space-y-3">
-                        <div className="flex justify-between items-center pb-2 border-b border-slate-border/40">
+                      <div className="bg-zinc-800 border border-zinc-700/60/60 p-4 rounded-xl space-y-3">
+                        <div className="flex justify-between items-center pb-2 border-b border-zinc-700/60/40">
                           <div className="flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                            <span className="text-[10px] font-black text-slate-text-primary uppercase tracking-wider">
+                            <span className="text-[10px] font-black text-white uppercase tracking-wider">
                               Latest Proposal (By {activeThread.machiningQuote.last_offered_by === 'BUYER' ? 'Buyer' : 'Seller'})
                             </span>
                           </div>
@@ -4041,19 +4041,19 @@ function QuotationChatsTab({
                         </div>
 
                         <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
-                          <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-[10px] text-slate-text-secondary font-bold font-mono">
-                            <div>Material: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_material}</span></div>
-                            <div>Finish: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_finish}</span></div>
-                            <div>Quantity: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.quantity} Units</span></div>
+                          <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-[10px] text-zinc-350 font-bold font-mono">
+                            <div>Material: <span className="text-white font-black">{activeThread.machiningQuote.selected_material}</span></div>
+                            <div>Finish: <span className="text-white font-black">{activeThread.machiningQuote.selected_finish}</span></div>
+                            <div>Quantity: <span className="text-white font-black">{activeThread.machiningQuote.quantity} Units</span></div>
                           </div>
                           <div className="flex items-baseline gap-1 self-start md:self-auto">
-                            <span className="text-[9px] text-slate-text-muted uppercase">Proposed Price:</span>
+                            <span className="text-[9px] text-zinc-400 uppercase">Proposed Price:</span>
                             <span className="text-sm font-black text-coral">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span>
                           </div>
                         </div>
 
                         {activeThread.machiningQuote.seller_notes && (
-                          <p className="text-[10px] text-slate-text-muted italic border-t border-slate-border/40 pt-1.5 mt-1">
+                          <p className="text-[10px] text-zinc-400 italic border-t border-zinc-700/60/40 pt-1.5 mt-1">
                             Notes: "{activeThread.machiningQuote.seller_notes}"
                           </p>
                         )}
@@ -4073,7 +4073,7 @@ function QuotationChatsTab({
                                 </button>
                                 <button
                                   onClick={() => setShowCounterForm(true)}
-                                  className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
+                                  className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 rounded-lg transition-colors cursor-pointer"
                                 >
                                   Counter-Offer
                                 </button>
@@ -4092,7 +4092,7 @@ function QuotationChatsTab({
                                 </button>
                                 <button
                                   onClick={() => setShowCounterForm(true)}
-                                  className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
+                                  className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 rounded-lg transition-colors cursor-pointer"
                                 >
                                   Counter-Offer
                                 </button>
@@ -4103,7 +4103,7 @@ function QuotationChatsTab({
                             {!profile.is_seller && activeThread.machiningQuote.last_offered_by === 'BUYER' && (
                               <button
                                 onClick={() => setShowCounterForm(true)}
-                                className="w-full py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                                className="w-full py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                               >
                                 <CircleDollarSign className="w-3.5 h-3.5" />
                                 Modify My Counter-Offer
@@ -4114,7 +4114,7 @@ function QuotationChatsTab({
                             {profile.is_seller && activeThread.machiningQuote.last_offered_by !== 'BUYER' && (
                               <button
                                 onClick={() => setShowCounterForm(true)}
-                                className="w-full py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                                className="w-full py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                               >
                                 <CircleDollarSign className="w-3.5 h-3.5" />
                                 Modify My Offer
@@ -4126,20 +4126,20 @@ function QuotationChatsTab({
 
                       {/* Counter / Modification Form */}
                       {showCounterForm && (
-                        <form onSubmit={profile.is_seller ? handleOfferSubmit : handleCounterOfferSubmit} className="bg-slate-bg/30 border border-slate-border/50 rounded-xl p-4 space-y-3 text-xs font-bold animate-slide-in">
-                          <div className="flex justify-between items-center pb-1 border-b border-slate-border/30">
-                            <span className="text-[10px] text-slate-text-primary uppercase tracking-wider">
+                        <form onSubmit={profile.is_seller ? handleOfferSubmit : handleCounterOfferSubmit} className="bg-zinc-900/30 border border-zinc-700/60/50 rounded-xl p-4 space-y-3 text-xs font-bold animate-slide-in">
+                          <div className="flex justify-between items-center pb-1 border-b border-zinc-700/60/30">
+                            <span className="text-[10px] text-white uppercase tracking-wider">
                               {profile.is_seller ? 'Modify Offer to Buyer' : 'Submit Counter-Offer to Fabricator'}
                             </span>
                           </div>
 
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono">
                             <div className="space-y-1 font-sans">
-                              <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Material</label>
+                              <label className="block text-[8px] text-zinc-350 uppercase font-sans">Material</label>
                               <select
                                 value={offerMaterial}
                                 onChange={(e) => setOfferMaterial(e.target.value)}
-                                className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                                className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
                               >
                                 {(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m) => (
                                   <option key={m} value={m}>{m}</option>
@@ -4148,11 +4148,11 @@ function QuotationChatsTab({
                             </div>
 
                             <div className="space-y-1 font-sans">
-                              <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Finish</label>
+                              <label className="block text-[8px] text-zinc-350 uppercase font-sans">Finish</label>
                               <select
                                 value={offerFinish}
                                 onChange={(e) => setOfferFinish(e.target.value)}
-                                className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                                className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
                               >
                                 {(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f) => (
                                   <option key={f} value={f}>{f}</option>
@@ -4161,19 +4161,19 @@ function QuotationChatsTab({
                             </div>
 
                             <div className="space-y-1">
-                              <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Qty (Units)</label>
+                              <label className="block text-[8px] text-zinc-350 uppercase font-sans">Qty (Units)</label>
                               <input
                                 type="number"
                                 required
                                 min={1}
                                 value={offerQuantity}
                                 onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
-                                className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-bold"
+                                className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none font-bold"
                               />
                             </div>
 
                             <div className="space-y-1">
-                              <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Price (₹)</label>
+                              <label className="block text-[8px] text-zinc-350 uppercase font-sans">Price (₹)</label>
                               <input
                                 type="number"
                                 required
@@ -4181,19 +4181,19 @@ function QuotationChatsTab({
                                 value={offerPrice || ''}
                                 placeholder="0"
                                 onChange={(e) => setOfferPrice(Number(e.target.value))}
-                                className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-bold"
+                                className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none font-bold"
                               />
                             </div>
                           </div>
 
                           <div className="space-y-1">
-                            <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Proposal Notes</label>
+                            <label className="block text-[8px] text-zinc-350 uppercase font-sans">Proposal Notes</label>
                             <input
                               type="text"
                               placeholder="Add explanation for counter-offer..."
                               value={sellerNotes}
                               onChange={(e) => setSellerNotes(e.target.value)}
-                              className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-semibold font-sans"
+                              className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none font-semibold font-sans"
                             />
                           </div>
 
@@ -4215,7 +4215,7 @@ function QuotationChatsTab({
                             <button
                               type="button"
                               onClick={() => setShowCounterForm(false)}
-                              className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
+                              className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 rounded-lg transition-colors cursor-pointer"
                             >
                               Cancel
                             </button>
@@ -4227,12 +4227,12 @@ function QuotationChatsTab({
 
                   {activeThread.machiningQuote.status === 'Accepted' && (
                     /* Accepted Offer Summary */
-                    <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-lg text-[10px] font-bold text-slate-text-secondary space-y-1">
+                    <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-lg text-[10px] font-bold text-zinc-350 space-y-1">
                       <p className="text-emerald font-black">Contract Terms Finalized & Accepted</p>
-                      <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-slate-text-secondary">
-                        <div>Material: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_material}</span></div>
-                        <div>Finish: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_finish}</span></div>
-                        <div>Quantity: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.quantity} Units</span></div>
+                      <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-zinc-350">
+                        <div>Material: <span className="text-white font-black">{activeThread.machiningQuote.selected_material}</span></div>
+                        <div>Finish: <span className="text-white font-black">{activeThread.machiningQuote.selected_finish}</span></div>
+                        <div>Quantity: <span className="text-white font-black">{activeThread.machiningQuote.quantity} Units</span></div>
                         <div className="ml-auto">Price: <span className="text-coral font-black">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span></div>
                       </div>
                     </div>
@@ -4241,9 +4241,9 @@ function QuotationChatsTab({
               )}
 
             {/* Input message bar */}
-            <form onSubmit={handleSendMessage} className="border-t border-slate-border/50 pt-4 flex gap-2">
-              <label className="btn-secondary p-3 rounded-lg border border-slate-border cursor-pointer flex items-center justify-center shrink-0 hover:bg-slate-bg transition-colors" title="Attach file">
-                <Paperclip className={`w-4 h-4 ${uploading ? 'animate-pulse text-cobalt' : 'text-slate-text-secondary'}`} />
+            <form onSubmit={handleSendMessage} className="border-t border-zinc-700/60/50 pt-4 flex gap-2">
+              <label className="btn-secondary p-3 rounded-lg border border-zinc-700/60 cursor-pointer flex items-center justify-center shrink-0 hover:bg-zinc-900 transition-colors" title="Attach file">
+                <Paperclip className={`w-4 h-4 ${uploading ? 'animate-pulse text-cobalt' : 'text-zinc-350'}`} />
                 <input type="file" onChange={handleFileUpload} disabled={uploading || sending} className="hidden" />
               </label>
               <input
@@ -4252,7 +4252,7 @@ function QuotationChatsTab({
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 disabled={sending || uploading}
-                className="flex-1 text-xs font-semibold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-cobalt transition-colors"
+                className="flex-1 text-xs font-semibold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-cobalt transition-colors"
               />
               <button
                 type="submit"
@@ -4265,10 +4265,10 @@ function QuotationChatsTab({
           </>
         ) : (
           <div className="space-y-3">
-            <MessageSquare className="w-12 h-12 text-slate-text-muted/30 mx-auto" />
+            <MessageSquare className="w-12 h-12 text-zinc-400/30 mx-auto" />
             <div>
-              <p className="text-xs font-black text-slate-text-primary uppercase tracking-tight">Select a conversation</p>
-              <p className="text-[10px] text-slate-text-muted mt-1 max-w-xs leading-normal">
+              <p className="text-xs font-black text-white uppercase tracking-tight">Select a conversation</p>
+              <p className="text-[10px] text-zinc-400 mt-1 max-w-xs leading-normal">
                 Choose a negotiation thread from the left menu to view secure messages, share CAD revisions, or review contract terms.
               </p>
             </div>
@@ -4285,26 +4285,26 @@ function QuotationChatsTab({
           ></div>
 
           {/* Panel */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-2xl relative z-10 animate-fade-in space-y-4">
+          <div className="bg-zinc-800 border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-2xl relative z-10 animate-fade-in space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-              <h3 className="text-sm font-black text-slate-text-primary uppercase tracking-tight font-['Space_Grotesk']">
+              <h3 className="text-sm font-black text-white uppercase tracking-tight font-['Space_Grotesk']">
                 Reject Quotation
               </h3>
               <button
                 onClick={() => setShowRejectForm(false)}
-                className="p-1 rounded hover:bg-slate-50 text-slate-text-muted cursor-pointer"
+                className="p-1 rounded hover:bg-slate-50 text-zinc-400 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <p className="text-xs text-slate-text-muted font-semibold leading-relaxed">
+            <p className="text-xs text-zinc-400 font-semibold leading-relaxed">
               Please provide a reason for rejecting this quotation. This feedback will be sent directly to <strong>{activeThread?.otherParticipantName}</strong> inside this chat channel.
             </p>
 
             <form onSubmit={handleRejectQuote} className="space-y-4">
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">
+                <label className="block text-[10px] font-bold text-zinc-350 uppercase">
                   Rejection Reason / Feedback *
                 </label>
                 <textarea
@@ -4313,7 +4313,7 @@ function QuotationChatsTab({
                   value={rejectionReasonInput}
                   onChange={(e) => setRejectionReasonInput(e.target.value)}
                   placeholder="e.g. Price is too high, lead times are too long, or specification mismatch..."
-                  className="w-full text-xs font-semibold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-rose-500 resize-none"
+                  className="w-full text-xs font-semibold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-rose-500 resize-none"
                 />
               </div>
 
@@ -4321,7 +4321,7 @@ function QuotationChatsTab({
                 <button
                   type="button"
                   onClick={() => setShowRejectForm(false)}
-                  className="flex-1 py-2.5 rounded-lg border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary cursor-pointer transition-colors"
+                  className="flex-1 py-2.5 rounded-lg border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>

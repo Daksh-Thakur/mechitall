@@ -107,16 +107,16 @@ export default function ProductsPage() {
   }, [parts, searchQuery, selectedCategory, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#1b1b1d] font-sans flex flex-col overflow-x-clip">
+    <div className="min-h-screen bg-zinc-900 text-zinc-100 font-sans flex flex-col overflow-x-clip">
       <Navbar />
 
       {/* ─── MOBILE TOP BAR ─── */}
-      <div className="md:hidden sticky top-0 z-40 bg-white border-b border-[#E4E4E7] flex items-center justify-between px-4 h-14">
-        <h1 className="font-['Space_Grotesk'] text-base font-bold text-[#0F172A]">Parts Catalog</h1>
+      <div className="md:hidden sticky top-0 z-40 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 h-14">
+        <h1 className="font-['Space_Grotesk'] text-base font-bold text-white">Parts Catalog</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowFilterDrawer(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E4E4E7] text-[11px] font-mono font-bold uppercase tracking-wider hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-700/60 bg-zinc-800 text-[11px] font-mono font-bold uppercase tracking-wider hover:bg-zinc-700 text-zinc-100 transition-colors cursor-pointer"
           >
             <SlidersVertical className="w-3.5 h-3.5" />
             Filter
@@ -125,39 +125,37 @@ export default function ProductsPage() {
       </div>
 
       <div className="flex flex-1 w-full max-w-[1280px] mx-auto">
-
         {/* ─── DESKTOP LEFT SIDEBAR ─── */}
-        <aside className="hidden lg:flex w-64 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-[#E4E4E7] bg-[#F8FAFC] flex-col p-6 gap-4 overflow-y-auto">
+        <aside className="hidden lg:flex w-64 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-zinc-800 bg-zinc-900 flex-col p-6 gap-4 overflow-y-auto text-zinc-100">
           <div className="pb-2">
-            <h2 className="font-['Space_Grotesk'] text-base font-bold text-[#0F172A]">Filter Specs</h2>
-            <p className="font-['Inter'] text-xs text-[#45464d] mt-0.5 opacity-70">Technical Parameters</p>
+            <h2 className="font-['Space_Grotesk'] text-base font-bold text-white">Catalog</h2>
+            <p className="font-['Inter'] text-xs text-zinc-500 mt-0.5 opacity-70">Interactive Portal</p>
           </div>
 
-          {/* Category nav */}
-          <nav className="flex flex-col gap-0.5">
+          {/* Primary Navigation */}
+          <nav className="flex flex-col gap-1">
             {categories.map(cat => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`flex items-center gap-3 px-3 py-2.5 text-sm font-['Inter'] text-left transition-all cursor-pointer ${
+                className={`flex items-center gap-3 px-3 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-left transition-all cursor-pointer rounded-md ${
                   selectedCategory === cat
-                    ? 'bg-[#0F172A] text-white font-bold'
-                    : 'text-[#45464d] hover:bg-[#E4E4E7]'
+                    ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/25 font-bold'
+                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                 }`}
               >
-                <span className="text-base">{cat === 'All' ? '⊞' : cat === 'Actuators' ? '⚡' : cat === 'Sensors' ? '📡' : cat === 'Control Boards' ? '🖥' : '⚙'}</span>
-                {cat === 'All' ? 'All Categories' : cat}
+                {cat}
               </button>
             ))}
           </nav>
 
           {/* Sort */}
-          <div className="pt-4 border-t border-[#E4E4E7] flex flex-col gap-3">
-            <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-[#45464d]">Sort By</label>
+          <div className="pt-4 border-t border-zinc-800 flex flex-col gap-3">
+            <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-zinc-500">Sort By</label>
             <select
               value={sortBy}
               onChange={e => setSortBy(e.target.value)}
-              className="bg-white border border-[#E4E4E7] px-3 py-2 text-xs font-['Inter'] text-[#45464d] focus:outline-none focus:border-[#06B6D4] transition-colors cursor-pointer"
+              className="bg-zinc-800 border border-zinc-700/60 px-3 py-2 text-xs font-['Inter'] text-zinc-200 focus:outline-none focus:border-emerald-400 transition-colors cursor-pointer"
             >
               <option value="featured">Featured</option>
               <option value="price-asc">Price: Low → High</option>
@@ -169,7 +167,7 @@ export default function ProductsPage() {
           {/* Reset */}
           <button
             onClick={() => { setSelectedCategory('All'); setSearchQuery(''); setSortBy('featured'); }}
-            className="mt-auto py-2 px-4 border border-[#0F172A] text-[#0F172A] font-bold text-xs font-['Inter'] hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer"
+            className="mt-auto py-2 px-4 border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer font-mono text-xs uppercase font-bold"
           >
             Reset Filters
           </button>
@@ -180,20 +178,20 @@ export default function ProductsPage() {
 
           {/* Desktop: Blueprint header banner */}
           <div
-            className="hidden md:block mb-4 border-l-4 border-[#06B6D4] px-4 py-3 bg-white/60"
+            className="hidden md:block mb-4 border-l-4 border-emerald-400 px-4 py-3 bg-zinc-950/40 border border-zinc-800/80 rounded-r-xl"
             style={{
-              backgroundImage: 'linear-gradient(to right, rgba(6,182,212,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(6,182,212,0.05) 1px, transparent 1px)',
+              backgroundImage: 'linear-gradient(to right, rgba(16,185,129,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(16,185,129,0.02) 1px, transparent 1px)',
               backgroundSize: '24px 24px',
             }}
           >
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="font-['Space_Grotesk'] text-lg font-bold text-[#0F172A]">Parts Catalog</h1>
-                <p className="font-['Inter'] text-xs text-[#45464d] mt-0.5">
-                  {isLoading ? 'Loading...' : `${filteredParts.length} Engineering Components Found`}
+                <h1 className="font-['Space_Grotesk'] text-lg font-bold text-white">Parts Catalog</h1>
+                <p className="font-['Inter'] text-xs text-zinc-400 mt-0.5">
+                  {isLoading ? 'Loading...' : `${filteredParts.length} Components Found`}
                 </p>
               </div>
-              <span className="px-2 py-1 bg-[#0F172A] text-white text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider flex items-center gap-1">
+              <span className="px-2 py-1 bg-emerald-400 text-zinc-950 text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider flex items-center gap-1 font-bold rounded">
                 ✓ ISO 9001:2015
               </span>
             </div>
@@ -208,51 +206,51 @@ export default function ProductsPage() {
               onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
               onFocus={() => setShowSuggestions(true)}
               onKeyDown={e => { if (e.key === 'Enter') { e.currentTarget.blur(); setShowSuggestions(false); } }}
-              className="w-full bg-white border border-[#E4E4E7] px-10 py-3 pr-28 text-sm font-['Inter'] focus:ring-2 focus:ring-[#06B6D4]/20 focus:border-[#06B6D4] outline-none transition-all placeholder:text-[#76777d]"
+              className="w-full bg-zinc-800 border border-zinc-700/60 px-10 py-3 pr-28 text-sm font-['Inter'] text-white focus:ring-2 focus:ring-emerald-400/20 focus:border-emerald-400 outline-none transition-all placeholder:text-zinc-500 rounded-xl"
             />
-            <Search className="w-4 h-4 text-[#45464d] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
               {searchQuery && (
                 <button onClick={() => { setSearchQuery(''); setShowSuggestions(false); }} className="cursor-pointer">
-                  <X className="w-3.5 h-3.5 text-[#76777d] hover:text-red-500 transition-colors" />
+                  <X className="w-3.5 h-3.5 text-zinc-400 hover:text-red-400 transition-colors" />
                 </button>
               )}
-              <span className="text-[10px] font-mono bg-[#F8FAFC] px-1.5 py-0.5 border border-[#E4E4E7] text-[#45464d] select-none" title="Matching items">
+              <span className="text-[10px] font-mono bg-zinc-900 px-1.5 py-0.5 border border-zinc-700/60 text-zinc-400 select-none" title="Matching items">
                 {filteredParts.length}/{parts.length}
               </span>
-              <span className="hidden md:block text-[10px] font-mono bg-[#F8FAFC] px-1.5 py-0.5 border border-[#E4E4E7] text-[#45464d]">⌘K</span>
+              <span className="hidden md:block text-[10px] font-mono bg-zinc-900 px-1.5 py-0.5 border border-zinc-700/60 text-zinc-400">⌘K</span>
             </div>
 
             {/* Autocomplete suggestions */}
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-[#E4E4E7] shadow-lg overflow-hidden py-1 max-h-72 overflow-y-auto divide-y divide-[#E4E4E7]/50">
+              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-zinc-800 border border-zinc-700/65 shadow-2xl overflow-hidden py-1 max-h-72 overflow-y-auto divide-y divide-zinc-700/50 rounded-xl">
                 {suggestions.map(part => (
                   <div
                     key={part.id}
                     onClick={() => { setSearchQuery(part.title); setShowSuggestions(false); }}
-                    className="p-3 hover:bg-[#F8FAFC] flex items-center justify-between gap-3 cursor-pointer transition-colors"
+                    className="p-3 hover:bg-zinc-700/50 flex items-center justify-between gap-3 cursor-pointer transition-colors"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-semibold text-[#0F172A] truncate">{part.title}</span>
-                        <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 bg-[#F8FAFC] border border-[#E4E4E7] text-[#45464d] select-none shrink-0">
+                        <span className="text-xs font-semibold text-white truncate">{part.title}</span>
+                        <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 bg-zinc-900 border border-zinc-700/60 text-zinc-400 select-none shrink-0 font-mono">
                           {part.category}
                         </span>
                       </div>
-                      <span className="text-[10px] text-[#76777d] font-mono block mt-0.5">{part.partNumber}</span>
+                      <span className="text-[10px] text-zinc-500 font-mono block mt-0.5">{part.partNumber}</span>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="text-right">
-                        <span className="block text-xs font-bold text-[#0F172A]">₹{part.price.toLocaleString('en-IN')}</span>
-                        <span className="block text-[8px] text-[#76777d]">
+                        <span className="block text-xs font-bold text-white font-mono">₹{part.price.toLocaleString('en-IN')}</span>
+                        <span className="block text-[8px] text-zinc-400">
                           {part.stock > 0 ? `${part.stock} in stock` : 'Out of stock'}
                         </span>
                       </div>
                       <button
                         onClick={e => { e.stopPropagation(); setSelectedPart(part); setShowSuggestions(false); }}
-                        className="p-1.5 border border-[#E4E4E7] bg-white hover:border-[#06B6D4] transition-all cursor-pointer"
+                        className="p-1.5 border border-zinc-700 bg-zinc-900 hover:border-emerald-400 transition-all cursor-pointer rounded"
                       >
-                        <Eye className="w-3.5 h-3.5 text-[#45464d]" />
+                        <Eye className="w-3.5 h-3.5 text-zinc-400" />
                       </button>
                     </div>
                   </div>
@@ -267,10 +265,10 @@ export default function ProductsPage() {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`shrink-0 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border transition-all cursor-pointer ${
+                className={`shrink-0 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-md transition-all cursor-pointer ${
                   selectedCategory === cat
-                    ? 'bg-[#0F172A] text-white border-[#0F172A]'
-                    : 'bg-white text-[#45464d] border-[#E4E4E7] hover:border-[#0F172A]'
+                    ? 'bg-emerald-400 text-zinc-950 border-emerald-400'
+                    : 'bg-zinc-800 text-zinc-400 border-zinc-700/60 hover:border-zinc-500'
                 }`}
               >
                 {cat}
@@ -282,29 +280,29 @@ export default function ProductsPage() {
           {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 animate-pulse">
               {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
-                <div key={n} className="bg-white border border-[#E4E4E7] h-64">
-                  <div className="h-32 md:h-36 bg-[#F8FAFC]" />
+                <div key={n} className="bg-zinc-800 border border-zinc-700/60 h-64 rounded-xl">
+                  <div className="h-32 md:h-36 bg-zinc-900/50" />
                   <div className="p-3 space-y-2">
-                    <div className="h-3 bg-[#E4E4E7] w-3/4" />
-                    <div className="h-2 bg-[#E4E4E7] w-1/2" />
+                    <div className="h-3 bg-zinc-700 w-3/4" />
+                    <div className="h-2 bg-zinc-700 w-1/2" />
                   </div>
                 </div>
               ))}
             </div>
           ) : filteredParts.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filteredParts.map(part => (
-                  <ProductCard key={part.id} part={part} onViewDetails={setSelectedPart} />
-                ))}
-              </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredParts.map(part => (
+                <ProductCard key={part.id} part={part} onViewDetails={setSelectedPart} />
+              ))}
+            </div>
           ) : (
-            <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
-              <div className="text-4xl opacity-20">⚙</div>
-              <p className="text-sm font-bold text-[#0F172A]">No parts found</p>
-              <p className="text-xs text-[#45464d]">Try different search terms or clear the category filter.</p>
+            <div className="text-center py-20 border border-dashed border-zinc-850 bg-zinc-900/40 rounded-2xl space-y-4">
+              <div className="text-4xl opacity-20 text-emerald-400">⚙</div>
+              <p className="text-sm font-bold text-white">No parts found</p>
+              <p className="text-xs text-zinc-400">Try different search terms or clear the category filter.</p>
               <button
                 onClick={() => { setSearchQuery(''); setSelectedCategory('All'); setSortBy('featured'); }}
-                className="mt-2 py-2 px-5 border border-[#0F172A] text-[#0F172A] font-bold text-xs hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer"
+                className="mt-2 py-2 px-5 border border-zinc-750 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer font-mono text-xs uppercase font-bold"
               >
                 Clear Filters
               </button>
@@ -318,7 +316,7 @@ export default function ProductsPage() {
       {/* ─── MOBILE FAB ─── */}
       <button
         onClick={() => setShowFilterDrawer(true)}
-        className="md:hidden fixed bottom-6 right-5 w-14 h-14 bg-[#0F172A] text-[#06B6D4] shadow-lg flex items-center justify-center z-40 active:scale-90 transition-transform cursor-pointer"
+        className="md:hidden fixed bottom-6 right-5 w-14 h-14 bg-emerald-400 text-zinc-950 rounded-full shadow-lg flex items-center justify-center z-40 active:scale-90 transition-transform cursor-pointer"
         aria-label="Open Filters"
       >
         <SlidersVertical className="w-5 h-5" />
@@ -328,20 +326,20 @@ export default function ProductsPage() {
       {/* Backdrop */}
       <div
         onClick={() => setShowFilterDrawer(false)}
-        className={`md:hidden fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm z-50 transition-opacity duration-300 ${showFilterDrawer ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        className={`md:hidden fixed inset-0 bg-zinc-950/80 backdrop-blur-sm z-50 transition-opacity duration-300 ${showFilterDrawer ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
       />
       {/* Drawer panel */}
       <aside
-        className={`md:hidden fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white shadow-2xl z-[60] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${showFilterDrawer ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`md:hidden fixed top-0 right-0 h-full w-[85%] max-w-sm bg-zinc-900 shadow-2xl z-[60] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${showFilterDrawer ? 'translate-x-0' : 'translate-x-full'} text-zinc-100 border-l border-zinc-800`}
       >
         {/* Drawer header */}
-        <div className="p-5 border-b border-[#E4E4E7] flex justify-between items-center bg-[#F8FAFC]">
-          <h2 className="font-['Space_Grotesk'] text-base font-semibold text-[#0F172A] flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4" />
+        <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
+          <h2 className="font-['Space_Grotesk'] text-base font-semibold text-white flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
             Technical Filters
           </h2>
-          <button onClick={() => setShowFilterDrawer(false)} className="p-1.5 hover:bg-[#E4E4E7] transition-colors cursor-pointer">
-            <X className="w-4 h-4 text-[#45464d]" />
+          <button onClick={() => setShowFilterDrawer(false)} className="p-1.5 hover:bg-zinc-800 transition-colors cursor-pointer text-zinc-400 hover:text-white rounded">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -349,16 +347,16 @@ export default function ProductsPage() {
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
           {/* Category */}
           <section>
-            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">Category</h3>
+            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Category</h3>
             <div className="grid grid-cols-2 gap-2">
               {categories.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3 py-2.5 border text-xs font-['JetBrains_Mono'] text-left transition-colors cursor-pointer ${
+                  className={`px-3 py-2.5 border text-xs font-['JetBrains_Mono'] text-left transition-colors cursor-pointer rounded-md ${
                     selectedCategory === cat
-                      ? 'bg-[#0F172A] text-white border-[#0F172A]'
-                      : 'border-[#E4E4E7] hover:bg-[#F8FAFC]'
+                      ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/25'
+                      : 'border-zinc-800 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
                   {cat === 'All' ? 'All Categories' : cat}
@@ -369,7 +367,7 @@ export default function ProductsPage() {
 
           {/* Sort */}
           <section>
-            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">Sort By</h3>
+            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Sort By</h3>
             <div className="space-y-2">
               {[
                 { val: 'featured', label: 'Featured' },
@@ -384,9 +382,9 @@ export default function ProductsPage() {
                     value={opt.val}
                     checked={sortBy === opt.val}
                     onChange={() => setSortBy(opt.val)}
-                    className="accent-[#0F172A] w-4 h-4"
+                    className="accent-emerald-400 w-4 h-4"
                   />
-                  <span className="font-['Inter'] text-sm text-[#1b1b1d]">{opt.label}</span>
+                  <span className="font-['Inter'] text-sm text-zinc-350">{opt.label}</span>
                 </label>
               ))}
             </div>
@@ -394,31 +392,31 @@ export default function ProductsPage() {
 
           {/* Stock filter */}
           <section>
-            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">Availability</h3>
+            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Availability</h3>
             <div className="space-y-3">
               <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 border-[#E4E4E7] accent-[#0F172A] focus:ring-[#06B6D4]" defaultChecked />
-                <span className="font-['Inter'] text-sm text-[#1b1b1d]">In Stock</span>
+                <input type="checkbox" className="w-4 h-4 border-zinc-750 accent-emerald-400 focus:ring-emerald-400/20" defaultChecked />
+                <span className="font-['Inter'] text-sm text-zinc-300">In Stock</span>
               </label>
               <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" className="w-4 h-4 border-[#E4E4E7] accent-[#0F172A] focus:ring-[#06B6D4]" />
-                <span className="font-['Inter'] text-sm text-[#1b1b1d]">Low Stock</span>
+                <input type="checkbox" className="w-4 h-4 border-zinc-750 accent-emerald-400 focus:ring-emerald-400/20" />
+                <span className="font-['Inter'] text-sm text-zinc-300">Low Stock</span>
               </label>
             </div>
           </section>
         </div>
 
         {/* Drawer footer */}
-        <div className="p-5 border-t border-[#E4E4E7] flex gap-3">
+        <div className="p-5 border-t border-zinc-800 flex gap-3">
           <button
             onClick={() => { setSelectedCategory('All'); setSortBy('featured'); setSearchQuery(''); setShowFilterDrawer(false); }}
-            className="flex-1 py-3 border border-[#E4E4E7] font-['JetBrains_Mono'] text-xs uppercase tracking-widest hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+            className="flex-1 py-3 border border-zinc-750 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer font-mono text-xs uppercase font-bold rounded-md"
           >
             Reset
           </button>
           <button
             onClick={() => setShowFilterDrawer(false)}
-            className="flex-1 py-3 bg-[#0F172A] text-white font-['JetBrains_Mono'] text-xs uppercase tracking-widest hover:bg-[#06B6D4] transition-colors cursor-pointer"
+            className="flex-1 py-3 bg-emerald-400 text-zinc-950 font-mono text-xs uppercase font-bold hover:bg-emerald-350 transition-colors cursor-pointer rounded-md"
           >
             Apply
           </button>

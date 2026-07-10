@@ -341,16 +341,16 @@ export default function CommunityPage() {
   }, [searchQuery]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#1b1b1d] font-sans flex flex-col overflow-x-clip">
+    <div className="min-h-screen bg-zinc-900 text-zinc-100 font-sans flex flex-col overflow-x-clip">
       <Navbar />
 
       {/* ─── MOBILE TOP BAR ─── */}
-      <div className="md:hidden sticky top-0 z-40 bg-white border-b border-[#E4E4E7] flex items-center justify-between px-4 h-14">
-        <h1 className="font-['Space_Grotesk'] text-base font-bold text-[#0F172A]">Community Hub</h1>
+      <div className="md:hidden sticky top-0 z-40 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 h-14">
+        <h1 className="font-['Space_Grotesk'] text-base font-bold text-white">Community Hub</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowFilterDrawer(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E4E4E7] text-[11px] font-mono font-bold uppercase tracking-wider hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-700/60 bg-zinc-800 text-[11px] font-mono font-bold uppercase tracking-wider hover:bg-zinc-700 text-zinc-100 transition-colors cursor-pointer"
           >
             <SlidersVertical className="w-3.5 h-3.5" />
             Filter
@@ -360,22 +360,22 @@ export default function CommunityPage() {
 
       <div className="flex flex-1 w-full max-w-[1280px] mx-auto">
         {/* ─── DESKTOP LEFT SIDEBAR ─── */}
-        <aside className="hidden lg:flex w-64 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-[#E4E4E7] bg-[#F8FAFC] flex-col p-6 gap-4 overflow-y-auto">
+        <aside className="hidden lg:flex w-64 shrink-0 sticky top-14 h-[calc(100vh-3.5rem)] border-r border-zinc-800 bg-zinc-900 flex-col p-6 gap-4 overflow-y-auto">
           <div className="pb-2">
-            <h2 className="font-['Space_Grotesk'] text-base font-bold text-[#0F172A]">Community</h2>
-            <p className="font-['Inter'] text-xs text-[#45464d] mt-0.5 opacity-70">Interactive Portal</p>
+            <h2 className="font-['Space_Grotesk'] text-base font-bold text-white">Community</h2>
+            <p className="font-['Inter'] text-xs text-zinc-500 mt-0.5 opacity-70">Interactive Portal</p>
           </div>
 
           {/* Primary Navigation */}
-          <nav className="flex flex-col gap-0.5">
+          <nav className="flex flex-col gap-1">
             {TABS.map(tab => (
               <button
                 key={tab}
                 onClick={() => { setActiveTab(tab); setSelectedDiscussionCategory('All'); setSelectedRating('All'); }}
-                className={`flex items-center gap-3 px-3 py-2.5 text-sm font-['Inter'] text-left transition-all cursor-pointer ${
+                className={`flex items-center gap-3 px-3 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-left transition-all cursor-pointer rounded-md ${
                   activeTab === tab
-                    ? 'bg-[#0F172A] text-white font-bold'
-                    : 'text-[#45464d] hover:bg-[#E4E4E7]'
+                    ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/25 font-bold'
+                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
                 }`}
               >
                 <span className="text-base">
@@ -388,15 +388,15 @@ export default function CommunityPage() {
 
           {/* Context-Specific Sub-Filters */}
           {activeTab === 'Discussions' && (
-            <div className="pt-4 border-t border-[#E4E4E7] flex flex-col gap-3">
-              <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-[#45464d]">Discussion Type</label>
+            <div className="pt-4 border-t border-zinc-800 flex flex-col gap-3">
+              <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-zinc-500">Discussion Type</label>
               <div className="flex flex-col gap-1">
                 {['All', ...DISCUSSION_CATEGORIES].map(cat => (
                   <button
                     key={cat}
                     onClick={() => setSelectedDiscussionCategory(cat)}
-                    className={`px-3 py-1.5 rounded text-xs font-bold text-left transition-colors cursor-pointer ${
-                      selectedDiscussionCategory === cat ? 'bg-cobalt/8 text-cobalt border border-cobalt/15' : 'text-[#45464d] hover:bg-[#E4E4E7]'
+                    className={`px-3 py-1.5 rounded text-xs font-bold text-left transition-colors cursor-pointer border ${
+                      selectedDiscussionCategory === cat ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/25' : 'text-zinc-400 border-transparent hover:bg-zinc-850 hover:text-white'
                     }`}
                   >
                     {cat}
@@ -407,15 +407,15 @@ export default function CommunityPage() {
           )}
 
           {activeTab === 'Reviews' && (
-            <div className="pt-4 border-t border-[#E4E4E7] flex flex-col gap-3">
-              <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-[#45464d]">Filter Rating</label>
+            <div className="pt-4 border-t border-zinc-800 flex flex-col gap-3">
+              <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-zinc-500">Filter Rating</label>
               <div className="flex flex-col gap-1">
                 {['All', '5 Stars', '4 Stars', '3 Stars & below'].map(ratingOpt => (
                   <button
                     key={ratingOpt}
                     onClick={() => setSelectedRating(ratingOpt)}
-                    className={`px-3 py-1.5 rounded text-xs font-bold text-left transition-colors cursor-pointer ${
-                      selectedRating === ratingOpt ? 'bg-amber-500/8 text-amber-600 border border-amber-500/15' : 'text-[#45464d] hover:bg-[#E4E4E7]'
+                    className={`px-3 py-1.5 rounded text-xs font-bold text-left transition-colors cursor-pointer border ${
+                      selectedRating === ratingOpt ? 'bg-amber-500/10 text-amber-400 border-amber-500/25' : 'text-zinc-400 border-transparent hover:bg-zinc-850 hover:text-white'
                     }`}
                   >
                     {ratingOpt}
@@ -428,7 +428,7 @@ export default function CommunityPage() {
           {/* Reset Filters */}
           <button
             onClick={() => { setSelectedDiscussionCategory('All'); setSelectedRating('All'); setSearchQuery(''); }}
-            className="mt-auto py-2 px-4 border border-[#0F172A] text-[#0F172A] font-bold text-xs font-['Inter'] hover:bg-[#0F172A] hover:text-white transition-colors cursor-pointer"
+            className="mt-auto py-2 px-4 border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer font-mono text-xs uppercase font-bold"
           >
             Reset Filters
           </button>
@@ -439,16 +439,16 @@ export default function CommunityPage() {
 
           {/* Desktop Blueprint Header Banner */}
           <div
-            className="hidden md:block mb-4 border-l-4 border-[#06B6D4] px-4 py-3 bg-white/60"
+            className="hidden md:block mb-4 border-l-4 border-emerald-400 px-4 py-3 bg-zinc-950/40 border border-zinc-800/80 rounded-r-xl"
             style={{
-              backgroundImage: 'linear-gradient(to right, rgba(6,182,212,0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(6,182,212,0.05) 1px, transparent 1px)',
+              backgroundImage: 'linear-gradient(to right, rgba(16,185,129,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(16,185,129,0.02) 1px, transparent 1px)',
               backgroundSize: '24px 24px',
             }}
           >
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="font-['Space_Grotesk'] text-lg font-bold text-[#0F172A]">Community Hub</h1>
-                <p className="font-['Inter'] text-xs text-[#45464d] mt-0.5">
+                <h1 className="font-['Space_Grotesk'] text-lg font-bold text-white">Community Hub</h1>
+                <p className="font-['Inter'] text-xs text-zinc-400 mt-0.5">
                   {activeTab === 'Discussions' ? 'Discuss projects, firmware architectures, and mechatronics logs.'
                     : activeTab === 'Reviews' ? 'Verified reviews and feedback on motors, sensors, and fabricators.'
                     : activeTab === 'Announcements' ? 'Stay updated with platform announcements and maintenance news.'
@@ -462,7 +462,7 @@ export default function CommunityPage() {
                       if (!profile) { showToast('Please sign in to start a discussion.', 'error'); return; }
                       setShowDiscussionCompose(true);
                     }}
-                    className="bg-[#0f172a] text-white hover:bg-[#06b6d4] text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider py-1.5 px-3 transition-colors font-bold flex items-center gap-1 cursor-pointer shadow-md shrink-0"
+                    className="bg-emerald-400 text-zinc-950 hover:bg-emerald-350 text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider py-1.5 px-3 transition-colors font-bold flex items-center gap-1 cursor-pointer shadow-md shrink-0 rounded"
                   >
                     <Plus className="w-3 h-3" /> Start Discussion
                   </button>
@@ -473,12 +473,12 @@ export default function CommunityPage() {
                       if (!profile) { showToast('Please sign in to write a review.', 'error'); return; }
                       setShowReviewCompose(true);
                     }}
-                    className="bg-[#0f172a] text-white hover:bg-[#06b6d4] text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider py-1.5 px-3 transition-colors font-bold flex items-center gap-1 cursor-pointer shadow-md shrink-0"
+                    className="bg-emerald-400 text-zinc-950 hover:bg-emerald-350 text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider py-1.5 px-3 transition-colors font-bold flex items-center gap-1 cursor-pointer shadow-md shrink-0 rounded"
                   >
                     <Star className="w-3 h-3" /> Write Review
                   </button>
                 )}
-                <span className="px-2 py-1 bg-[#0F172A] text-white text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider flex items-center gap-1 select-none">
+                <span className="px-2 py-1 bg-zinc-800 text-emerald-400 border border-zinc-700/60 text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider flex items-center gap-1 select-none font-bold rounded">
                   ✓ 2,400+ Makers
                 </span>
               </div>
@@ -494,16 +494,16 @@ export default function CommunityPage() {
               onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
               onFocus={() => setShowSuggestions(true)}
               onKeyDown={e => { if (e.key === 'Enter') { e.currentTarget.blur(); setShowSuggestions(false); } }}
-              className="w-full bg-white border border-[#E4E4E7] px-10 py-3 pr-28 text-sm font-['Inter'] focus:ring-2 focus:ring-[#06B6D4]/20 focus:border-[#06B6D4] outline-none transition-all placeholder:text-[#76777d]"
+              className="w-full bg-zinc-800 border border-zinc-700/60 px-10 py-3 pr-28 text-sm font-['Inter'] text-white focus:ring-2 focus:ring-emerald-400/20 focus:border-emerald-400 outline-none transition-all placeholder:text-zinc-500 rounded-xl"
             />
-            <Search className="w-4 h-4 text-[#45464d] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
               {searchQuery && (
                 <button onClick={() => { setSearchQuery(''); setShowSuggestions(false); }} className="cursor-pointer">
-                  <X className="w-3.5 h-3.5 text-[#76777d] hover:text-red-500 transition-colors" />
+                  <X className="w-3.5 h-3.5 text-zinc-400 hover:text-red-400 transition-colors" />
                 </button>
               )}
-              <span className="text-[10px] font-mono bg-[#F8FAFC] px-1.5 py-0.5 border border-[#E4E4E7] text-[#45464d] select-none" title="Matching items">
+              <span className="text-[10px] font-mono bg-zinc-900 px-1.5 py-0.5 border border-zinc-700/60 text-zinc-400 select-none" title="Matching items">
                 {
                   activeTab === 'Discussions' ? `${filteredDiscussions.length}/${discussions.length}`
                   : activeTab === 'Reviews' ? `${filteredReviews.length}/${allReviews.length}`
@@ -511,12 +511,12 @@ export default function CommunityPage() {
                   : `${filteredNews.length}/${NEWS.length}`
                 }
               </span>
-              <span className="hidden md:block text-[10px] font-mono bg-[#F8FAFC] px-1.5 py-0.5 border border-[#E4E4E7] text-[#45464d]">Search</span>
+              <span className="hidden md:block text-[10px] font-mono bg-zinc-900 px-1.5 py-0.5 border border-zinc-700/60 text-zinc-400">Search</span>
             </div>
 
             {/* Suggestions Autocomplete */}
             {showSuggestions && suggestions.length > 0 && (
-              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-white border border-[#E4E4E7] shadow-lg overflow-hidden py-1 max-h-72 overflow-y-auto divide-y divide-[#E4E4E7]/50">
+              <div className="absolute top-full left-0 right-0 z-30 mt-1 bg-zinc-800 border border-zinc-700/65 shadow-2xl overflow-hidden py-1 max-h-72 overflow-y-auto divide-y divide-zinc-700/50 rounded-xl">
                 {suggestions.map((item: any) => {
                   const title = item.title || item.product || '';
                   const subText = item.body || item.excerpt || '';
@@ -524,13 +524,13 @@ export default function CommunityPage() {
                     <div
                       key={item.id}
                       onClick={() => { setSearchQuery(title); setShowSuggestions(false); }}
-                      className="p-3 hover:bg-[#F8FAFC] flex items-center justify-between gap-3 cursor-pointer transition-colors"
+                      className="p-3 hover:bg-zinc-700/50 flex items-center justify-between gap-3 cursor-pointer transition-colors"
                     >
                       <div className="min-w-0">
-                        <span className="text-xs font-semibold text-[#0F172A] truncate block">{title}</span>
-                        <span className="text-[10px] text-[#76777d] line-clamp-1 block mt-0.5">{subText}</span>
+                        <span className="text-xs font-semibold text-white truncate block">{title}</span>
+                        <span className="text-[10px] text-zinc-450 line-clamp-1 block mt-0.5">{subText}</span>
                       </div>
-                      <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 bg-[#F8FAFC] border border-[#E4E4E7] text-[#45464d] shrink-0 font-mono">
+                      <span className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 bg-zinc-900 border border-zinc-700/60 text-zinc-400 shrink-0 font-mono">
                         {activeTab}
                       </span>
                     </div>
@@ -546,10 +546,10 @@ export default function CommunityPage() {
               <button
                 key={tab}
                 onClick={() => { setActiveTab(tab); setSelectedDiscussionCategory('All'); setSelectedRating('All'); }}
-                className={`shrink-0 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border transition-all cursor-pointer ${
+                className={`shrink-0 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-md transition-all cursor-pointer ${
                   activeTab === tab
-                    ? 'bg-[#0F172A] text-white border-[#0F172A]'
-                    : 'bg-white text-[#45464d] border-[#E4E4E7] hover:border-[#0F172A]'
+                    ? 'bg-emerald-400 text-zinc-950 border-emerald-400 font-bold'
+                    : 'bg-zinc-800 text-zinc-400 border-zinc-700/60 hover:border-zinc-500'
                 }`}
               >
                 {tab}
@@ -557,31 +557,29 @@ export default function CommunityPage() {
             ))}
           </div>
 
-
-
           {/* ==================== DISCUSSIONS TAB ==================== */}
           {activeTab === 'Discussions' && (
             <div className="space-y-4">
               {loadingDiscussions ? (
                 <div className="space-y-4 animate-pulse">
-                  {[1, 2, 3].map(n => <div key={n} className="h-32 bg-white border border-[#E4E4E7]" />)}
+                  {[1, 2, 3].map(n => <div key={n} className="h-32 bg-zinc-800 border border-zinc-700/60 rounded-xl" />)}
                 </div>
               ) : filteredDiscussions.length === 0 ? (
-                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
-                  <MessageSquare className="w-12 h-12 text-[#76777d]/20 mx-auto" />
-                  <p className="text-sm font-bold text-[#0F172A]">No discussions found</p>
-                  <p className="text-xs text-[#45464d]">Be the first to start a discussion by clicking the compose button!</p>
+                <div className="text-center py-20 border border-dashed border-zinc-855 bg-zinc-900/40 rounded-2xl space-y-4">
+                  <MessageSquare className="w-12 h-12 text-zinc-500/20 mx-auto" />
+                  <p className="text-sm font-bold text-white">No discussions found</p>
+                  <p className="text-xs text-zinc-400">Be the first to start a discussion by clicking the compose button!</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4">
                   {filteredDiscussions.map(disc => (
                     <div
                       key={disc.id}
-                      className="bg-white border border-[#E4E4E7] p-6 hover:border-[#06B6D4] hover:-translate-y-0.5 transition-all duration-200"
-                      style={{ boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)' }}
+                      className="bg-zinc-800 border border-zinc-700/60 p-6 hover:border-emerald-400/25 hover:-translate-y-0.5 transition-all duration-200 rounded-xl"
+                      style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)' }}
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded bg-[#0F172A] text-white flex items-center justify-center font-bold text-sm shrink-0">
+                        <div className="w-10 h-10 rounded bg-zinc-900 border border-zinc-750 text-white flex items-center justify-center font-bold text-sm shrink-0">
                           {(disc.author_name || 'AN').substring(0, 2).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -589,20 +587,20 @@ export default function CommunityPage() {
                             <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border font-mono ${CATEGORY_COLORS[disc.category] || 'bg-cobalt/8 text-cobalt border-cobalt/15'}`}>
                               {disc.category}
                             </span>
-                            <span className="text-[10px] text-slate-text-muted font-bold flex items-center gap-1 font-mono">
-                              <Clock className="w-3 h-3" /> {new Date(disc.created_at).toLocaleDateString('en-IN')}
+                            <span className="text-[10px] text-zinc-550 font-bold flex items-center gap-1 font-mono">
+                              <Clock className="w-3 h-3 text-zinc-500" /> {new Date(disc.created_at).toLocaleDateString('en-IN')}
                             </span>
                           </div>
-                          <h3 className="font-['Space_Grotesk'] text-base font-semibold text-[#0F172A] leading-tight">{disc.title}</h3>
-                          <p className="text-[11px] text-slate-text-muted font-semibold mt-1 flex items-center gap-1.5">
+                          <h3 className="font-['Space_Grotesk'] text-base font-semibold text-white leading-tight">{disc.title}</h3>
+                          <p className="text-[11px] text-zinc-400 font-semibold mt-1 flex items-center gap-1.5">
                             <span>by {disc.author_name}</span>
                             {disc.is_verified_buyer && (
-                              <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald border border-emerald/20 px-1.5 py-0.5 rounded scale-90" title="Verified Buyer">
+                              <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-400/20 px-1.5 py-0.5 rounded scale-90" title="Verified Buyer">
                                 <ShieldCheck className="w-2.5 h-2.5" /> Verified Buyer
                               </span>
                             )}
                           </p>
-                          <p className="text-xs text-slate-text-secondary leading-relaxed mt-3 line-clamp-3">{disc.body}</p>
+                          <p className="text-xs text-zinc-400 leading-relaxed mt-3 line-clamp-3 font-sans font-medium">{disc.body}</p>
                         </div>
                       </div>
                     </div>
@@ -616,13 +614,13 @@ export default function CommunityPage() {
           {activeTab === 'Reviews' && (
             <div className="space-y-6">
               {/* Aggregated ratings overview */}
-              <div className="bg-white border border-[#E4E4E7] p-6 flex flex-col sm:flex-row items-center gap-8"
-                style={{ boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)' }}
+              <div className="bg-zinc-800 border border-zinc-700/60 p-6 flex flex-col sm:flex-row items-center gap-8 rounded-xl"
+                style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)' }}
               >
                 <div className="text-center shrink-0">
-                  <span className="block text-5xl font-extrabold text-[#0F172A]">{reviewStats.average}</span>
+                  <span className="block text-5xl font-extrabold text-white">{reviewStats.average}</span>
                   <div className="flex justify-center mt-1"><StarRating rating={Math.round(Number(reviewStats.average))} /></div>
-                  <span className="block text-[10px] text-slate-text-muted mt-1.5 font-bold uppercase tracking-wider">
+                  <span className="block text-[10px] text-zinc-450 mt-1.5 font-bold uppercase tracking-wider">
                     {reviewStats.total} {reviewStats.total === 1 ? 'Verified Review' : 'Verified Reviews'}
                   </span>
                 </div>
@@ -631,12 +629,12 @@ export default function CommunityPage() {
                     const pct = reviewStats.percentages[star];
                     return (
                       <div key={star} className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-text-muted w-4 text-right">{star}</span>
+                        <span className="text-xs font-bold text-zinc-400 w-4 text-right">{star}</span>
                         <Star className="w-3 h-3 fill-amber-400 text-amber-400 shrink-0" />
-                        <div className="flex-1 bg-[#F8FAFC] border border-[#E4E4E7]/40 rounded-full h-2.5 overflow-hidden">
+                        <div className="flex-1 bg-zinc-900 border border-zinc-850 rounded-full h-2.5 overflow-hidden">
                           <div className="bg-amber-400 h-full rounded-full transition-all" style={{ width: `${pct}%` }} />
                         </div>
-                        <span className="text-[10px] text-slate-text-muted font-bold w-8">{pct}%</span>
+                        <span className="text-[10px] text-zinc-450 font-bold w-8">{pct}%</span>
                       </div>
                     );
                   })}
@@ -645,47 +643,47 @@ export default function CommunityPage() {
 
               {loadingReviews ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
-                  {[1, 2, 3, 4].map(n => <div key={n} className="h-44 bg-white border border-[#E4E4E7]" />)}
+                  {[1, 2, 3, 4].map(n => <div key={n} className="h-44 bg-zinc-800 border border-zinc-700/60 rounded-xl" />)}
                 </div>
               ) : filteredReviews.length === 0 ? (
-                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
-                  <Star className="w-12 h-12 text-[#76777d]/20 mx-auto" />
-                  <p className="text-sm font-bold text-[#0F172A]">No reviews found</p>
-                  <p className="text-xs text-[#45464d]">No customer feedback matches the selected specifications.</p>
+                <div className="text-center py-20 border border-dashed border-zinc-850 bg-zinc-900/40 rounded-2xl space-y-4">
+                  <Star className="w-12 h-12 text-zinc-500/20 mx-auto" />
+                  <p className="text-sm font-bold text-white">No reviews found</p>
+                  <p className="text-xs text-zinc-400">No customer feedback matches the selected specifications.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {filteredReviews.map(review => (
                     <div
                       key={review.id}
-                      className={`bg-white border p-6 flex flex-col justify-between hover:border-[#06B6D4] hover:-translate-y-1 transition-all duration-200 relative ${review.isLive ? 'border-cobalt/30 bg-[#F8FAFC]' : 'border-[#E4E4E7]'}`}
-                      style={{ boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)', transition: 'transform 0.2s ease, border-color 0.2s ease' }}
+                      className={`bg-zinc-800 border p-6 flex flex-col justify-between hover:border-emerald-400/25 hover:-translate-y-1 transition-all duration-200 relative rounded-xl ${review.isLive ? 'border-emerald-400/30 bg-zinc-800/80' : 'border-zinc-700/60'}`}
+                      style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)', transition: 'transform 0.2s ease, border-color 0.2s ease' }}
                     >
                       {review.isLive && (
-                        <span className="absolute top-2 right-2 text-[8px] font-black uppercase tracking-wider text-cobalt bg-cobalt/8 border border-cobalt/15 px-2 py-0.5 rounded font-mono">New</span>
+                        <span className="absolute top-2 right-2 text-[8px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-400/10 border border-emerald-400/25 px-2 py-0.5 rounded font-mono">New</span>
                       )}
                       <div className="space-y-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3">
-                            <div className={`w-9 h-9 rounded ${review.avatarColor} text-white flex items-center justify-center font-bold text-xs shrink-0`}>
+                            <div className={`w-9 h-9 rounded bg-zinc-900 border border-zinc-750 text-white flex items-center justify-center font-bold text-xs shrink-0`}>
                               {review.avatar}
                             </div>
                             <div>
                               <div className="flex items-center gap-1">
-                                <span className="block text-xs font-bold text-[#0F172A]">{review.author}</span>
+                                <span className="block text-xs font-bold text-white">{review.author}</span>
                                 {review.is_verified_buyer && (
-                                  <span className="text-emerald shrink-0" title="Verified Buyer">
-                                    <ShieldCheck className="w-3.5 h-3.5 fill-emerald/10" />
+                                  <span className="text-emerald-400 shrink-0" title="Verified Buyer">
+                                    <ShieldCheck className="w-3.5 h-3.5 fill-emerald-500/10" />
                                   </span>
                                 )}
                               </div>
-                              <span className="block text-[10px] text-slate-text-muted font-semibold">{review.role}</span>
+                              <span className="block text-[10px] text-zinc-500 font-semibold">{review.role}</span>
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1 shrink-0">
                             <StarRating rating={review.rating} />
                             {review.verified && (
-                              <span className="text-[8px] uppercase tracking-wider font-extrabold text-emerald flex items-center gap-0.5 font-mono">
+                              <span className="text-[8px] uppercase tracking-wider font-extrabold text-emerald-400 flex items-center gap-0.5 font-mono">
                                 <CheckCircle2 className="w-2.5 h-2.5" /> Verified Purchase
                               </span>
                             )}
@@ -693,23 +691,23 @@ export default function CommunityPage() {
                         </div>
 
                         <div>
-                          <span className="inline-flex items-center text-[9px] uppercase tracking-wider font-bold text-cobalt bg-cobalt/5 border border-cobalt/15 px-2 py-0.5 rounded font-mono mb-2">
+                          <span className="inline-flex items-center text-[9px] uppercase tracking-wider font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/25 px-2 py-0.5 rounded font-mono mb-2">
                             <Cpu className="w-3 h-3 mr-1" />{review.product}
                           </span>
-                          <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] mb-1.5 leading-snug">{review.title || 'Design Integrity & Performance'}</h4>
-                          <p className="text-xs text-slate-text-secondary leading-relaxed">{review.body}</p>
+                          <h4 className="font-['Space_Grotesk'] text-sm font-semibold text-white mb-1.5 leading-snug">{review.title || 'Design Integrity & Performance'}</h4>
+                          <p className="text-xs text-zinc-400 leading-relaxed font-sans font-medium">{review.body}</p>
                         </div>
                       </div>
 
-                      <div className="pt-4 border-t border-slate-border/50 mt-4 flex items-center justify-between">
-                        <span className="text-[10px] text-slate-text-muted flex items-center gap-1 font-mono">
+                      <div className="pt-4 border-t border-zinc-750/50 mt-4 flex items-center justify-between">
+                        <span className="text-[10px] text-zinc-500 flex items-center gap-1 font-mono">
                           <Clock className="w-3 h-3" /> {review.date}
                         </span>
                         <button
                           onClick={() => toggleLike(review.id)}
                           className={`flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded border transition-all cursor-pointer ${likedReviews.has(review.id)
-                            ? 'text-cobalt bg-cobalt/5 border-cobalt/25'
-                            : 'text-[#45464d] border-[#E4E4E7] hover:border-cobalt/30 hover:text-cobalt'}`}
+                            ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/25'
+                            : 'text-zinc-450 border-zinc-700/60 hover:border-emerald-400/30 hover:text-emerald-400'}`}
                         >
                           <ThumbsUp className="w-3 h-3" />
                           {review.likes + (likedReviews.has(review.id) ? 1 : 0)} Helpful
@@ -726,31 +724,31 @@ export default function CommunityPage() {
           {activeTab === 'Announcements' && (
             <div className="space-y-4">
               {filteredAnnouncements.length === 0 ? (
-                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
-                  <Megaphone className="w-12 h-12 text-[#76777d]/20 mx-auto" />
-                  <p className="text-sm font-bold text-[#0F172A]">No announcements found</p>
+                <div className="text-center py-20 border border-dashed border-zinc-850 bg-zinc-900/40 rounded-2xl space-y-4">
+                  <Megaphone className="w-12 h-12 text-zinc-500/20 mx-auto" />
+                  <p className="text-sm font-bold text-white">No announcements found</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4">
                   {filteredAnnouncements.map((ann) => (
                     <div
                       key={ann.id}
-                      className={`bg-white border p-6 flex flex-col justify-between hover:border-[#0F172A] transition-all relative ${ann.pinned ? 'border-l-4 border-l-[#06B6D4] border-[#E4E4E7]' : 'border-[#E4E4E7]'}`}
-                      style={{ boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)' }}
+                      className={`bg-zinc-800 border p-6 flex flex-col justify-between hover:border-zinc-700 transition-all relative rounded-xl ${ann.pinned ? 'border-l-4 border-l-emerald-400 border-zinc-700/65' : 'border-zinc-700/60'}`}
+                      style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)' }}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 flex-1">
-                          {ann.pinned && <Pin className="w-4 h-4 text-cobalt shrink-0 mt-0.5" />}
+                          {ann.pinned && <Pin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />}
                           <div className="space-y-2 flex-1">
                             <div className="flex flex-wrap items-center gap-2">
                               <span className={`text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border font-mono ${ann.tagColor}`}>{ann.tag}</span>
-                              {ann.pinned && <span className="text-[9px] uppercase tracking-wider font-extrabold text-cobalt font-mono">Pinned</span>}
+                              {ann.pinned && <span className="text-[9px] uppercase tracking-wider font-extrabold text-emerald-400 font-mono">Pinned</span>}
                             </div>
-                            <h3 className="font-['Space_Grotesk'] text-base font-semibold text-[#0F172A] leading-tight">{ann.title}</h3>
-                            <p className="text-xs text-slate-text-secondary leading-relaxed">{ann.body}</p>
+                            <h3 className="font-['Space_Grotesk'] text-base font-semibold text-white leading-tight">{ann.title}</h3>
+                            <p className="text-xs text-zinc-400 leading-relaxed font-sans font-medium">{ann.body}</p>
                           </div>
                         </div>
-                        <span className="text-[10px] text-slate-text-muted font-bold shrink-0 flex items-center gap-1 font-mono">
+                        <span className="text-[10px] text-zinc-500 font-bold shrink-0 flex items-center gap-1 font-mono">
                           <Clock className="w-3 h-3" /> {ann.date}
                         </span>
                       </div>
@@ -765,32 +763,32 @@ export default function CommunityPage() {
           {activeTab === 'News' && (
             <div className="space-y-4">
               {filteredNews.length === 0 ? (
-                <div className="text-center py-20 border border-dashed border-[#E4E4E7] bg-white space-y-4">
-                  <Newspaper className="w-12 h-12 text-[#76777d]/20 mx-auto" />
-                  <p className="text-sm font-bold text-[#0F172A]">No news articles found</p>
+                <div className="text-center py-20 border border-dashed border-zinc-850 bg-zinc-900/40 rounded-2xl space-y-4">
+                  <Newspaper className="w-12 h-12 text-zinc-500/20 mx-auto" />
+                  <p className="text-sm font-bold text-white">No news articles found</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4">
                   {filteredNews.map((article) => (
                     <div
                       key={article.id}
-                      className="bg-white border border-[#E4E4E7] p-6 flex flex-col sm:flex-row gap-5 hover:border-[#06B6D4] hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
-                      style={{ boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)' }}
+                      className="bg-zinc-800 border border-zinc-700/60 p-6 flex flex-col sm:flex-row gap-5 hover:border-emerald-400/25 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group rounded-xl"
+                      style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)' }}
                     >
-                      <div className={`w-12 h-12 rounded ${article.avatarColor} text-white flex items-center justify-center font-bold text-sm shrink-0`}>
+                      <div className={`w-12 h-12 rounded bg-zinc-900 border border-zinc-750 text-white flex items-center justify-center font-bold text-sm shrink-0`}>
                         {article.avatar}
                       </div>
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-cobalt/5 text-cobalt border-cobalt/20 font-mono">{article.category}</span>
-                          <span className="text-[10px] text-slate-text-muted font-bold flex items-center gap-1 font-mono"><Clock className="w-3 h-3" /> {article.date}</span>
-                          <span className="text-[10px] text-slate-text-muted font-bold font-mono">· {article.readTime}</span>
+                          <span className="text-[9px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded border bg-emerald-400/10 text-emerald-400 border-emerald-400/25 font-mono">{article.category}</span>
+                          <span className="text-[10px] text-zinc-500 font-bold flex items-center gap-1 font-mono"><Clock className="w-3 h-3" /> {article.date}</span>
+                          <span className="text-[10px] text-zinc-550 font-bold font-mono">· {article.readTime}</span>
                         </div>
-                        <h3 className="font-['Space_Grotesk'] text-base font-semibold text-[#0F172A] group-hover:text-[#06B6D4] transition-colors leading-tight">{article.title}</h3>
-                        <p className="text-xs text-slate-text-secondary leading-relaxed">{article.excerpt}</p>
+                        <h3 className="font-['Space_Grotesk'] text-base font-semibold text-white group-hover:text-emerald-400 transition-colors leading-tight">{article.title}</h3>
+                        <p className="text-xs text-zinc-400 leading-relaxed font-sans font-medium">{article.excerpt}</p>
                       </div>
                       <div className="shrink-0 flex items-center justify-end">
-                        <ArrowRight className="w-4 h-4 text-slate-text-muted group-hover:text-[#06B6D4] group-hover:translate-x-1 transition-all" />
+                        <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
                       </div>
                     </div>
                   ))}
@@ -806,7 +804,7 @@ export default function CommunityPage() {
       {/* ─── MOBILE FAB ─── */}
       <button
         onClick={() => setShowFilterDrawer(true)}
-        className="md:hidden fixed bottom-6 right-5 w-14 h-14 bg-[#0F172A] text-[#06B6D4] shadow-lg flex items-center justify-center z-40 active:scale-90 transition-transform cursor-pointer"
+        className="md:hidden fixed bottom-6 right-5 w-14 h-14 bg-emerald-400 text-zinc-950 rounded-full shadow-lg flex items-center justify-center z-40 active:scale-90 transition-transform cursor-pointer"
         aria-label="Open Filters"
       >
         <SlidersVertical className="w-5 h-5" />
@@ -816,20 +814,20 @@ export default function CommunityPage() {
       {/* Backdrop */}
       <div
         onClick={() => setShowFilterDrawer(false)}
-        className={`md:hidden fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm z-50 transition-opacity duration-300 ${showFilterDrawer ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        className={`md:hidden fixed inset-0 bg-zinc-955/85 backdrop-blur-sm z-50 transition-opacity duration-300 ${showFilterDrawer ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
       />
       {/* Drawer panel */}
       <aside
-        className={`md:hidden fixed top-0 right-0 h-full w-[85%] max-w-sm bg-white shadow-2xl z-[60] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${showFilterDrawer ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`md:hidden fixed top-0 right-0 h-full w-[85%] max-w-sm bg-zinc-900 shadow-2xl z-[60] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${showFilterDrawer ? 'translate-x-0' : 'translate-x-full'} text-zinc-100 border-l border-zinc-800`}
       >
         {/* Drawer header */}
-        <div className="p-5 border-b border-[#E4E4E7] flex justify-between items-center bg-[#F8FAFC]">
-          <h2 className="font-['Space_Grotesk'] text-base font-semibold text-[#0F172A] flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4" />
+        <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
+          <h2 className="font-['Space_Grotesk'] text-base font-semibold text-white flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
             Marketplace Filters
           </h2>
-          <button onClick={() => setShowFilterDrawer(false)} className="p-1.5 hover:bg-[#E4E4E7] transition-colors cursor-pointer">
-            <X className="w-4 h-4 text-[#45464d]" />
+          <button onClick={() => setShowFilterDrawer(false)} className="p-1.5 hover:bg-zinc-800 transition-colors cursor-pointer text-zinc-450 hover:text-white rounded">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -837,16 +835,16 @@ export default function CommunityPage() {
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
           {/* Category */}
           <section>
-            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">Category</h3>
+            <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Category</h3>
             <div className="grid grid-cols-2 gap-2">
               {TABS.map(tab => (
                 <button
                   key={tab}
                   onClick={() => { setActiveTab(tab); setSelectedDiscussionCategory('All'); setSelectedRating('All'); setShowFilterDrawer(false); }}
-                  className={`px-3 py-2.5 border text-xs font-['JetBrains_Mono'] text-left transition-colors cursor-pointer ${
+                  className={`px-3 py-2.5 border text-xs font-['JetBrains_Mono'] text-left transition-colors cursor-pointer rounded-md ${
                     activeTab === tab
-                      ? 'bg-[#0F172A] text-white border-[#0F172A]'
-                      : 'border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d]'
+                      ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/25'
+                      : 'border-zinc-800 bg-zinc-950 text-zinc-450 hover:bg-zinc-800 hover:text-zinc-200'
                   }`}
                 >
                   {tab}
@@ -858,16 +856,16 @@ export default function CommunityPage() {
           {/* Sub-Filters */}
           {activeTab === 'Discussions' && (
             <section>
-              <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">Discussion Type</h3>
+              <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Discussion Type</h3>
               <div className="grid grid-cols-2 gap-2">
                 {['All', ...DISCUSSION_CATEGORIES].map(cat => (
                   <button
                     key={cat}
                     onClick={() => { setSelectedDiscussionCategory(cat); setShowFilterDrawer(false); }}
-                    className={`px-3 py-2 text-left border text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3 py-2 text-left border text-xs font-bold transition-all cursor-pointer rounded-md ${
                       selectedDiscussionCategory === cat
-                        ? 'bg-cobalt/8 text-cobalt border-cobalt'
-                        : 'border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d]'
+                        ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/25'
+                        : 'border-zinc-850 bg-zinc-955 text-zinc-455 hover:bg-zinc-800 hover:text-white'
                     }`}
                   >
                     {cat}
@@ -879,16 +877,16 @@ export default function CommunityPage() {
 
           {activeTab === 'Reviews' && (
             <section>
-              <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-[#45464d] mb-4">Star Rating</h3>
+              <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-zinc-500 mb-4">Star Rating</h3>
               <div className="flex flex-col gap-1.5">
                 {['All', '5 Stars', '4 Stars', '3 Stars & below'].map(ratingOpt => (
                   <button
                     key={ratingOpt}
                     onClick={() => { setSelectedRating(ratingOpt); setShowFilterDrawer(false); }}
-                    className={`px-3 py-2 text-left border text-xs font-bold transition-all cursor-pointer ${
+                    className={`px-3 py-2 text-left border text-xs font-bold transition-all cursor-pointer rounded-md ${
                       selectedRating === ratingOpt
-                        ? 'bg-amber-500/8 text-amber-600 border-amber-500'
-                        : 'border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d]'
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/25'
+                        : 'border-zinc-805 bg-zinc-955 text-zinc-455 hover:bg-zinc-800 hover:text-white'
                     }`}
                   >
                     {ratingOpt}
@@ -905,27 +903,27 @@ export default function CommunityPage() {
           ========================================== */}
       {showDiscussionCompose && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E4E4E7] rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-5 animate-slide-in">
+          <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-5 animate-slide-in text-zinc-100">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-black text-[#0F172A] tracking-tight">Start a New Discussion</h3>
+              <h3 className="text-base font-black text-white tracking-tight font-['Space_Grotesk']">Start a New Discussion</h3>
               <button
                 onClick={() => setShowDiscussionCompose(false)}
-                className="text-slate-text-muted hover:text-slate-text-primary cursor-pointer p-1 rounded-lg hover:bg-slate-bg transition-colors"
+                className="text-zinc-400 hover:text-white cursor-pointer p-1 rounded-lg hover:bg-zinc-700 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <form onSubmit={handleDiscussionSubmit} className="space-y-4 text-xs font-bold">
+            <form onSubmit={handleDiscussionSubmit} className="space-y-4 text-xs font-bold font-mono">
               <div>
-                <label className="block text-[10px] text-slate-text-secondary uppercase mb-2">Select Category *</label>
-                <div className="flex gap-2 flex-wrap">
+                <label className="block text-[10px] text-zinc-400 uppercase mb-2">Select Category *</label>
+                <div className="flex gap-2 flex-wrap font-sans">
                   {DISCUSSION_CATEGORIES.map(cat => (
                     <button
                       key={cat}
                       type="button"
                       onClick={() => setDiscussionCategory(cat)}
                       className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold cursor-pointer transition-all ${
-                        discussionCategory === cat ? CATEGORY_COLORS[cat] : 'bg-slate-bg border-slate-border text-slate-text-muted hover:text-slate-text-primary'
+                        discussionCategory === cat ? CATEGORY_COLORS[cat] : 'bg-zinc-900 border-zinc-750 text-zinc-400 hover:text-white hover:border-zinc-600'
                       }`}
                     >
                       {cat}
@@ -935,31 +933,31 @@ export default function CommunityPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Discussion Title *</label>
+                <label className="block text-[10px] text-zinc-400 uppercase">Discussion Title *</label>
                 <input
                   type="text"
                   required
                   placeholder="Discussion title..."
                   value={discussionTitle}
                   onChange={e => setDiscussionTitle(e.target.value)}
-                  className="w-full text-sm font-semibold p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40 transition-colors"
+                  className="w-full text-sm font-sans font-semibold p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white focus:outline-none focus:border-emerald-400/50 transition-colors"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Detailed description *</label>
+                <label className="block text-[10px] text-zinc-400 uppercase">Detailed description *</label>
                 <textarea
                   required
                   rows={4}
                   placeholder="Share your thoughts, build logs, questions, or showcase your work..."
                   value={discussionBody}
                   onChange={e => setDiscussionBody(e.target.value)}
-                  className="w-full text-sm p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary resize-none focus:outline-none focus:border-cobalt/40 transition-colors"
+                  className="w-full text-sm font-sans font-medium p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white resize-none focus:outline-none focus:border-emerald-400/50 transition-colors"
                 />
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button type="submit" disabled={submittingDiscussion} className="flex-1 btn-cobalt text-xs font-bold py-3 rounded-xl cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
+                <button type="submit" disabled={submittingDiscussion} className="flex-1 bg-emerald-400 hover:bg-emerald-500 text-zinc-950 text-xs font-bold py-3 rounded-xl cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2">
                   {submittingDiscussion ? <><RotateCcw className="w-3.5 h-3.5 animate-spin" /> Posting...</> : <><Send className="w-3.5 h-3.5" /> Post Discussion</>}
                 </button>
               </div>
@@ -973,34 +971,34 @@ export default function CommunityPage() {
           ========================================== */}
       {showReviewCompose && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-[#E4E4E7] rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-5 animate-slide-in">
+          <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl w-full max-w-lg shadow-2xl p-6 space-y-5 animate-slide-in text-zinc-100">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-black text-[#0F172A] tracking-tight">Write a Community Review</h3>
+              <h3 className="text-base font-black text-white tracking-tight font-['Space_Grotesk']">Write a Community Review</h3>
               <button
                 onClick={() => setShowReviewCompose(false)}
-                className="text-slate-text-muted hover:text-slate-text-primary cursor-pointer p-1 rounded-lg hover:bg-slate-bg transition-colors"
+                className="text-zinc-400 hover:text-white cursor-pointer p-1 rounded-lg hover:bg-zinc-700 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <form onSubmit={handleReviewSubmit} className="space-y-4 text-xs font-bold">
-              <div className="flex items-center justify-between bg-[#F8FAFC] border border-[#E4E4E7] p-3.5 rounded-xl">
-                <span className="text-[10px] font-bold text-slate-text-secondary uppercase">Product Rating *</span>
+            <form onSubmit={handleReviewSubmit} className="space-y-4 text-xs font-bold font-mono">
+              <div className="flex items-center justify-between bg-zinc-900 border border-zinc-700 p-3.5 rounded-xl">
+                <span className="text-[10px] font-bold text-zinc-400 uppercase">Product Rating *</span>
                 <StarRating rating={reviewRating} interactive onChange={setReviewRating} />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Select Purchased Product *</label>
+                <label className="block text-[10px] text-zinc-400 uppercase">Select Purchased Product *</label>
                 {loadingPurchasedProducts ? (
-                  <div className="w-full text-xs font-mono p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-muted animate-pulse">
+                  <div className="w-full text-xs font-mono p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-zinc-500 animate-pulse">
                     Loading your purchase history...
                   </div>
                 ) : purchasedProducts.length === 0 ? (
-                  <div className="space-y-2">
-                    <div className="w-full text-xs p-3.5 border border-red-200 rounded-xl bg-red-50 text-red-700 font-semibold leading-relaxed">
+                  <div className="space-y-2 font-sans">
+                    <div className="w-full text-xs p-3.5 border border-red-500/25 bg-red-500/10 text-red-400 font-semibold leading-relaxed rounded-xl">
                       ⚠️ You have not purchased any mechatronics products yet. Our anti-fake-review policy requires you to select a product from your order history.
                     </div>
-                    <p className="text-[10px] text-slate-text-muted italic font-normal">
+                    <p className="text-[10px] text-zinc-400 italic font-normal">
                       Please visit the Marketplace, make a purchase, and then come back to review it!
                     </p>
                   </div>
@@ -1009,7 +1007,7 @@ export default function CommunityPage() {
                     required
                     value={reviewProduct}
                     onChange={e => setReviewProduct(e.target.value)}
-                    className="w-full text-sm p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40 font-semibold cursor-pointer"
+                    className="w-full text-sm font-sans font-semibold p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white focus:outline-none focus:border-emerald-400/50 cursor-pointer"
                   >
                     <option value="" disabled>-- Select a purchased product --</option>
                     {purchasedProducts.map((prod: any) => (
@@ -1022,26 +1020,26 @@ export default function CommunityPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Review Headline *</label>
+                <label className="block text-[10px] text-zinc-400 uppercase">Review Headline *</label>
                 <input
                   type="text"
                   required
                   placeholder="Review title (e.g. 'Excellent build quality!')"
                   value={reviewTitle}
                   onChange={e => setReviewTitle(e.target.value)}
-                  className="w-full text-sm font-semibold p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary focus:outline-none focus:border-cobalt/40"
+                  className="w-full text-sm font-sans font-semibold p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white focus:outline-none focus:border-emerald-400/50"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] text-slate-text-secondary uppercase">Detailed Experience *</label>
+                <label className="block text-[10px] text-zinc-400 uppercase">Detailed Experience *</label>
                 <textarea
                   required
                   rows={4}
                   placeholder="Share your detailed experience..."
                   value={reviewBody}
                   onChange={e => setReviewBody(e.target.value)}
-                  className="w-full text-sm p-3 border border-[#E4E4E7] rounded-xl bg-[#F8FAFC] text-slate-text-primary resize-none focus:outline-none focus:border-cobalt/40"
+                  className="w-full text-sm font-sans font-medium p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white resize-none focus:outline-none focus:border-emerald-400/50"
                 />
               </div>
 
@@ -1049,7 +1047,7 @@ export default function CommunityPage() {
                 <button
                   type="submit"
                   disabled={submittingReview || purchasedProducts.length === 0}
-                  className="flex-1 btn-cobalt text-xs font-bold py-3 rounded-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 bg-emerald-400 hover:bg-emerald-500 text-zinc-950 text-xs font-bold py-3 rounded-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {submittingReview ? <><RotateCcw className="w-3.5 h-3.5 animate-spin" /> Posting...</> : <><Send className="w-3.5 h-3.5" /> Post Review</>}
                 </button>

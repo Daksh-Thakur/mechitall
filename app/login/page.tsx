@@ -73,10 +73,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden flex font-sans bg-slate-bg">
+    <div className="h-screen w-screen overflow-hidden flex font-sans bg-zinc-900 text-zinc-100">
 
       {/* ── Left panel — branding (hidden on small screens) ── */}
-      <div className="hidden lg:flex lg:w-5/12 xl:w-1/2 bg-gradient-to-br from-slate-text-primary via-slate-text-secondary to-slate-text-primary flex-col justify-between p-10 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-5/12 xl:w-1/2 bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 flex-col justify-between p-10 relative overflow-hidden border-r border-zinc-800">
         {/* Engineering grid lines */}
         <div 
           className="absolute inset-0 opacity-[0.03] pointer-events-none" 
@@ -86,13 +86,13 @@ export default function LoginPage() {
           }}
         />
         {/* Glow blur elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-cobalt/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald/5 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 z-10 w-fit">
-          <div className="w-9 h-9 rounded-xl bg-cobalt flex items-center justify-center shadow-lg transition-transform hover:scale-105">
-            <Cpu className="w-5 h-5 text-white animate-pulse" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-400/10 transition-transform hover:scale-105">
+            <Cpu className="w-5 h-5 text-zinc-950 animate-pulse" />
           </div>
           <span className="text-white font-black text-lg tracking-tight font-['Space_Grotesk']">MechItAll</span>
         </Link>
@@ -100,31 +100,31 @@ export default function LoginPage() {
         {/* Centre Copy / Value Prop card */}
         <div className="z-10 space-y-6 max-w-sm">
           <div className="space-y-3">
-            <span className="text-[9px] font-black uppercase tracking-widest text-[#06B6D4] bg-white/10 px-2.5 py-1 rounded-full backdrop-blur-sm border border-white/5 w-fit block">
+            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 bg-zinc-800 px-2.5 py-1 rounded-full border border-zinc-700/60 w-fit block font-mono">
               Precision Mechatronics Marketplace
             </span>
             <h1 className="text-3xl xl:text-4xl font-extrabold text-white leading-tight tracking-tight font-['Space_Grotesk']">
               The marketplace<br />
-              <span className="bg-gradient-to-r from-cobalt to-[#38bdf8] bg-clip-text text-transparent">engineers trust</span>
+              <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">engineers trust</span>
             </h1>
-            <p className="text-xs text-slate-300 leading-relaxed font-medium">
+            <p className="text-xs text-zinc-400 leading-relaxed font-medium">
               Find premium parts, request custom CNC machining quotes, track orders, and join our verified hardware network.
             </p>
           </div>
 
-          <div className="p-5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md glow-cobalt-lg space-y-4">
-            <span className="text-[9px] font-black uppercase tracking-widest text-[#38bdf8] block font-mono">Platform Benefits</span>
-            <div className="space-y-3">
+          <div className="p-5 bg-zinc-900/50 border border-zinc-805/80 rounded-2xl space-y-4">
+            <span className="text-[9px] font-black uppercase tracking-widest text-emerald-400 block font-mono">Platform Benefits</span>
+            <div className="space-y-3 font-sans">
               {[
                 { icon: BoltIcon, color: 'text-amber-500', label: '25 Bolts welcome bonus on sign-up' },
                 { icon: Package, color: 'text-emerald-400', label: 'Same-day dispatch, no minimum order' },
-                { icon: ShieldCheck, color: 'text-[#38bdf8]', label: 'ISO 9001:2015 quality verified parts' },
+                { icon: ShieldCheck, color: 'text-emerald-400', label: 'ISO 9001:2015 quality verified parts' },
               ].map(({ icon: Icon, color, label }) => (
                 <div key={label} className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center shrink-0 border border-white/5 shadow-inner">
+                  <div className="w-7 h-7 rounded-lg bg-zinc-850 flex items-center justify-center shrink-0 border border-zinc-750 shadow-inner">
                     <Icon className={`w-3.5 h-3.5 ${color}`} />
                   </div>
-                  <span className="text-xs text-white/80 font-bold">{label}</span>
+                  <span className="text-xs text-zinc-300 font-bold">{label}</span>
                 </div>
               ))}
             </div>
@@ -132,31 +132,31 @@ export default function LoginPage() {
         </div>
 
         {/* Bottom note */}
-        <p className="text-[10px] text-slate-400 font-bold z-10 font-mono tracking-wider">
+        <p className="text-[10px] text-zinc-500 font-bold z-10 font-mono tracking-wider">
           © 2026 MECHITALL · ALL RIGHTS RESERVED
         </p>
       </div>
 
       {/* ── Right panel — form ── */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-10 relative overflow-hidden bg-slate-bg">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 sm:px-10 relative overflow-hidden bg-zinc-900">
         {/* Subtle dot grid */}
-        <div className="absolute inset-0 bg-[radial-gradient(#0f172a_1px,transparent_1px)] [background-size:22px_22px] opacity-[0.03] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:22px_22px] opacity-[0.02] pointer-events-none" />
 
         {/* Mobile logo */}
         <Link href="/" className="flex lg:hidden items-center gap-2 mb-6 z-10">
-          <div className="w-8 h-8 rounded-xl bg-cobalt flex items-center justify-center shadow-md">
-            <Cpu className="w-4 h-4 text-white" />
+          <div className="w-8 h-8 rounded-xl bg-emerald-400 flex items-center justify-center shadow-md">
+            <Cpu className="w-4 h-4 text-zinc-955" />
           </div>
-          <span className="font-black text-slate-text-primary text-base tracking-tight font-['Space_Grotesk']">MechItAll</span>
+          <span className="font-black text-white text-base tracking-tight font-['Space_Grotesk']">MechItAll</span>
         </Link>
 
-        <div className="w-full max-w-sm z-10 bg-white border border-slate-border rounded-2xl p-6 md:p-8 shadow-xl glow-cobalt space-y-5 animate-slide-in">
+        <div className="w-full max-w-sm z-10 bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 md:p-8 shadow-2xl space-y-5 animate-slide-in">
           {/* Header */}
           <div className="space-y-1">
-            <h2 className="text-xl font-extrabold text-slate-text-primary tracking-tight font-['Space_Grotesk']">
+            <h2 className="text-xl font-extrabold text-white tracking-tight font-['Space_Grotesk']">
               {isSignUp ? 'Create your account' : 'Welcome back'}
             </h2>
-            <p className="text-xs text-slate-text-muted font-bold">
+            <p className="text-xs text-zinc-400 font-bold font-sans">
               {isSignUp
                 ? 'Join thousands of makers and engineers'
                 : 'Sign in to your MechItAll account'}
@@ -167,7 +167,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-3.5">
             {isSignUp && (
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-slate-text-secondary uppercase tracking-wider font-mono">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
                   Full Name
                 </label>
                 <input
@@ -176,13 +176,13 @@ export default function LoginPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   disabled={isLoading}
-                  className="w-full text-xs font-bold p-2.5 border border-slate-border rounded-lg bg-white text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:border-cobalt focus:ring-4 focus:ring-cobalt/10 transition-all shadow-inner"
+                  className="w-full text-xs font-sans font-semibold p-2.5 border border-zinc-705 rounded-lg bg-zinc-900 text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 transition-all shadow-inner"
                 />
               </div>
             )}
 
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-text-secondary uppercase tracking-wider font-mono">
+              <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
                 Email Address
               </label>
               <input
@@ -191,12 +191,12 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
-                className="w-full text-xs font-bold p-2.5 border border-slate-border rounded-lg bg-white text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:border-cobalt focus:ring-4 focus:ring-cobalt/10 transition-all shadow-inner"
+                className="w-full text-xs font-sans font-semibold p-2.5 border border-zinc-705 rounded-lg bg-zinc-900 text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 transition-all shadow-inner"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="block text-[10px] font-bold text-slate-text-secondary uppercase tracking-wider font-mono">
+              <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
                 Password
               </label>
               <div className="relative">
@@ -206,12 +206,12 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
-                  className="w-full text-xs font-bold p-2.5 pr-10 border border-slate-border rounded-lg bg-white text-slate-text-primary placeholder:text-slate-text-muted focus:outline-none focus:border-cobalt focus:ring-4 focus:ring-cobalt/10 transition-all shadow-inner"
+                  className="w-full text-xs font-sans font-semibold p-2.5 pr-10 border border-zinc-705 rounded-lg bg-zinc-900 text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/10 transition-all shadow-inner"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-slate-text-muted hover:text-slate-text-primary cursor-pointer transition-colors"
+                  className="absolute right-3 top-2.5 text-zinc-400 hover:text-white cursor-pointer transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
@@ -221,7 +221,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-cobalt py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md hover:shadow-cobalt/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-1"
+              className="w-full bg-emerald-400 hover:bg-emerald-350 text-zinc-950 py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-emerald-400/5 hover:shadow-emerald-400/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-1 font-mono uppercase tracking-wider"
             >
               {isLoading ? (
                 'Authenticating...'
@@ -235,7 +235,7 @@ export default function LoginPage() {
           </form>
 
           {/* Bolts reward hint */}
-          <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl flex items-start gap-2.5 text-[10px] leading-relaxed text-amber-700 font-bold">
+          <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl flex items-start gap-2.5 text-[10px] leading-relaxed text-amber-400 font-bold font-mono">
             <div className="shrink-0 mt-0.5">
               <BoltIcon className="w-4 h-4 text-amber-500 animate-pulse" />
             </div>
@@ -247,20 +247,20 @@ export default function LoginPage() {
           </div>
 
           {/* Toggle */}
-          <p className="text-center text-xs text-slate-text-muted font-bold">
+          <p className="text-center text-xs text-zinc-400 font-bold font-sans">
             {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
             <button
               onClick={() => { setIsSignUp(!isSignUp); setEmail(''); setPassword(''); setFullName(''); }}
               disabled={isLoading}
-              className="text-cobalt font-bold hover:underline cursor-pointer transition-opacity disabled:opacity-50"
+              className="text-emerald-400 font-bold hover:underline cursor-pointer transition-opacity disabled:opacity-50"
             >
               {isSignUp ? 'Sign In' : 'Sign Up'}
             </button>
           </p>
 
           {/* Back to home */}
-          <p className="text-center text-[10px] text-slate-text-muted/60">
-            <Link href="/" className="hover:text-cobalt transition-colors font-bold">← Back to homepage</Link>
+          <p className="text-center text-[10px] text-zinc-500">
+            <Link href="/" className="hover:text-emerald-400 transition-colors font-mono font-bold">← Back to homepage</Link>
           </p>
         </div>
       </div>
