@@ -391,18 +391,66 @@ export async function getProfileOrders(profileId: string) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const { data: orders, error } = await supabase
+  const { data: orders } = await supabase
     .from('orders')
     .select('*')
     .eq('profile_id', profileId)
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching profile orders:', error.message);
-    return [];
+  // Fetch buyer's RFQs
+  const { data: buyerRfqs } = await supabase
+    .from('rfqs')
+    .select('id, title')
+    .eq('buyer_id', profileId);
+
+  const rfqIds = (buyerRfqs || []).map(r => r.id);
+  
+  let generalQuotes: any[] = [];
+  let machQuotes: any[] = [];
+  if (rfqIds.length > 0) {
+    const [gRes, mRes] = await Promise.all([
+      supabase.from('quotes').select('id, rfq_id').in('rfq_id', rfqIds),
+      supabase.from('machining_quotes').select('id, rfq_id').in('rfq_id', rfqIds),
+    ]);
+    generalQuotes = gRes.data || [];
+    machQuotes = mRes.data || [];
   }
 
-  return orders;
+  const mappedOrders = (orders || []).map((o: any) => {
+    let rfqTitle = `Order #${o.id} - ${o.items_count} Units`;
+    let rfqId = '';
+    if (o.id.startsWith('RFQ-')) {
+      const orderSuffix = o.id.replace('RFQ-', '').toUpperCase();
+      const matchedGeneralQuote = (generalQuotes || []).find(
+        q => q.id.substring(0, 8).toUpperCase() === orderSuffix
+      );
+      if (matchedGeneralQuote) {
+        rfqId = matchedGeneralQuote.rfq_id;
+        const rfqObj = (buyerRfqs || []).find(r => r.id === rfqId);
+        if (rfqObj) {
+          rfqTitle = `${rfqObj.title} (${o.items_count} Pcs)`;
+        }
+      } else {
+        const matchedMachQuote = (machQuotes || []).find(
+          mq => mq.id.substring(0, 8).toUpperCase() === orderSuffix
+        );
+        if (matchedMachQuote) {
+          rfqId = matchedMachQuote.rfq_id;
+          const rfqObj = (buyerRfqs || []).find(r => r.id === rfqId);
+          if (rfqObj) {
+            rfqTitle = `${rfqObj.title} (${o.items_count} Pcs)`;
+          }
+        }
+      }
+    }
+    return {
+      ...o,
+      rfq_id: rfqId,
+      rfq_title: rfqTitle,
+    };
+  });
+
+  return mappedOrders;
 }
 
 /**
@@ -717,7 +765,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   if (serviceIds.length > 0) {
     const { data } = await supabase
       .from('machining_quotes')
-      .select('id, rfq:rfq_id(title)')
+      .select('id, rfq_id, rfq:rfq_id(title)')
       .in('service_id', serviceIds);
     machQuotes = data || [];
   }
@@ -727,25 +775,33 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     .filter(o => o.status === 'Processing' || o.status === 'Shipped')
     .map((o: any) => {
       let rfqTitle = `Order #${o.id} - ${o.items_count} Units`;
+      let rfqId = '';
       if (o.id.startsWith('RFQ-')) {
         const orderSuffix = o.id.replace('RFQ-', '').toUpperCase();
         const matchedGeneralQuote = (myQuotes || []).find(
           q => q.id.substring(0, 8).toUpperCase() === orderSuffix
         );
-        if (matchedGeneralQuote?.rfq?.title) {
-          rfqTitle = `${matchedGeneralQuote.rfq.title} (${o.items_count} Pcs)`;
+        if (matchedGeneralQuote) {
+          rfqId = matchedGeneralQuote.rfq_id;
+          if (matchedGeneralQuote.rfq?.title) {
+            rfqTitle = `${matchedGeneralQuote.rfq.title} (${o.items_count} Pcs)`;
+          }
         } else {
           const matchedMachQuote = (machQuotes || []).find(
             mq => mq.id.substring(0, 8).toUpperCase() === orderSuffix
           );
-          if (matchedMachQuote?.rfq?.title) {
-            rfqTitle = `${matchedMachQuote.rfq.title} (${o.items_count} Pcs)`;
+          if (matchedMachQuote) {
+            rfqId = matchedMachQuote.rfq_id || '';
+            if (matchedMachQuote.rfq?.title) {
+              rfqTitle = `${matchedMachQuote.rfq.title} (${o.items_count} Pcs)`;
+            }
           }
         }
       }
       return {
         id: o.id,
         rfq: {
+          id: rfqId,
           title: rfqTitle,
         },
         status: o.status,

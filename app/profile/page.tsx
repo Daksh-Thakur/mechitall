@@ -40,6 +40,7 @@ export default function ProfilePage() {
 
   const [activeTab, setActiveTab] = useState<'orders' | 'rewards' | 'wishlist' | 'settings' | 'address' | 'support' | 'chats' | 'seller_orders' | 'seller_rfqs' | 'seller_listings' | 'seller_capabilities' | 'seller_earnings'>('orders');
   const [unreadChatsCount, setUnreadChatsCount] = useState(0);
+  const [activeChatRfqId, setActiveChatRfqId] = useState<string | null>(null);
 
   const checkUnreadChats = async () => {
     try {
@@ -1025,6 +1026,19 @@ export default function ProfilePage() {
                                   ></div>
                                 </div>
                               </div>
+
+                              {job.rfq?.id && (
+                                <button
+                                  onClick={() => {
+                                    setActiveChatRfqId(job.rfq.id);
+                                    setActiveTab('chats');
+                                  }}
+                                  className="w-full py-2 bg-[#0B1528] hover:bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                                >
+                                  <MessageSquare className="w-3.5 h-3.5" />
+                                  <span>Open Quote Chat</span>
+                                </button>
+                              )}
                             </div>
                           );
                         })
@@ -1798,6 +1812,9 @@ export default function ProfilePage() {
                           </div>
                           
                           <div className="space-y-1 text-slate-text-secondary text-xs">
+                            {ord.rfq_title && (
+                              <h4 className="text-[10px] font-black text-slate-text-primary mb-1.5 line-clamp-1">{ord.rfq_title}</h4>
+                            )}
                             <div className="flex justify-between">
                               <span className="text-[10px] text-slate-text-muted">Items Count</span>
                               <span className="font-bold text-slate-text-primary">{ord.items_count} units</span>
@@ -1993,6 +2010,19 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="flex items-center gap-3">
+                      {selectedOrder.rfq_id && (
+                        <button
+                          onClick={() => {
+                            setActiveChatRfqId(selectedOrder.rfq_id);
+                            setActiveTab('chats');
+                          }}
+                          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg cursor-pointer transition-all shadow"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>Open Quote Chat</span>
+                        </button>
+                      )}
+
                       {selectedOrder.status === 'Processing' && (
                         <button
                           onClick={() => handleSimulateStatus(selectedOrder.id, 'Shipped')}
@@ -2307,9 +2337,14 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* TAB 7: QUOTATION CHATS */}
           {activeTab === 'chats' && (
-            <QuotationChatsTab profile={profile} showToast={showToast} onUnreadChange={checkUnreadChats} />
+            <QuotationChatsTab 
+              profile={profile} 
+              showToast={showToast} 
+              onUnreadChange={checkUnreadChats} 
+              initialActiveRfqId={activeChatRfqId}
+              onClearInitialActiveRfqId={() => setActiveChatRfqId(null)}
+            />
           )}
 
         </section>
@@ -3046,7 +3081,19 @@ export default function ProfilePage() {
   );
 }
 
-function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: any; showToast: any; onUnreadChange?: () => void }) {
+function QuotationChatsTab({ 
+  profile, 
+  showToast, 
+  onUnreadChange,
+  initialActiveRfqId,
+  onClearInitialActiveRfqId
+}: { 
+  profile: any; 
+  showToast: any; 
+  onUnreadChange?: () => void;
+  initialActiveRfqId: string | null;
+  onClearInitialActiveRfqId: () => void;
+}) {
   const supabase = createClient();
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [loading, setLoading] = useState(true);
@@ -3068,6 +3115,18 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
   const [offerFinish, setOfferFinish] = useState('');
   const [sellerNotes, setSellerNotes] = useState('');
   const [submittingOffer, setSubmittingOffer] = useState(false);
+
+  useEffect(() => {
+    if (initialActiveRfqId && threads.length > 0) {
+      const thread = threads.find(t => t.rfqId === initialActiveRfqId);
+      if (thread) {
+        setActiveThread(thread);
+      } else {
+        showToast('Chat thread not found for this order.', 'error');
+      }
+      onClearInitialActiveRfqId();
+    }
+  }, [initialActiveRfqId, threads]);
 
   const markThreadAsSeen = (threadId: string, lastMessageTime: string | null, status: string) => {
     try {
