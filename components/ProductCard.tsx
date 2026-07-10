@@ -52,9 +52,9 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
   return (
     <div
       onClick={() => onViewDetails(part)}
-      className="flex flex-col bg-white border border-[#E4E4E7] overflow-hidden cursor-pointer group transition-all duration-200 hover:border-[#06B6D4]"
+      className="flex flex-col bg-zinc-800 border border-zinc-700/60 overflow-hidden cursor-pointer group transition-all duration-200 hover:border-emerald-400/40"
       style={{
-        boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -2px rgba(0,0,0,0.2)',
         transition: 'transform 0.2s ease, border-color 0.2s ease'
       }}
       onMouseEnter={e => {
@@ -69,17 +69,17 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
       }}
     >
       {/* Image / Icon container */}
-      <div className="h-32 md:h-36 bg-[#F8FAFC] overflow-hidden relative border-b border-[#E4E4E7]/60 flex items-center justify-center shrink-0">
+      <div className="h-32 md:h-36 bg-zinc-900/50 overflow-hidden relative border-b border-zinc-700/60 flex items-center justify-center shrink-0">
         {part.imageData ? (
           <img src={part.imageData} alt={part.title} className="w-full h-full object-cover" />
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${part.gradientClass} flex items-center justify-center`}>
-            <CategoryIcon className="w-8 h-8 text-[#0F172A] opacity-20 group-hover:rotate-12 group-hover:scale-105 transition-all duration-500" />
+            <CategoryIcon className="w-8 h-8 text-white opacity-20 group-hover:rotate-12 group-hover:scale-105 transition-all duration-500" />
           </div>
         )}
         {/* Category Badge */}
         <div className="absolute top-1.5 left-1.5">
-          <span className="bg-[#0F172A] text-white text-[7px] md:text-[8px] font-mono px-1 py-0.5 uppercase tracking-wider font-bold">
+          <span className="bg-zinc-900 border border-zinc-700 text-zinc-300 text-[7px] md:text-[8px] font-mono px-1 py-0.5 uppercase tracking-wider font-bold">
             {part.category.slice(0, 12)}
           </span>
         </div>
@@ -88,9 +88,9 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
           <StockBadge stock={part.stock} />
         </div>
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-[#0F172A]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <span className="bg-white text-[#0F172A] text-[8px] font-mono font-bold uppercase tracking-wider py-1 px-2 shadow border border-[#E4E4E7] flex items-center gap-1">
-            <Eye className="w-3 h-3" /> View Details
+        <div className="absolute inset-0 bg-zinc-950/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <span className="bg-zinc-900 text-white text-[8px] font-mono font-bold uppercase tracking-wider py-1 px-2 shadow border border-zinc-700 flex items-center gap-1">
+            <Eye className="w-3 h-3 text-emerald-400" /> View Details
           </span>
         </div>
       </div>
@@ -98,36 +98,36 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
       {/* Body */}
       <div className="p-3 flex flex-col flex-1">
         <div className="flex justify-between items-start mb-1 gap-1">
-          <h3 className="font-['Space_Grotesk'] text-[11px] md:text-xs font-semibold text-[#0F172A] leading-tight group-hover:text-[#06B6D4] transition-colors line-clamp-2 flex-1">
+          <h3 className="font-['Space_Grotesk'] text-[11px] md:text-xs font-semibold text-zinc-100 leading-tight group-hover:text-emerald-400 transition-colors line-clamp-2 flex-1">
             {part.title}
           </h3>
         </div>
         <div className="flex items-center gap-1 mb-2.5">
-          <span className="font-['JetBrains_Mono'] text-[7px] text-[#76777d] uppercase tracking-wider font-bold">SKU:</span>
-          <span className="font-['JetBrains_Mono'] text-[8px] font-bold text-[#06B6D4] truncate max-w-[120px]">
+          <span className="font-['JetBrains_Mono'] text-[7px] text-zinc-500 uppercase tracking-wider font-bold">SKU:</span>
+          <span className="font-['JetBrains_Mono'] text-[8px] font-bold text-emerald-400 truncate max-w-[120px]">
             {part.partNumber}
           </span>
         </div>
  
         {/* Price + CTA */}
-        <div className="flex items-center justify-between pt-2 border-t border-[#E4E4E7] mt-auto">
+        <div className="flex items-center justify-between pt-2 border-t border-zinc-700/60 mt-auto">
           <div>
-            <p className="text-[7px] font-['Inter'] text-[#76777d] uppercase tracking-wider mb-0.5">Price</p>
-            <p className="font-['Space_Grotesk'] text-xs md:text-sm font-bold text-[#0F172A]">
+            <p className="text-[7px] font-['Inter'] text-zinc-500 uppercase tracking-wider mb-0.5">Price</p>
+            <p className="font-mono text-xs md:text-sm font-bold text-white">
               ₹{part.price.toLocaleString('en-IN')}
             </p>
           </div>
           <div className="flex gap-1 shrink-0">
             <button
               onClick={e => { e.stopPropagation(); toggleWishlist(part.id); }}
-              className="p-1.5 border border-[#E4E4E7] bg-white hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+              className="p-1.5 border border-zinc-700 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors cursor-pointer"
               title={saved ? 'Remove from Wishlist' : 'Add to Wishlist'}
             >
-              <Heart className={`w-3 h-3 ${saved ? 'fill-rose-500 text-rose-500' : 'text-[#45464d]'}`} />
+              <Heart className={`w-3 h-3 ${saved ? 'fill-rose-500 text-rose-500' : 'text-zinc-400'}`} />
             </button>
             <button
               onClick={e => { e.stopPropagation(); addToCart(part, 1); }}
-              className="p-1.5 bg-[#0F172A] text-white hover:bg-[#06B6D4] transition-colors flex items-center justify-center cursor-pointer"
+              className="p-1.5 bg-emerald-400 text-zinc-950 hover:bg-emerald-350 transition-colors flex items-center justify-center cursor-pointer"
               title="Add to Cart"
             >
               <ShoppingCart className="w-3 h-3" />

@@ -107,14 +107,14 @@ export default function Home() {
   }, [allParts, allServices]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#1b1b1d] font-sans flex flex-col overflow-x-clip">
+    <div className="min-h-screen bg-zinc-900 text-zinc-100 font-sans flex flex-col overflow-x-clip">
       <Navbar />
 
       <main className="flex-1 mt-0">
         <HeroSection onShuffle={handleShuffle} />
 
         {/* WHY MECHITALL MATRIX */}
-        <section className="bg-zinc-900 text-zinc-100 py-16 border-b border-zinc-800">
+        <section className="bg-zinc-950 text-zinc-100 py-16 border-b border-zinc-800">
           <div className="max-w-7xl mx-auto px-6 space-y-10">
             <div className="text-center space-y-2">
               <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-400 bg-emerald-400/5 border border-emerald-400/15 px-3 py-1 rounded">
@@ -167,26 +167,93 @@ export default function Home() {
           </div>
         </section>
 
+        {/* TRUSTED MAKERS & CASE STUDIES */}
+        <section className="bg-zinc-900 text-zinc-100 py-16 border-b border-zinc-800">
+          <div className="max-w-7xl mx-auto px-6 space-y-12">
+            <div className="text-center space-y-2">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-blue-400 bg-blue-400/5 border border-blue-400/15 px-3 py-1 rounded">
+                Trusted Makers &amp; Case Studies
+              </span>
+              <h2 className="text-3xl font-bold text-white tracking-tight font-['Space_Grotesk'] mt-2">Powering Next-Gen Robotics</h2>
+              <p className="text-xs text-zinc-400 max-w-lg mx-auto font-medium">From premier university labs to venture-backed UAV startups, engineers choose MechItAll.</p>
+            </div>
+
+            {/* Testimonials Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-zinc-805 border border-zinc-800 p-6 rounded-2xl space-y-4 relative">
+                <div className="flex items-center gap-1 text-amber-500">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                  ))}
+                </div>
+                <p className="text-xs text-zinc-300 italic leading-relaxed">
+                  "MechItAll solved our sourcing bottlenecks overnight. We were able to procure NEMA 23 motors and get custom CNC-milled mounting plates quoted and dispatched within 4 days. The PayU escrow protection gave our finance team peace of mind."
+                </p>
+                <div>
+                  <span className="block text-xs font-bold text-white font-['Space_Grotesk']">Dr. Aris Thorne</span>
+                  <span className="block text-[10px] text-zinc-500 font-mono">Lead Kinematics Researcher, AeroDrive Labs</span>
+                </div>
+              </div>
+
+              <div className="bg-zinc-805 border border-zinc-800 p-6 rounded-2xl space-y-4 relative">
+                <div className="flex items-center gap-1 text-amber-500">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                  ))}
+                </div>
+                <p className="text-xs text-zinc-300 italic leading-relaxed">
+                  "As a DIY maker building autonomous rovers, finding high-quality mechatronics without high MOQs was nearly impossible. MechItAll has changed that. The Nuts &amp; Bolts loyalty program keeps my prototyping costs extremely low."
+                </p>
+                <div>
+                  <span className="block text-xs font-bold text-white font-['Space_Grotesk']">Kabir Sen</span>
+                  <span className="block text-[10px] text-zinc-500 font-mono">Founding Engineer, Veloce UAVs</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Maker Logo Grid Placeholder */}
+            <div className="pt-6 border-t border-zinc-800/60">
+              <p className="text-center text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-500 mb-6">
+                Accredited Collaborations &amp; Maker Networks
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center justify-items-center opacity-40">
+                <div className="flex items-center gap-2 text-white font-['Space_Grotesk'] font-bold text-sm tracking-wide">
+                  <Cpu className="w-5 h-5 text-blue-400" /> AERO_DRIVE
+                </div>
+                <div className="flex items-center gap-2 text-white font-['Space_Grotesk'] font-bold text-sm tracking-wide">
+                  <Settings className="w-5 h-5 text-emerald-400" /> HINDUSTAN_ROBOTICS
+                </div>
+                <div className="flex items-center gap-2 text-white font-['Space_Grotesk'] font-bold text-sm tracking-wide">
+                  <Zap className="w-5 h-5 text-blue-400" /> VELOCE_UAVS
+                </div>
+                <div className="flex items-center gap-2 text-white font-['Space_Grotesk'] font-bold text-sm tracking-wide">
+                  <Users className="w-5 h-5 text-emerald-400" /> IIT_MECHATRONICS
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* FEATURED PRODUCTS SECTION */}
         <section className="max-w-7xl mx-auto px-6 py-16 space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-1.5">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-cobalt bg-cobalt/5 border border-cobalt/15 px-3 py-1 rounded">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-400 bg-emerald-400/5 border border-emerald-400/15 px-3 py-1 rounded">
                 E-Commerce Catalog
               </span>
-              <h2 className="text-3xl font-bold text-[#0F172A] tracking-tight font-['Space_Grotesk'] mt-2">Featured Products</h2>
-              <p className="text-xs text-slate-text-muted font-medium">A curated selection of our in-stock mechatronics parts — refreshed every visit.</p>
+              <h2 className="text-3xl font-bold text-white tracking-tight font-['Space_Grotesk'] mt-2">Featured Products</h2>
+              <p className="text-xs text-zinc-400 font-medium">A curated selection of our in-stock mechatronics parts — refreshed every visit.</p>
             </div>
             <div className="flex items-center gap-3">
               <button
                 onClick={handleShuffle}
-                className="bg-white border border-[#E4E4E7] hover:border-[#0F172A] text-[#0F172A] px-4 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all font-['JetBrains_Mono'] uppercase tracking-wider"
+                className="bg-zinc-800 border border-zinc-700/60 hover:bg-zinc-700 hover:text-white text-zinc-300 px-4 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all font-['JetBrains_Mono'] uppercase tracking-wider"
               >
                 <Shuffle className="w-3.5 h-3.5" /> Shuffle
               </button>
               <Link
                 href="/products"
-                className="bg-[#0F172A] hover:bg-[#06B6D4] text-white px-4 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer transition-all font-['JetBrains_Mono'] uppercase tracking-wider"
+                className="bg-emerald-400 hover:bg-emerald-350 text-zinc-950 px-4 py-2 text-xs font-extrabold flex items-center gap-2 cursor-pointer transition-all font-['JetBrains_Mono'] uppercase tracking-wider shadow-lg shadow-emerald-950/20"
               >
                 View Full Catalog <ArrowRight className="w-3.5 h-3.5" />
               </Link>
@@ -196,11 +263,11 @@ export default function Home() {
           {isLoading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 animate-pulse">
               {[1, 2, 3, 4].map(n => (
-                <div key={n} className="bg-white border border-[#E4E4E7] h-64">
-                  <div className="h-32 md:h-36 bg-[#F8FAFC]" />
+                <div key={n} className="bg-zinc-800 border border-zinc-700/60 h-64">
+                  <div className="h-32 md:h-36 bg-zinc-900/50" />
                   <div className="p-3 space-y-2">
-                    <div className="h-3 bg-[#E4E4E7] w-3/4" />
-                    <div className="h-2 bg-[#E4E4E7] w-1/2" />
+                    <div className="h-3 bg-zinc-700 w-3/4" />
+                    <div className="h-2 bg-zinc-700 w-1/2" />
                   </div>
                 </div>
               ))}
@@ -212,10 +279,10 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16 border border-dashed border-[#E4E4E7] bg-white">
-              <Cpu className="w-12 h-12 text-[#76777d]/20 mx-auto mb-3" />
-              <p className="text-sm font-bold text-[#0F172A]">No products yet</p>
-              <p className="text-xs text-[#45464d]">Products will appear here once added to the catalog.</p>
+            <div className="text-center py-16 border border-dashed border-zinc-800 bg-zinc-900/40 rounded-2xl">
+              <Cpu className="w-12 h-12 text-zinc-750 mx-auto mb-3" />
+              <p className="text-sm font-bold text-white">No products yet</p>
+              <p className="text-xs text-zinc-500">Products will appear here once added to the catalog.</p>
             </div>
           )}
 
@@ -223,7 +290,7 @@ export default function Home() {
           <div className="flex items-center justify-center pt-2">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 text-xs font-bold text-cobalt hover:text-cobalt-hover transition-colors group font-['JetBrains_Mono'] uppercase tracking-wider"
+              className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors group font-['JetBrains_Mono'] uppercase tracking-wider"
             >
               Explore all {allParts.length > 0 ? `${allParts.length}+` : ''} parts in our catalog
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -232,18 +299,18 @@ export default function Home() {
         </section>
 
         {/* CUSTOM MANUFACTURING TEASER */}
-        <section className="max-w-7xl mx-auto px-6 py-16 space-y-8 border-t border-[#E4E4E7]">
+        <section className="max-w-7xl mx-auto px-6 py-16 space-y-8 border-t border-zinc-800/80">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-1.5">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-orange-600 bg-orange-500/5 border border-orange-500/15 px-3 py-1 rounded">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-blue-400 bg-blue-500/5 border border-blue-500/15 px-3 py-1 rounded">
                 On-Demand Fabrication
               </span>
-              <h2 className="text-3xl font-bold text-[#0F172A] tracking-tight font-['Space_Grotesk'] mt-2">Custom Machining Hub</h2>
-              <p className="text-xs text-slate-text-muted font-medium">Upload your CAD files and get custom parts made by verified local machining services.</p>
+              <h2 className="text-3xl font-bold text-white tracking-tight font-['Space_Grotesk'] mt-2">Custom Machining Hub</h2>
+              <p className="text-xs text-zinc-400 font-medium">Upload your CAD files and get custom parts made by verified local machining services.</p>
             </div>
             <Link
               href="/machining"
-              className="bg-[#0F172A] hover:bg-[#06B6D4] text-white px-4 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors font-['JetBrains_Mono'] uppercase tracking-wider shrink-0"
+              className="bg-blue-500 hover:bg-blue-400 text-white px-4 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors font-['JetBrains_Mono'] uppercase tracking-wider shrink-0"
             >
               Browse All Services <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -252,24 +319,24 @@ export default function Home() {
           {/* How it works grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {[
-              { icon: Upload, color: 'text-orange-600', bg: 'bg-orange-500/5 border-orange-500/12', step: '01', title: 'Upload Design File', desc: 'Share your STEP, STL, IGES, DXF, OBJ or PDF file directly with a seller.' },
-              { icon: Settings, color: 'text-cobalt', bg: 'bg-cobalt/5 border-cobalt/12', step: '02', title: 'Seller Reviews & Quotes', desc: 'The machining expert reviews your geometry and sends back a custom price quote.' },
-              { icon: CheckCircle2, color: 'text-emerald', bg: 'bg-emerald/5 border-emerald/12', step: '03', title: 'Accept & Get Parts Made', desc: 'Accept the offer when satisfied. Track your manufacturing order from your dashboard.' },
+              { icon: Upload, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/15', step: '01', title: 'Upload Design File', desc: 'Share your STEP, STL, IGES, DXF, OBJ or PDF file directly with a seller.' },
+              { icon: Settings, color: 'text-blue-450', bg: 'bg-blue-500/5 border-blue-500/10', step: '02', title: 'Seller Reviews & Quotes', desc: 'The machining expert reviews your geometry and sends back a custom price quote.' },
+              { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/15', step: '03', title: 'Accept & Get Parts Made', desc: 'Accept the offer when satisfied. Track your manufacturing order from your dashboard.' },
             ].map(({ icon: Icon, color, bg, step, title, desc }) => (
               <div 
                 key={step} 
-                className={`bg-white border rounded p-6 space-y-4 hover:border-[#06B6D4] hover:-translate-y-0.5 transition-all duration-200 border-[#E4E4E7]`}
-                style={{ boxShadow: '0 4px 6px -1px rgba(15,23,42,0.02), 0 2px 4px -2px rgba(15,23,42,0.02)' }}
+                className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 space-y-4 hover:border-blue-500/40 hover:-translate-y-0.5 transition-all duration-200"
+                style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -2px rgba(0,0,0,0.2)' }}
               >
                 <div className="flex items-center justify-between">
                   <div className={`w-10 h-10 rounded flex items-center justify-center ${bg} border`}>
                     <Icon className={`w-5 h-5 ${color}`} />
                   </div>
-                  <span className="text-[10px] font-bold text-[#76777d] font-mono uppercase tracking-widest">Step {step}</span>
+                  <span className="text-[10px] font-bold text-zinc-500 font-mono uppercase tracking-widest">Step {step}</span>
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-[#0F172A] font-['Space_Grotesk']">{title}</h3>
-                  <p className="text-xs text-[#45464d] leading-relaxed mt-1 font-semibold opacity-85">{desc}</p>
+                  <h3 className="text-sm font-semibold text-white font-['Space_Grotesk']">{title}</h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed mt-1 font-semibold opacity-85">{desc}</p>
                 </div>
               </div>
             ))}
@@ -281,12 +348,12 @@ export default function Home() {
               {displayedMachining.slice(0, 3).map((service: any) => {
                 const gradientClass =
                   service.process_type === 'CNC Machining'
-                    ? 'from-blue-600/20 to-indigo-600/5'
+                    ? 'from-blue-600/20 to-zinc-900/5'
                     : service.process_type === '3D Printing'
-                    ? 'from-violet-500/20 to-purple-500/5'
+                    ? 'from-violet-500/20 to-zinc-900/5'
                     : service.process_type === 'Sheet Metal'
-                    ? 'from-amber-500/20 to-orange-500/5'
-                    : 'from-red-500/20 to-pink-500/5';
+                    ? 'from-amber-500/20 to-zinc-900/5'
+                    : 'from-red-500/20 to-zinc-900/5';
 
                 const ProcessIcon =
                   service.process_type === 'CNC Machining'
@@ -301,27 +368,26 @@ export default function Home() {
                   <div 
                     key={service.id} 
                     onClick={() => setSelectedService(service)}
-                    className="bg-white border border-[#E4E4E7] overflow-hidden flex flex-col justify-between hover:border-[#06B6D4] hover:-translate-y-1 transition-all duration-200 cursor-pointer group relative"
+                    className="bg-zinc-800 border border-zinc-700/60 overflow-hidden flex flex-col justify-between hover:border-blue-500/40 hover:-translate-y-1 transition-all duration-200 cursor-pointer group relative"
                     style={{
-                      boxShadow: '0 4px 6px -1px rgba(15,23,42,0.04), 0 2px 4px -2px rgba(15,23,42,0.04)',
-                      transition: 'transform 0.2s ease, border-color 0.2s ease'
+                      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -2px rgba(0,0,0,0.2)',
                     }}
                   >
-                    <div className="h-40 bg-[#F8FAFC] overflow-hidden relative border-b border-[#E4E4E7]/60">
+                    <div className="h-40 bg-zinc-900/50 overflow-hidden relative border-b border-zinc-700/60">
                       <div className={`w-full h-full bg-gradient-to-br ${gradientClass} group-hover:scale-105 transition-transform duration-500 flex items-center justify-center`}>
-                        <ProcessIcon className="w-12 h-12 text-[#0F172A] opacity-25 group-hover:rotate-12 transition-transform duration-500" />
+                        <ProcessIcon className="w-12 h-12 text-white opacity-25 group-hover:rotate-12 transition-transform duration-500" />
                       </div>
                       <div className="absolute top-2 right-2">
-                        <span className="bg-[#0F172A] text-white text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider font-bold">
+                        <span className="bg-zinc-900 border border-zinc-700 text-zinc-300 text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider font-bold">
                           {service.lead_time}
                         </span>
                       </div>
                       <div className="absolute top-2 left-2">
                         <span className={`text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider border font-bold ${
-                          service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-750 border-blue-500/20'
-                          : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-750 border-violet-500/20'
-                          : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-750 border-amber-500/20'
-                          : 'bg-red-500/10 text-red-750 border-red-500/20'
+                          service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                          : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+                          : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                          : 'bg-red-500/10 text-red-405 border-red-500/20'
                         }`}>
                           {service.process_type}
                         </span>
@@ -330,24 +396,24 @@ export default function Home() {
                     <div className="p-5 flex flex-col flex-1 justify-between space-y-4">
                       <div>
                         <div className="mb-2">
-                          <h3 className="font-['Space_Grotesk'] text-sm font-semibold text-[#0F172A] leading-tight group-hover:text-[#06B6D4] transition-colors line-clamp-1">
+                          <h3 className="font-['Space_Grotesk'] text-sm font-semibold text-white leading-tight group-hover:text-blue-400 transition-colors line-clamp-1">
                             {service.title}
                           </h3>
-                          <p className="text-[10px] text-slate-text-muted mt-0.5 font-semibold">by {service.seller_name}</p>
+                          <p className="text-[10px] text-zinc-500 mt-0.5 font-semibold">by {service.seller_name}</p>
                         </div>
-                        <p className="text-xs text-[#45464d] line-clamp-2 leading-relaxed font-semibold opacity-85">{service.description}</p>
+                        <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed font-semibold opacity-85">{service.description}</p>
                       </div>
 
-                      <div className="pt-4 border-t border-[#E4E4E7] flex items-center justify-between">
+                      <div className="pt-4 border-t border-zinc-700/60 flex items-center justify-between">
                         <div>
-                          <p className="text-[9px] font-['Inter'] text-[#45464d] uppercase tracking-wider mb-0.5">Setup Fee</p>
-                          <p className="font-['Space_Grotesk'] text-sm font-bold text-[#0F172A]">
+                          <p className="text-[9px] font-['Inter'] text-zinc-500 uppercase tracking-wider mb-0.5">Setup Fee</p>
+                          <p className="font-mono text-sm font-bold text-white">
                             ₹{Number(service.base_price).toLocaleString('en-IN')}
                           </p>
                         </div>
                         <button
                           onClick={e => { e.stopPropagation(); setSelectedService(service); }}
-                          className="px-3.5 py-2 bg-[#0F172A] text-white hover:bg-[#06B6D4] transition-colors flex items-center justify-center gap-1.5 font-bold text-xs font-['Inter'] cursor-pointer"
+                          className="px-3.5 py-2 bg-blue-500 text-white hover:bg-blue-400 transition-colors flex items-center justify-center gap-1.5 font-bold text-xs font-['Inter'] cursor-pointer"
                         >
                           <span>Get Quote</span>
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -363,7 +429,7 @@ export default function Home() {
           <div className="flex items-center justify-center pt-2">
             <Link
               href="/machining"
-              className="inline-flex items-center gap-2 text-xs font-bold text-cobalt hover:text-cobalt-hover transition-colors group font-['JetBrains_Mono'] uppercase tracking-wider"
+              className="inline-flex items-center gap-2 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors group font-['JetBrains_Mono'] uppercase tracking-wider"
             >
               Explore all machining services
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

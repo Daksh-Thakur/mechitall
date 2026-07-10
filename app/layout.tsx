@@ -30,7 +30,7 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        {/* Google Tag Manager */}
+        {/* Google Tag Manager - Native, asynchronous loading */}
         <Script
           id="gtm-script"
           strategy="afterInteractive"
@@ -42,11 +42,11 @@ export default function RootLayout({
             })(window,document,'script','dataLayer','GTM-PH9XXXX');`,
           }}
         />
-        {/* Google Analytics */}
+        {/* Google Analytics - Native, asynchronous loading */}
         <Script
+          async
           src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
           strategy="afterInteractive"
-          className="lazyload"
         />
         <Script
           id="ga-script"
@@ -56,14 +56,16 @@ export default function RootLayout({
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-XXXXXXXXXX');
+              gtag('config', 'G-XXXXXXXXXX', {
+                page_path: window.location.pathname,
+              });
             `,
           }}
         />
-        {/* Hotjar Session Recording Placeholder */}
+        {/* Hotjar Session Recording Placeholder - Loaded with lazyOnload to avoid blocking hydration */}
         <Script
           id="hotjar-script"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
               (function(h,o,t,j,a,r){
@@ -78,7 +80,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A]">
+      <body className="min-h-full flex flex-col bg-zinc-900 text-zinc-100">
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
