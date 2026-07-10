@@ -192,6 +192,16 @@ export async function requestMachiningQuote(
 
       if (mainQuoteError) {
         console.error('Failed to create matching quote record:', mainQuoteError.message);
+      } else if (mainQuote) {
+        // Update RFQ's cad_file_path to include the chat ID prefix
+        const { error: updateError } = await supabase
+          .from('rfqs')
+          .update({ cad_file_path: `${mainQuote.id}/${data.cadFileName}` })
+          .eq('id', rfq.id);
+
+        if (updateError) {
+          console.error('Failed to update RFQ cad_file_path with chat ID prefix:', updateError.message);
+        }
       }
 
       return { 

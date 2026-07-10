@@ -19,13 +19,14 @@ import {
   ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus, 
   Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play, Upload,
   Send, Paperclip, FileText, ExternalLink, CircleDollarSign, IndianRupee, LayoutDashboard, ArrowRight,
-  Package, X, Camera, Loader2
+  Package, X, Camera, Loader2, Eye
 } from 'lucide-react';
 import { 
   getOngoingChats, 
   getChatMessages, 
   sendChatMessage, 
   getChatUploadSignedUrl,
+  getUploadSignedUrl,
   rejectQuote,
   cancelQuoteNegotiation 
 } from '@/app/actions/machining-workflow';
@@ -3545,6 +3546,26 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                {activeThread.cadFilePath && (
+                  <button
+                    onClick={async () => {
+                      const client = createClient();
+                      const { data } = await client.storage
+                        .from('rfq-cad-files')
+                        .createSignedUrl(activeThread.cadFilePath!, 60);
+                      if (data?.signedUrl) {
+                        window.open(data.signedUrl, '_blank');
+                      } else {
+                        showToast('Failed to open design file.', 'error');
+                      }
+                    }}
+                    className="flex items-center gap-1 bg-cobalt hover:bg-[#06b6d4] text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
+                    title="See CAD Design"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>See Design</span>
+                  </button>
+                )}
                 {activeThread.status !== 'REJECTED' && activeThread.status !== 'ACCEPTED' && (
                   <button
                     onClick={() => setShowRejectForm(true)}
@@ -3595,7 +3616,8 @@ function QuotationChatsTab({ profile, showToast, onUnreadChange }: { profile: an
                             <button
                               onClick={async () => {
                                 const client = createClient();
-                                const { data } = await client.storage.from('chat-attachments').createSignedUrl(m.file_attachment_path!, 60);
+                                const bucketName = m.message_text.includes('Shared CAD Design:') ? 'rfq-cad-files' : 'chat-attachments';
+                                const { data } = await client.storage.from(bucketName).createSignedUrl(m.file_attachment_path!, 60);
                                 if (data?.signedUrl) {
                                   window.open(data.signedUrl, '_blank');
                                 } else {

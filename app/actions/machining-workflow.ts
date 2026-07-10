@@ -85,10 +85,10 @@ export async function getUploadSignedUrl(
 
     const profile = await getAuthProfile(supabase);
 
-    // Verify machining quote ownership before granting upload URL
+    // Verify user owns the quote or parent RFQ
     const { data: quote, error: quoteError } = await supabase
-      .from('machining_quotes')
-      .select('buyer_profile_id')
+      .from('quotes')
+      .select('seller_id, rfq_id, rfqs(buyer_id)')
       .eq('id', quoteId)
       .single();
 
@@ -96,8 +96,11 @@ export async function getUploadSignedUrl(
       return { success: false, error: 'Quotation request not found' };
     }
 
-    if (quote.buyer_profile_id !== profile.id) {
-      return { success: false, error: 'Unauthorized: You do not own this quotation request' };
+    const rfqBuyerId = (quote.rfqs as any)?.buyer_id;
+    const sellerId = quote.seller_id;
+
+    if (profile.id !== rfqBuyerId && profile.id !== sellerId) {
+      return { success: false, error: 'Unauthorized: You do not own this RFQ/Quote' };
     }
 
     const filePath = `${quoteId}/${fileName}`;

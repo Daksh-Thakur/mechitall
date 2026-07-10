@@ -16,7 +16,7 @@ import {
   ChevronRight, Info, X, Upload, File, Trash2, Eye, ArrowRight, 
   Zap, RotateCcw, Package, Search, SlidersHorizontal, SlidersVertical
 } from 'lucide-react';
-import { getChatUploadSignedUrl, sendChatMessage } from '@/app/actions/machining-workflow';
+import { getChatUploadSignedUrl, getUploadSignedUrl, sendChatMessage } from '@/app/actions/machining-workflow';
 
 const MOCK_DEMO_SERVICES: MachiningService[] = [];
 
@@ -194,12 +194,12 @@ export default function MachiningMarketplacePage() {
         cadFileName: uploadedFile.name,
       });
 
-      const quoteId = resObj.quote?.id;
+      const quoteId = resObj.quoteId;
       const rfqId = resObj.rfqId;
 
       if (quoteId && rfqId) {
-        // Generate signed upload URL for the CAD file in chat-attachments
-        const signedRes = await getChatUploadSignedUrl(quoteId, uploadedFile.name);
+        // Generate signed upload URL for the CAD file in rfq-cad-files
+        const signedRes = await getUploadSignedUrl(quoteId, uploadedFile.name);
         if (signedRes.success && signedRes.data) {
           const { token, path, signedUrl } = signedRes.data;
           
