@@ -5,30 +5,30 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { useCart } from '@/components/CartProvider';
-import { 
-  getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode, 
-  submitSellerKYC, getSellerDashboardData, submitProductListing, getSellerOrders, 
-  updateSellerOrderStatus, deleteSellerCapability, submitServiceListing, deleteSellerProduct, 
-  deleteSellerService, Profile, BoltsTransaction, confirmDeliveryAndClaimBolts, simulateOrderStatus 
+import {
+  getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode,
+  submitSellerKYC, getSellerDashboardData, submitProductListing, getSellerOrders,
+  updateSellerOrderStatus, deleteSellerCapability, submitServiceListing, deleteSellerProduct,
+  deleteSellerService, Profile, BoltsTransaction, confirmDeliveryAndClaimBolts, simulateOrderStatus
 } from '@/app/actions/rewards';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import LoginPage from '../login/page';
-import { 
-  User, ShoppingBag, Gift, Heart, Settings, MapPin, MessageSquare, 
-  ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus, 
+import {
+  User, ShoppingBag, Gift, Heart, Settings, MapPin, MessageSquare,
+  ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus,
   Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play, Upload,
   Send, Paperclip, FileText, ExternalLink, CircleDollarSign, IndianRupee, LayoutDashboard, ArrowRight,
   Package, X, Camera, Loader2, Eye, XCircle
 } from 'lucide-react';
-import { 
-  getOngoingChats, 
-  getChatMessages, 
-  sendChatMessage, 
+import {
+  getOngoingChats,
+  getChatMessages,
+  sendChatMessage,
   getChatUploadSignedUrl,
   getUploadSignedUrl,
   rejectQuote,
-  cancelQuoteNegotiation 
+  cancelQuoteNegotiation
 } from '@/app/actions/machining-workflow';
 import { listMachiningService, submitQuoteOffer, acceptQuoteOffer, submitBuyerCounterOffer, acceptQuoteOfferBySeller } from '@/app/actions/marketplace';
 import { ChatThread, ChatMessage } from '@/types/machining';
@@ -67,7 +67,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       checkUnreadChats();
-      
+
       const channel = supabase
         .channel('global-chats-realtime')
         .on(
@@ -126,7 +126,7 @@ export default function ProfilePage() {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [loadingTx, setLoadingTx] = useState(true);
   const [hasTimedOut, setHasTimedOut] = useState(false);
-  
+
   // Tracking selected order for detailed progress timeline
   const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
   const [uploadingOrderId, setUploadingOrderId] = useState<string | null>(null);
@@ -284,7 +284,7 @@ export default function ProfilePage() {
 
   const handleToggleSellerMode = async () => {
     if (!profile) return;
-    
+
     const nextState = !profile.is_seller;
 
     // If turning ON seller mode and KYC is not completed, show the KYC wizard modal
@@ -405,17 +405,17 @@ export default function ProfilePage() {
   const handlePhotoUploadAndClaim = async (orderId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0 || !profile) return;
     const file = event.target.files[0];
-    
+
     setUploadingOrderId(orderId);
-    
+
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64String = reader.result as string;
-      
+
       startTransitionStatus(async () => {
         try {
           const response = await confirmDeliveryAndClaimBolts(orderId, base64String, profile.id);
-          
+
           if (response.success) {
             showToast(`Successfully released PayU escrow funds & credited ${response.earnedBolts} Bolts!`, 'success');
             await fetchProfile();
@@ -558,7 +558,7 @@ export default function ProfilePage() {
               <p className="text-xs text-slate-text-muted font-semibold leading-relaxed">
                 We are having trouble connecting to your Supabase profiles table. If you have not executed the database migrations yet, please copy the SQL code block from your implementation plan and run it in the Supabase SQL Editor.
               </p>
-              <button 
+              <button
                 onClick={() => window.location.reload()}
                 className="btn-cobalt text-xs font-bold px-4 py-2.5 rounded-lg cursor-pointer w-full mt-2"
               >
@@ -648,240 +648,229 @@ export default function ProfilePage() {
 
       <main className="flex-1 max-w-7xl mx-auto px-6 pt-3 pb-8 md:py-10 w-full flex flex-col md:flex-row gap-3 md:gap-8">
         {/* Sidebar Nav */}
-          {profile.is_seller ? (
-            /* Seller Sidebar Nav */
-            <aside className="w-full md:w-3/12 flex flex-col justify-between bg-transparent md:bg-white text-slate-800 rounded-none md:rounded border-0 md:border border-transparent md:border-[#E4E4E7] p-0 md:p-6 shadow-none md:shadow-sm h-fit md:h-[600px] shrink-0">
-              <div className="space-y-6 hidden md:block">
-                {/* Header Seller Hub Card */}
-                <div className="pb-4 border-b border-[#E4E4E7]">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2 font-mono">
-                      <span className="w-2.5 h-2.5 rounded-full bg-[#06B6D4] animate-pulse"></span>
-                      Seller Hub
-                    </h3>
-                    {profile.is_verified_seller && (
-                      <span className="inline-flex items-center gap-1 text-[8px] font-mono uppercase tracking-wider font-bold bg-emerald/10 text-emerald border border-emerald-500/20 px-2 py-0.5 rounded" title="Verified Seller">
-                        <ShieldCheck className="w-2.5 h-2.5" /> Verified
-                      </span>
-                    )}
-                  </div>
-                  <span className="block text-[8px] font-bold text-[#76777d] mt-2 uppercase tracking-widest font-mono">
-                    Precision Partner
-                  </span>
+        {profile.is_seller ? (
+          /* Seller Sidebar Nav */
+          <aside className="w-full md:w-3/12 flex flex-col justify-between bg-transparent md:bg-white text-slate-800 rounded-none md:rounded border-0 md:border border-transparent md:border-[#E4E4E7] p-0 md:p-6 shadow-none md:shadow-sm h-fit md:h-[600px] shrink-0">
+            <div className="space-y-6 hidden md:block">
+              {/* Header Seller Hub Card */}
+              <div className="pb-4 border-b border-[#E4E4E7]">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-[#0F172A] flex items-center gap-2 font-mono">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#06B6D4] animate-pulse"></span>
+                    Seller Hub
+                  </h3>
+                  {profile.is_verified_seller && (
+                    <span className="inline-flex items-center gap-1 text-[8px] font-mono uppercase tracking-wider font-bold bg-emerald/10 text-emerald border border-emerald-500/20 px-2 py-0.5 rounded" title="Verified Seller">
+                      <ShieldCheck className="w-2.5 h-2.5" /> Verified
+                    </span>
+                  )}
                 </div>
+                <span className="block text-[8px] font-bold text-[#76777d] mt-2 uppercase tracking-widest font-mono">
+                  Precision Partner
+                </span>
+              </div>
 
-                {/* Nav Tabs */}
-                <nav className="space-y-1">
-                  {[
-                    { tab: 'seller_rfqs', label: 'Dashboard', icon: LayoutDashboard },
-                    { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
-                    { tab: 'seller_listings', label: 'My Products', icon: Package },
-                    { tab: 'seller_capabilities', label: 'My Services', icon: Cpu },
-                    { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
-                    { tab: 'chats', label: 'Quotation Chats', icon: MessageSquare },
-                  ].map(({ tab, label, icon: Icon }) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab as any)}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
-                        activeTab === tab
-                          ? 'bg-[#0f172a] text-white shadow-md'
-                          : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+              {/* Nav Tabs */}
+              <nav className="space-y-1">
+                {[
+                  { tab: 'seller_rfqs', label: 'Dashboard', icon: LayoutDashboard },
+                  { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
+                  { tab: 'seller_listings', label: 'My Products', icon: Package },
+                  { tab: 'seller_capabilities', label: 'My Services', icon: Cpu },
+                  { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
+                  { tab: 'chats', label: 'Quotation Chats', icon: MessageSquare },
+                ].map(({ tab, label, icon: Icon }) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab as any)}
+                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === tab
+                        ? 'bg-[#0f172a] text-white shadow-md'
+                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
                       }`}
-                    >
-                      <Icon className={`w-4 h-4 shrink-0 ${activeTab === tab ? 'text-[#06B6D4]' : 'text-[#76777d]'}`} />
-                      <span>{label}</span>
-                      {tab === 'chats' && unreadChatsCount > 0 && (
-                        <span className="ml-auto w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
-                      )}
-                    </button>
-                  ))}
-                </nav>
-
-                {/* Quick Action Button: New Listing */}
-                <button 
-                  onClick={openAddListingModal}
-                  className="w-full bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all shadow"
-                >
-                  <Plus className="w-4 h-4 shrink-0 stroke-[3]" />
-                  <span>New Listing</span>
-                </button>
-              </div>
-
-              {/* Exit/Deactivate Seller Mode */}
-              <div className="pt-0 md:pt-4 md:border-t border-[#E4E4E7]">
-                <button
-                  disabled={togglingSeller}
-                  onClick={handleToggleSellerMode}
-                  className="w-full py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer border border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d] hover:text-[#0f172a] transition-all bg-[#F8FAFC]/50"
-                >
-                  <ArrowLeftRight className="w-4 h-4 shrink-0" />
-                  <span>Switch to Customer Mode</span>
-                </button>
-              </div>
-            </aside>
-          ) : (
-            /* Sidebar Nav */
-            <aside className="w-full md:w-3/12 flex flex-col justify-between bg-transparent md:bg-white rounded-none md:rounded border-0 md:border border-transparent md:border-[#E4E4E7] p-0 md:p-6 shadow-none md:shadow-sm h-fit">
-              <div className="space-y-6 hidden md:block">
-                {/* Header User Card */}
-                <div className="text-center space-y-3 pb-6 border-b border-[#E4E4E7]">
-                  <div className="relative inline-flex items-center justify-center w-16 h-16 rounded bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow font-mono">
-                    {profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0]}
-                    {profile.is_verified_buyer && (
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded bg-emerald text-white flex items-center justify-center border border-white shadow-sm" title="Verified Buyer">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-[#0F172A] tracking-tight truncate font-['Space_Grotesk']">Hello, {profile.full_name.split(' ')[0]}</h3>
-                    <div className="flex flex-col items-center gap-1 mt-1.5">
-                      <span className="inline-block text-[8px] font-mono uppercase tracking-wider font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded">
-                        {profile.loyalty_tier}
-                      </span>
-                      {profile.is_verified_buyer && (
-                        <span className="inline-flex items-center gap-1 text-[8px] font-mono uppercase tracking-wider font-bold bg-emerald/10 text-emerald border border-emerald-500/20 px-2 py-0.5 rounded">
-                          <ShieldCheck className="w-2.5 h-2.5" /> Verified Buyer
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Nav Tabs */}
-                <nav className="space-y-1">
-                  <button
-                    onClick={() => setActiveTab('orders')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
-                      activeTab === 'orders'
-                        ? 'bg-[#0f172a] text-white shadow'
-                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
-                    }`}
                   >
-                    <ShoppingBag className="w-4 h-4 shrink-0" />
-                    <span>My Orders</span>
-                  </button>
-                  
-                  <button
-                    onClick={() => setActiveTab('rewards')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
-                      activeTab === 'rewards'
-                        ? 'bg-[#0f172a] text-white shadow'
-                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
-                    }`}
-                  >
-                    <Gift className="w-4 h-4 shrink-0" />
-                    <span>Rewards &amp; Offers</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('wishlist')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
-                      activeTab === 'wishlist'
-                        ? 'bg-[#0f172a] text-white shadow'
-                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
-                    }`}
-                  >
-                    <Heart className="w-4 h-4 shrink-0" />
-                    <span>Wishlist</span>
-                    {wishlist.length > 0 && (
-                      <span className={`ml-auto text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${
-                        activeTab === 'wishlist'
-                          ? 'bg-white/20 text-white'
-                          : 'bg-cobalt/10 text-cobalt border border-cobalt/20'
-                      }`}>
-                        {wishlist.length}
-                      </span>
-                    )}
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('settings')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
-                      activeTab === 'settings'
-                        ? 'bg-[#0f172a] text-white shadow'
-                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
-                    }`}
-                  >
-                    <Settings className="w-4 h-4 shrink-0" />
-                    <span>Account Settings</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('address')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
-                      activeTab === 'address'
-                        ? 'bg-[#0f172a] text-white shadow'
-                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
-                    }`}
-                  >
-                    <MapPin className="w-4 h-4 shrink-0" />
-                    <span>Address Book</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('support')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
-                      activeTab === 'support'
-                        ? 'bg-[#0f172a] text-white shadow'
-                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
-                    }`}
-                  >
-                    <MessageSquare className="w-4 h-4 shrink-0" />
-                    <span>Customer Support</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveTab('chats')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${
-                      activeTab === 'chats'
-                        ? 'bg-[#0f172a] text-white shadow'
-                        : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
-                    }`}
-                  >
-                    <MessageSquare className="w-4 h-4 shrink-0" />
-                    <span>Quotation Chats</span>
-                    {unreadChatsCount > 0 && (
+                    <Icon className={`w-4 h-4 shrink-0 ${activeTab === tab ? 'text-[#06B6D4]' : 'text-[#76777d]'}`} />
+                    <span>{label}</span>
+                    {tab === 'chats' && unreadChatsCount > 0 && (
                       <span className="ml-auto w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
                     )}
                   </button>
-                </nav>
+                ))}
+              </nav>
+
+              {/* Quick Action Button: New Listing */}
+              <button
+                onClick={openAddListingModal}
+                className="w-full bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all shadow"
+              >
+                <Plus className="w-4 h-4 shrink-0 stroke-[3]" />
+                <span>New Listing</span>
+              </button>
+            </div>
+
+            {/* Exit/Deactivate Seller Mode */}
+            <div className="pt-0 md:pt-4 md:border-t border-[#E4E4E7]">
+              <button
+                disabled={togglingSeller}
+                onClick={handleToggleSellerMode}
+                className="w-full py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer border border-[#E4E4E7] hover:bg-[#F8FAFC] text-[#45464d] hover:text-[#0f172a] transition-all bg-[#F8FAFC]/50"
+              >
+                <ArrowLeftRight className="w-4 h-4 shrink-0" />
+                <span>Switch to Customer Mode</span>
+              </button>
+            </div>
+          </aside>
+        ) : (
+          /* Sidebar Nav */
+          <aside className="w-full md:w-3/12 flex flex-col justify-between bg-transparent md:bg-white rounded-none md:rounded border-0 md:border border-transparent md:border-[#E4E4E7] p-0 md:p-6 shadow-none md:shadow-sm h-fit">
+            <div className="space-y-6 hidden md:block">
+              {/* Header User Card */}
+              <div className="text-center space-y-3 pb-6 border-b border-[#E4E4E7]">
+                <div className="relative inline-flex items-center justify-center w-16 h-16 rounded bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow font-mono">
+                  {profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0]}
+                  {profile.is_verified_buyer && (
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded bg-emerald text-white flex items-center justify-center border border-white shadow-sm" title="Verified Buyer">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#0F172A] tracking-tight truncate font-['Space_Grotesk']">Hello, {profile.full_name.split(' ')[0]}</h3>
+                  <div className="flex flex-col items-center gap-1 mt-1.5">
+                    <span className="inline-block text-[8px] font-mono uppercase tracking-wider font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded">
+                      {profile.loyalty_tier}
+                    </span>
+                    {profile.is_verified_buyer && (
+                      <span className="inline-flex items-center gap-1 text-[8px] font-mono uppercase tracking-wider font-bold bg-emerald/10 text-emerald border border-emerald-500/20 px-2 py-0.5 rounded">
+                        <ShieldCheck className="w-2.5 h-2.5" /> Verified Buyer
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
 
-              {/* Switch/Activate Seller Mode */}
-              <div className="pt-0 md:pt-6 md:border-t border-[#E4E4E7] md:mt-8 space-y-2">
-                <div className="hidden md:flex justify-between items-center text-[10px] font-bold text-[#76777d] font-mono uppercase tracking-wider">
-                  <span>Seller Account</span>
-                  <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${
-                    profile.seller_kyc_completed 
-                      ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20' 
-                      : 'bg-[#F8FAFC] text-[#76777d] border border-[#E4E4E7]'
-                  }`}>
-                    {profile.seller_kyc_completed ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
+              {/* Nav Tabs */}
+              <nav className="space-y-1">
                 <button
-                  disabled={togglingSeller}
-                  onClick={handleToggleSellerMode}
-                  className={`w-full transition-all py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${
-                    profile.is_seller
-                      ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
-                      : 'border border-[#E4E4E7] text-[#45464d] hover:text-[#0f172a] hover:border-[#0f172a] bg-[#F8FAFC]'
-                  }`}
+                  onClick={() => setActiveTab('orders')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'orders'
+                      ? 'bg-[#0f172a] text-white shadow'
+                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
                 >
-                  <ArrowLeftRight className="w-4 h-4 shrink-0" />
-                  <span>
-                    {profile.is_seller 
-                      ? 'Deactivate Seller Mode' 
-                      : profile.seller_kyc_completed 
-                      ? 'Switch to Seller Mode' 
-                      : 'Activate Seller Mode'}
-                  </span>
+                  <ShoppingBag className="w-4 h-4 shrink-0" />
+                  <span>My Orders</span>
                 </button>
+
+                <button
+                  onClick={() => setActiveTab('rewards')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'rewards'
+                      ? 'bg-[#0f172a] text-white shadow'
+                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                >
+                  <Gift className="w-4 h-4 shrink-0" />
+                  <span>Rewards &amp; Offers</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('wishlist')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'wishlist'
+                      ? 'bg-[#0f172a] text-white shadow'
+                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                >
+                  <Heart className="w-4 h-4 shrink-0" />
+                  <span>Wishlist</span>
+                  {wishlist.length > 0 && (
+                    <span className={`ml-auto text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${activeTab === 'wishlist'
+                        ? 'bg-white/20 text-white'
+                        : 'bg-cobalt/10 text-cobalt border border-cobalt/20'
+                      }`}>
+                      {wishlist.length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'settings'
+                      ? 'bg-[#0f172a] text-white shadow'
+                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                >
+                  <Settings className="w-4 h-4 shrink-0" />
+                  <span>Account Settings</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('address')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'address'
+                      ? 'bg-[#0f172a] text-white shadow'
+                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                >
+                  <MapPin className="w-4 h-4 shrink-0" />
+                  <span>Address Book</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('support')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'support'
+                      ? 'bg-[#0f172a] text-white shadow'
+                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                >
+                  <MessageSquare className="w-4 h-4 shrink-0" />
+                  <span>Customer Support</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('chats')}
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'chats'
+                      ? 'bg-[#0f172a] text-white shadow'
+                      : 'text-[#45464d] hover:bg-[#F8FAFC] hover:text-[#0f172a]'
+                    }`}
+                >
+                  <MessageSquare className="w-4 h-4 shrink-0" />
+                  <span>Quotation Chats</span>
+                  {unreadChatsCount > 0 && (
+                    <span className="ml-auto w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
+                  )}
+                </button>
+              </nav>
+            </div>
+
+            {/* Switch/Activate Seller Mode */}
+            <div className="pt-0 md:pt-6 md:border-t border-[#E4E4E7] md:mt-8 space-y-2">
+              <div className="hidden md:flex justify-between items-center text-[10px] font-bold text-[#76777d] font-mono uppercase tracking-wider">
+                <span>Seller Account</span>
+                <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${profile.seller_kyc_completed
+                    ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
+                    : 'bg-[#F8FAFC] text-[#76777d] border border-[#E4E4E7]'
+                  }`}>
+                  {profile.seller_kyc_completed ? 'Active' : 'Inactive'}
+                </span>
               </div>
-            </aside>
-          )}
+              <button
+                disabled={togglingSeller}
+                onClick={handleToggleSellerMode}
+                className={`w-full transition-all py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${profile.is_seller
+                    ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
+                    : 'border border-[#E4E4E7] text-[#45464d] hover:text-[#0f172a] hover:border-[#0f172a] bg-[#F8FAFC]'
+                  }`}
+              >
+                <ArrowLeftRight className="w-4 h-4 shrink-0" />
+                <span>
+                  {profile.is_seller
+                    ? 'Deactivate Seller Mode'
+                    : profile.seller_kyc_completed
+                      ? 'Switch to Seller Mode'
+                      : 'Activate Seller Mode'}
+                </span>
+              </button>
+            </div>
+          </aside>
+        )}
 
         {/* Main Content Area */}
         <section className="w-full md:w-9/12 space-y-6">
@@ -889,7 +878,7 @@ export default function ProfilePage() {
           {/* SELLER HUB TAB: ACTIVE RFQS FOR REVIEW */}
           {profile.is_seller && activeTab === 'seller_rfqs' && (
             <div className="space-y-6 pb-20 md:pb-0">
-              
+
               {/* Stats Cards Row */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
@@ -900,13 +889,12 @@ export default function ProfilePage() {
                 ].map((stat, idx) => {
                   const StatIcon = stat.icon;
                   return (
-                    <div 
-                      key={idx} 
-                      className={`border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all ${
-                        stat.isDark 
-                          ? 'bg-[#0B1528] border-slate-850 text-white' 
+                    <div
+                      key={idx}
+                      className={`border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all ${stat.isDark
+                          ? 'bg-[#0B1528] border-slate-850 text-white'
                           : 'bg-white border-slate-border text-slate-text-primary'
-                      }`}
+                        }`}
                     >
                       <div className="space-y-1">
                         <span className={`block text-[8px] font-black uppercase tracking-wider ${stat.isDark ? 'text-slate-400' : 'text-slate-text-muted'}`}>{stat.label}</span>
@@ -922,10 +910,10 @@ export default function ProfilePage() {
 
               {/* Grid Layout for Main Content & Sidebar */}
               <div className="flex flex-col lg:flex-row gap-6">
-                
+
                 {/* Left Column (8/12) */}
                 <div className="lg:w-8/12 space-y-6">
-                  
+
                   {/* ACTIVE RFQS FOR REVIEW */}
                   <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-4">
                     <div className="flex justify-between items-center pb-3 border-b border-slate-border">
@@ -949,18 +937,17 @@ export default function ProfilePage() {
                         </div>
                       ) : (
                         sellerData.openRfqs.map((rfq, idx) => (
-                          <div 
-                            key={rfq.id} 
+                          <div
+                            key={rfq.id}
                             className="snap-center shrink-0 w-[270px] md:w-auto border border-slate-border/70 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-border transition-colors bg-white shadow-sm space-y-4"
                           >
                             <div className="space-y-3">
                               {/* Header Badge & Code */}
                               <div className="flex justify-between items-center text-[9px] font-black tracking-wider uppercase">
-                                <span className={`px-2 py-0.5 rounded ${
-                                  idx === 0 
-                                    ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20' 
+                                <span className={`px-2 py-0.5 rounded ${idx === 0
+                                    ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
                                     : 'bg-slate-100 text-slate-600 border'
-                                }`}>
+                                  }`}>
                                   {idx === 0 ? 'HIGH PRIORITY' : 'STANDARD'}
                                 </span>
                                 <span className="text-slate-400 font-mono">#RFQ-{rfq.id.slice(0, 4).toUpperCase()}</span>
@@ -983,7 +970,7 @@ export default function ProfilePage() {
                             </div>
 
                             {/* Navigate to Chats to discuss and submit quote */}
-                            <button 
+                            <button
                               onClick={() => setActiveTab('chats')}
                               className="w-full py-2.5 rounded-xl bg-[#0B1528] hover:bg-slate-900 text-white text-[10px] font-extrabold cursor-pointer transition-colors flex items-center justify-center gap-1.5"
                             >
@@ -1028,11 +1015,10 @@ export default function ProfilePage() {
                                   <span className="block text-[8px] font-black text-slate-400 font-mono">ORDER-{job.id.substring(0, 8).toUpperCase()}</span>
                                   <h5 className="text-xs font-black text-slate-text-primary mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</h5>
                                 </div>
-                                <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
-                                  isShipped 
-                                    ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' 
+                                <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${isShipped
+                                    ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
                                     : 'bg-sky-500/10 text-sky-600 border-sky-500/20'
-                                }`}>
+                                  }`}>
                                   {isShipped ? 'SHIPPED' : 'PROCESSING'}
                                 </span>
                               </div>
@@ -1043,7 +1029,7 @@ export default function ProfilePage() {
                                   <span className="font-mono font-black text-[9px] text-slate-text-secondary">{progress}%</span>
                                 </div>
                                 <div className="w-full bg-slate-bg border border-slate-border/50 h-2 rounded-full overflow-hidden">
-                                  <div 
+                                  <div
                                     className={`h-full rounded-full transition-all ${isShipped ? 'bg-amber-500' : 'bg-sky-500'}`}
                                     style={{ width: `${progress}%` }}
                                   ></div>
@@ -1115,9 +1101,8 @@ export default function ProfilePage() {
                                     Standard Delivery
                                   </td>
                                   <td className="py-3 text-right">
-                                    <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase ${
-                                      isCompleted ? 'text-emerald' : 'text-sky-600'
-                                    }`}>
+                                    <span className={`inline-flex items-center gap-1.5 text-[9px] font-black uppercase ${isCompleted ? 'text-emerald' : 'text-sky-600'
+                                      }`}>
                                       <span className={`w-1.5 h-1.5 rounded-full ${isCompleted ? 'bg-emerald' : 'bg-sky-500 animate-pulse'}`}></span>
                                       {job.status}
                                     </span>
@@ -1135,7 +1120,7 @@ export default function ProfilePage() {
 
                 {/* Right Column (4/12) */}
                 <div className="lg:w-4/12 space-y-6">
-                  
+
                   {/* EARNINGS VELOCITY */}
                   <div className="bg-white border border-slate-border rounded-2xl p-5 shadow-sm space-y-5">
                     <div className="pb-3 border-b border-slate-border">
@@ -1154,7 +1139,7 @@ export default function ProfilePage() {
                             { label: 'This Wk', amount: 0 },
                           ];
                           const maxAmount = Math.max(...velocity.map(v => v.amount), 10000);
-                          
+
                           return velocity.map((bar, idx) => {
                             // Scale height relative to maxAmount (max 100px)
                             const height = Math.max(Math.round((bar.amount / maxAmount) * 100), bar.amount > 0 ? 8 : 4);
@@ -1165,12 +1150,11 @@ export default function ProfilePage() {
                                 <span className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-zinc-800 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md transition-opacity whitespace-nowrap pointer-events-none z-10">
                                   ₹{Number(bar.amount).toLocaleString('en-IN')}
                                 </span>
-                                <div 
-                                  className={`w-7 rounded-t-lg transition-all duration-300 ${
-                                    isActive 
-                                      ? 'bg-[#00D0F5] shadow-lg shadow-[#00D0F5]/20 hover:brightness-105' 
+                                <div
+                                  className={`w-7 rounded-t-lg transition-all duration-300 ${isActive
+                                      ? 'bg-[#00D0F5] shadow-lg shadow-[#00D0F5]/20 hover:brightness-105'
                                       : 'bg-[#F1F5F9] border border-slate-200 hover:border-slate-400'
-                                  }`}
+                                    }`}
                                   style={{ height: `${height}px` }}
                                 ></div>
                                 <span className={`text-[9px] font-black uppercase tracking-wider ${isActive ? 'text-[#007084]' : 'text-slate-text-muted'}`}>
@@ -1271,22 +1255,21 @@ export default function ProfilePage() {
                             <span className="text-xs font-mono font-bold text-cobalt bg-cobalt/5 border border-cobalt/15 px-2.5 py-1 rounded">
                               {order.id}
                             </span>
-                            <span className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                              order.status === 'Completed'
+                            <span className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${order.status === 'Completed'
                                 ? 'bg-emerald/8 text-emerald border-emerald/20'
                                 : order.status === 'Delivered'
-                                ? 'bg-sky-500/8 text-sky-600 border-sky-500/20'
-                                : order.status === 'Shipped'
-                                ? 'bg-amber-500/8 text-amber-600 border-amber-500/20'
-                                : 'bg-slate-500/8 text-slate-600 border-slate-500/20'
-                            }`}>
+                                  ? 'bg-sky-500/8 text-sky-600 border-sky-500/20'
+                                  : order.status === 'Shipped'
+                                    ? 'bg-amber-500/8 text-amber-600 border-amber-500/20'
+                                    : 'bg-slate-500/8 text-slate-600 border-slate-500/20'
+                              }`}>
                               {order.status}
                             </span>
                           </div>
-                          
+
                           <div className="space-y-1">
                             <h4 className="text-xs font-black text-slate-text-primary">
-                              Buyer: <span className="text-slate-text-secondary">{order.buyer_name}</span> 
+                              Buyer: <span className="text-slate-text-secondary">{order.buyer_name}</span>
                               <span className="text-[10px] text-slate-text-muted font-normal font-mono ml-2">({order.buyer_email})</span>
                             </h4>
                             <p className="text-[11px] text-slate-text-muted font-semibold">
@@ -1337,7 +1320,7 @@ export default function ProfilePage() {
                     Manage your active inventory listings, wholesale pricing tiers, and custom fabrication offerings.
                   </p>
                 </div>
-                <button 
+                <button
                   onClick={openAddListingModal}
                   className="bg-[#0f172a] hover:bg-[#06b6d4] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-colors shadow flex items-center gap-1.5 cursor-pointer"
                 >
@@ -1477,7 +1460,7 @@ export default function ProfilePage() {
                     Manage your listed mechatronics fabrication systems, CNC machines, and 3D printing envelopes.
                   </p>
                 </div>
-                <button 
+                <button
                   onClick={openAddListingModal}
                   className="bg-[#0f172a] hover:bg-[#06b6d4] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-colors shadow flex items-center gap-1.5 cursor-pointer"
                 >
@@ -1524,7 +1507,7 @@ export default function ProfilePage() {
                               ₹{Number(cap.base_price).toLocaleString('en-IN')}/hr
                             </span>
                           </div>
-                          
+
                           <p className="text-[11px] text-slate-text-muted leading-relaxed font-semibold">
                             {cap.description}
                           </p>
@@ -1649,7 +1632,7 @@ export default function ProfilePage() {
                       <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono">
                         Weekly Sales Velocity
                       </span>
-                      
+
                       <div className="flex items-end justify-between h-40 pt-4 px-2">
                         {sellerData?.earningsVelocity.map((item, idx) => {
                           const maxVal = Math.max(...sellerData.earningsVelocity.map(v => v.amount), 1);
@@ -1676,7 +1659,7 @@ export default function ProfilePage() {
                           Recent Contracts Ledger
                         </span>
                       </div>
-                      
+
                       {!sellerData || (sellerData.activeJobs.length === 0 && sellerData.completedJobs.length === 0) ? (
                         <div className="p-8 text-center text-xs font-semibold text-slate-text-muted">
                           No recent custom jobs completed or active.
@@ -1695,9 +1678,8 @@ export default function ProfilePage() {
                                   </div>
                                   <div className="text-right">
                                     <span className="block text-[#0f172a] font-black">₹{Number(job.total_cost).toLocaleString('en-IN')}</span>
-                                    <span className={`block text-[9px] font-mono uppercase tracking-wider font-bold ${
-                                      isCleared ? 'text-emerald-600' : 'text-slate-500'
-                                    }`}>
+                                    <span className={`block text-[9px] font-mono uppercase tracking-wider font-bold ${isCleared ? 'text-emerald-600' : 'text-slate-500'
+                                      }`}>
                                       {isCleared ? 'Cleared' : 'Escrow Active'}
                                     </span>
                                   </div>
@@ -1717,7 +1699,7 @@ export default function ProfilePage() {
           {/* TAB 1: ORDERS */}
           {activeTab === 'orders' && (
             <div className="space-y-6">
-              
+
               {/* Profile Overview Banner */}
               <div className="bg-white border border-slate-border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center gap-6 justify-between">
                 <div className="flex items-center gap-4">
@@ -1757,7 +1739,7 @@ export default function ProfilePage() {
               {/* Bolts Wallet Card */}
               <div className="bg-white border border-[#E4E4E7] rounded p-6 shadow-sm relative overflow-hidden text-[#0F172A] flex flex-col md:flex-row justify-between gap-6">
                 <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] opacity-60 pointer-events-none"></div>
-                
+
                 <div className="space-y-4 z-10 flex-1">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-500">
@@ -1810,7 +1792,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => {
                       showToast('Bolt balance applied automatically in the Cart drawer!', 'success');
                     }}
@@ -1837,26 +1819,24 @@ export default function ProfilePage() {
                     {orders.slice(0, 3).map((ord) => {
                       const isSelected = selectedOrder?.id === ord.id;
                       return (
-                        <div 
-                          key={ord.id} 
+                        <div
+                          key={ord.id}
                           onClick={() => setSelectedOrder(ord)}
-                          className={`bg-white border rounded-xl p-4 shadow-sm space-y-3 cursor-pointer transition-all ${
-                            isSelected ? 'border-cobalt ring-2 ring-cobalt/25' : 'border-slate-border hover:border-slate-text-secondary/20'
-                          }`}
+                          className={`bg-white border rounded-xl p-4 shadow-sm space-y-3 cursor-pointer transition-all ${isSelected ? 'border-cobalt ring-2 ring-cobalt/25' : 'border-slate-border hover:border-slate-text-secondary/20'
+                            }`}
                         >
                           <div className="flex justify-between items-start">
                             <span className="font-mono text-[10px] font-black text-slate-text-primary">{ord.id}</span>
-                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
-                              ord.status === 'Delivered' || ord.status === 'Completed'
+                            <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${ord.status === 'Delivered' || ord.status === 'Completed'
                                 ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
                                 : ord.status === 'Shipped'
-                                ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
-                                : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                            }`}>
+                                  ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
+                                  : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                              }`}>
                               {ord.status}
                             </span>
                           </div>
-                          
+
                           <div className="space-y-1 text-slate-text-secondary text-xs">
                             {ord.rfq_title && (
                               <h4 className="text-[10px] font-black text-slate-text-primary mb-1.5 line-clamp-1">{ord.rfq_title}</h4>
@@ -1872,13 +1852,12 @@ export default function ProfilePage() {
                           </div>
 
                           <div className="w-full bg-slate-bg h-1.5 rounded-full overflow-hidden border border-slate-border/50">
-                            <div className={`h-full rounded-full ${
-                              ord.status === 'Delivered' || ord.status === 'Completed'
+                            <div className={`h-full rounded-full ${ord.status === 'Delivered' || ord.status === 'Completed'
                                 ? 'bg-emerald w-full'
                                 : ord.status === 'Shipped'
-                                ? 'bg-cobalt w-2/3'
-                                : 'bg-amber-500 w-1/3'
-                            }`}></div>
+                                  ? 'bg-cobalt w-2/3'
+                                  : 'bg-amber-500 w-1/3'
+                              }`}></div>
                           </div>
                         </div>
                       );
@@ -1980,15 +1959,14 @@ export default function ProfilePage() {
                   {/* Horizontal visual progress meter */}
                   <div className="relative pt-6 pb-2">
                     <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-bg -translate-y-1/2 rounded-full overflow-hidden border border-slate-border/50">
-                      <div className={`h-full rounded-full bg-cobalt transition-all duration-500 ${
-                        selectedOrder.status === 'Completed'
+                      <div className={`h-full rounded-full bg-cobalt transition-all duration-500 ${selectedOrder.status === 'Completed'
                           ? 'w-full'
                           : selectedOrder.status === 'Delivered'
-                          ? 'w-3/4'
-                          : selectedOrder.status === 'Shipped'
-                          ? 'w-1/2'
-                          : 'w-1/4'
-                      }`}></div>
+                            ? 'w-3/4'
+                            : selectedOrder.status === 'Shipped'
+                              ? 'w-1/2'
+                              : 'w-1/4'
+                        }`}></div>
                     </div>
 
                     <div className="relative flex justify-between text-center text-[10px] font-bold text-slate-text-secondary z-10">
@@ -1997,13 +1975,12 @@ export default function ProfilePage() {
                         <span className="block font-bold">Order Placed</span>
                         <span className="block text-[8px] text-slate-text-muted">Oct 24, 09:00</span>
                       </div>
-                      
+
                       <div className="space-y-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${
-                          selectedOrder.status !== 'Processing' && selectedOrder.status !== 'idle'
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status !== 'Processing' && selectedOrder.status !== 'idle'
                             ? 'bg-cobalt text-white'
                             : 'bg-white text-slate-text-muted border-slate-border'
-                        }`}>
+                          }`}>
                           {selectedOrder.status === 'Processing' ? '●' : '✓'}
                         </div>
                         <span className="block font-bold">Processing</span>
@@ -2011,11 +1988,10 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="space-y-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${
-                          selectedOrder.status === 'Shipped' || selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Shipped' || selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
                             ? 'bg-cobalt text-white'
                             : 'bg-white text-slate-text-muted border-slate-border'
-                        }`}>
+                          }`}>
                           {selectedOrder.status === 'Shipped' ? '●' : selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed' ? '✓' : '3'}
                         </div>
                         <span className="block font-bold">Shipped</span>
@@ -2023,11 +1999,10 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="space-y-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${
-                          selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
                             ? 'bg-cobalt text-white'
                             : 'bg-white text-slate-text-muted border-slate-border'
-                        }`}>
+                          }`}>
                           {selectedOrder.status === 'Delivered' ? '●' : selectedOrder.status === 'Completed' ? '✓' : '4'}
                         </div>
                         <span className="block font-bold">Out for Delivery</span>
@@ -2035,11 +2010,10 @@ export default function ProfilePage() {
                       </div>
 
                       <div className="space-y-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${
-                          selectedOrder.status === 'Completed'
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Completed'
                             ? 'bg-emerald text-white'
                             : 'bg-white text-slate-text-muted border-slate-border'
-                        }`}>
+                          }`}>
                           {selectedOrder.status === 'Completed' ? '✓' : '5'}
                         </div>
                         <span className="block font-bold">Delivered</span>
@@ -2319,7 +2293,7 @@ export default function ProfilePage() {
                     Manage your delivery locations and billing addresses.
                   </p>
                 </div>
-                <button 
+                <button
                   onClick={() => showToast('New addresses can be saved at checkout.', 'success')}
                   className="btn-cobalt text-xs font-bold px-3 py-2 rounded-lg cursor-pointer flex items-center gap-1"
                 >
@@ -2384,10 +2358,10 @@ export default function ProfilePage() {
           )}
 
           {activeTab === 'chats' && (
-            <QuotationChatsTab 
-              profile={profile} 
-              showToast={showToast} 
-              onUnreadChange={checkUnreadChats} 
+            <QuotationChatsTab
+              profile={profile}
+              showToast={showToast}
+              onUnreadChange={checkUnreadChats}
               initialActiveRfqId={activeChatRfqId}
               onClearInitialActiveRfqId={() => setActiveChatRfqId(null)}
             />
@@ -2428,7 +2402,7 @@ export default function ProfilePage() {
                 const price = Number(target.price.value) || 0;
                 const desc = target.description.value.trim();
                 const gradient = imagePreviews.length > 0 ? 'custom-image' : 'from-cobalt/20 to-cobalt/5 border-cobalt/20';
-                
+
                 if (type === 'Product') {
                   const sku = target.sku.value.trim();
                   const category = selectedCategory === 'Other' ? target.customCategory.value.trim() : selectedCategory;
@@ -2467,7 +2441,7 @@ export default function ProfilePage() {
                   const updatedProds = [...localProducts, newProduct];
                   setLocalProducts(updatedProds);
                   localStorage.setItem('local_listed_products', JSON.stringify(updatedProds));
-                  
+
                   // Submit to database via server action (handles auth + seller_profile_id)
                   try {
                     await submitProductListing({
@@ -2514,11 +2488,11 @@ export default function ProfilePage() {
                     image_data: imagePreviews[0] || undefined,
                     images_data: imagePreviews || []
                   };
-                  
+
                   const updatedServs = [...localServices, newService];
                   setLocalServices(updatedServs);
                   localStorage.setItem('local_listed_services', JSON.stringify(updatedServs));
-                  
+
                   // 1. Submit general service listing via Server Action
                   try {
                     await submitServiceListing({
@@ -2563,15 +2537,15 @@ export default function ProfilePage() {
                 setPublishingListing(false);
               }
             }} className="space-y-4">
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
-                
+
                 {/* LEFT COLUMN: Basic Info & Tech Specifications */}
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <label className="block text-[10px] font-bold text-[#76777d] uppercase">Listing Type</label>
-                    <select 
-                      name="type" 
+                    <select
+                      name="type"
                       value={listingType}
                       onChange={(e) => setListingType(e.target.value as any)}
                       className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none focus:border-[#06b6d4]"
@@ -2596,7 +2570,7 @@ export default function ProfilePage() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <label className="block text-[10px] font-bold text-[#76777d] uppercase">Category *</label>
-                          <select 
+                          <select
                             name="category"
                             value={selectedCategory}
                             onChange={(e) => setSelectedCategory(e.target.value)}
@@ -2633,8 +2607,8 @@ export default function ProfilePage() {
                       <div className="space-y-1.5 pt-1">
                         <div className="flex items-center justify-between">
                           <label className="block text-[10px] font-bold text-[#76777d] uppercase">Tech Specifications (Key-Value)</label>
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={() => setCustomSpecs([...customSpecs, { id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(), key: '', value: '' }])}
                             className="text-[#06b6d4] hover:text-[#0b9cb5] text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer"
                           >
@@ -2644,28 +2618,28 @@ export default function ProfilePage() {
                         <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1 no-scrollbar">
                           {customSpecs.map((spec) => (
                             <div key={spec.id} className="flex gap-2 items-center">
-                              <input 
-                                type="text" 
-                                placeholder="Key (e.g. Weight)" 
+                              <input
+                                type="text"
+                                placeholder="Key (e.g. Weight)"
                                 value={spec.key}
                                 onChange={(e) => {
                                   const val = e.target.value;
                                   setCustomSpecs(prev => prev.map(s => s.id === spec.id ? { ...s, key: val } : s));
                                 }}
-                                className="w-[45%] text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" 
+                                className="w-[45%] text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none"
                               />
-                              <input 
-                                type="text" 
-                                placeholder="Value (e.g. 2.4 kg)" 
+                              <input
+                                type="text"
+                                placeholder="Value (e.g. 2.4 kg)"
                                 value={spec.value}
                                 onChange={(e) => {
                                   const val = e.target.value;
                                   setCustomSpecs(prev => prev.map(s => s.id === spec.id ? { ...s, value: val } : s));
                                 }}
-                                className="w-[45%] text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none" 
+                                className="w-[45%] text-xs p-2 border border-[#E4E4E7] rounded bg-white text-[#0F172A] focus:outline-none"
                               />
-                              <button 
-                                type="button" 
+                              <button
+                                type="button"
                                 onClick={() => setCustomSpecs(prev => prev.filter(s => s.id !== spec.id))}
                                 className="p-1 rounded hover:bg-[#F8FAFC] border border-[#E4E4E7] text-red-500 cursor-pointer"
                                 title="Remove Specification"
@@ -2686,8 +2660,8 @@ export default function ProfilePage() {
 
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-[#76777d] uppercase">Process Type *</label>
-                        <select 
-                          name="processType" 
+                        <select
+                          name="processType"
                           value={selectedProcessType}
                           onChange={(e) => setSelectedProcessType(e.target.value)}
                           className="w-full text-xs font-bold p-2 border border-[#E4E4E7] bg-white text-[#0f172a] focus:outline-none focus:border-[#06b6d4] rounded"
@@ -2727,25 +2701,24 @@ export default function ProfilePage() {
                       {/* Image Upload Area */}
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-[#76777d] uppercase">Product Images (.jpg, .png, .svg) *</label>
-                        <div 
+                        <div
                           onDragEnter={(e) => handleDrag(e, 'image')}
                           onDragOver={(e) => handleDrag(e, 'image')}
                           onDragLeave={(e) => handleDrag(e, 'image')}
                           onDrop={(e) => handleDrop(e, 'image')}
-                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
-                            dragActiveImage ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
-                          }`}
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveImage ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                            }`}
                         >
-                          <input 
-                            type="file" 
-                            accept=".jpg,.jpeg,.png,.svg" 
+                          <input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.svg"
                             multiple
                             onChange={(e) => {
                               if (e.target.files) {
                                 Array.from(e.target.files).forEach(file => processFile(file, 'image'));
                               }
                             }}
-                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
                           <Upload className="w-5 h-5 text-[#76777d]" />
                           <span className="text-[10px] text-[#45464d] font-bold leading-tight">
@@ -2757,8 +2730,8 @@ export default function ProfilePage() {
                             {imagePreviews.map((src, index) => (
                               <div key={index} className="relative w-10 h-10 border border-[#E4E4E7] overflow-hidden rounded group">
                                 <img src={src} alt="Preview" className="w-full h-full object-cover" />
-                                <button 
-                                  type="button" 
+                                <button
+                                  type="button"
                                   onClick={() => {
                                     setImagePreviews(prev => prev.filter((_, i) => i !== index));
                                     setImageFileNames(prev => prev.filter((_, i) => i !== index));
@@ -2776,24 +2749,23 @@ export default function ProfilePage() {
                       {/* Datasheet Upload Area */}
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-[#76777d] uppercase">Technical Datasheet (PDF)</label>
-                        <div 
+                        <div
                           onDragEnter={(e) => handleDrag(e, 'datasheet')}
                           onDragOver={(e) => handleDrag(e, 'datasheet')}
                           onDragLeave={(e) => handleDrag(e, 'datasheet')}
                           onDrop={(e) => handleDrop(e, 'datasheet')}
-                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
-                            dragActiveDatasheet ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
-                          }`}
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveDatasheet ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                            }`}
                         >
-                          <input 
-                            type="file" 
-                            accept=".pdf" 
+                          <input
+                            type="file"
+                            accept=".pdf"
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
                                 processFile(e.target.files[0], 'datasheet');
                               }
                             }}
-                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
                           <FileText className="w-4 h-4 text-[#76777d]" />
                           <span className="text-[10px] text-[#45464d] font-bold leading-tight">
@@ -2803,8 +2775,8 @@ export default function ProfilePage() {
                         {datasheetFile && (
                           <div className="flex justify-between items-center text-[9px] font-bold uppercase mt-1">
                             <span className="text-emerald">{datasheetFile.size}</span>
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => setDatasheetFile(null)}
                               className="text-red-500 hover:text-red-700"
                             >
@@ -2817,24 +2789,23 @@ export default function ProfilePage() {
                       {/* CAD Model Upload Area */}
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-[#76777d] uppercase">3D CAD Model (STEP, STP, IGES)</label>
-                        <div 
+                        <div
                           onDragEnter={(e) => handleDrag(e, 'cad')}
                           onDragOver={(e) => handleDrag(e, 'cad')}
                           onDragLeave={(e) => handleDrag(e, 'cad')}
                           onDrop={(e) => handleDrop(e, 'cad')}
-                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
-                            dragActiveCad ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
-                          }`}
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveCad ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                            }`}
                         >
-                          <input 
-                            type="file" 
-                            accept=".step,.stp,.iges,.igs" 
+                          <input
+                            type="file"
+                            accept=".step,.stp,.iges,.igs"
                             onChange={(e) => {
                               if (e.target.files && e.target.files[0]) {
                                 processFile(e.target.files[0], 'cad');
                               }
                             }}
-                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
                           <Settings className="w-4 h-4 text-[#76777d]" />
                           <span className="text-[10px] text-[#45464d] font-bold leading-tight">
@@ -2844,8 +2815,8 @@ export default function ProfilePage() {
                         {cadFile && (
                           <div className="flex justify-between items-center text-[9px] font-bold uppercase mt-1">
                             <span className="text-emerald">{cadFile.size}</span>
-                            <button 
-                              type="button" 
+                            <button
+                              type="button"
                               onClick={() => setCadFile(null)}
                               className="text-red-500 hover:text-red-700"
                             >
@@ -2871,8 +2842,8 @@ export default function ProfilePage() {
                         <div className="flex items-center justify-between">
                           <label className="block text-[10px] font-bold text-[#76777d] uppercase">Enable Bulk Pricing</label>
                           <label className="relative inline-flex items-center cursor-pointer select-none">
-                            <input 
-                              type="checkbox" 
+                            <input
+                              type="checkbox"
                               checked={enableBulkPricing}
                               onChange={(e) => setEnableBulkPricing(e.target.checked)}
                               className="sr-only peer"
@@ -2909,25 +2880,24 @@ export default function ProfilePage() {
                       {/* Image Upload Area for Service */}
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-[#76777d] uppercase">Service Images (.jpg, .png, .svg)</label>
-                        <div 
+                        <div
                           onDragEnter={(e) => handleDrag(e, 'image')}
                           onDragOver={(e) => handleDrag(e, 'image')}
                           onDragLeave={(e) => handleDrag(e, 'image')}
                           onDrop={(e) => handleDrop(e, 'image')}
-                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
-                            dragActiveImage ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
-                          }`}
+                          className={`relative border-2 border-dashed rounded p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${dragActiveImage ? 'border-[#06b6d4] bg-[#06b6d4]/5' : 'border-[#E4E4E7] hover:border-[#76777d]'
+                            }`}
                         >
-                          <input 
-                            type="file" 
-                            accept=".jpg,.jpeg,.png,.svg" 
+                          <input
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.svg"
                             multiple
                             onChange={(e) => {
                               if (e.target.files) {
                                 Array.from(e.target.files).forEach(file => processFile(file, 'image'));
                               }
                             }}
-                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" 
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
                           <Upload className="w-5 h-5 text-[#76777d]" />
                           <span className="text-[10px] text-[#45464d] font-bold leading-tight">
@@ -2939,8 +2909,8 @@ export default function ProfilePage() {
                             {imagePreviews.map((src, index) => (
                               <div key={index} className="relative w-10 h-10 border border-[#E4E4E7] overflow-hidden rounded group">
                                 <img src={src} alt="Preview" className="w-full h-full object-cover" />
-                                <button 
-                                  type="button" 
+                                <button
+                                  type="button"
                                   onClick={() => {
                                     setImagePreviews(prev => prev.filter((_, i) => i !== index));
                                     setImageFileNames(prev => prev.filter((_, i) => i !== index));
@@ -2966,8 +2936,8 @@ export default function ProfilePage() {
               </div>
 
               <div className="flex gap-3 pt-3 border-t border-[#E4E4E7]">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={publishingListing}
                   className="flex-1 bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer text-center disabled:opacity-50 flex items-center justify-center gap-1.5"
                 >
@@ -2993,7 +2963,7 @@ export default function ProfilePage() {
       {showKYCModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div 
+          <div
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"
             onClick={() => setShowKYCModal(false)}
           ></div>
@@ -3042,43 +3012,43 @@ export default function ProfilePage() {
                 setTogglingSeller(false);
               }
             }} className="space-y-4 text-left">
-              
+
               <div className="space-y-1">
                 <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Company / Shop Name *</label>
-                <input 
-                  type="text" 
-                  name="companyName" 
-                  required 
+                <input
+                  type="text"
+                  name="companyName"
+                  required
                   placeholder="e.g. Precision CNC Lab Ltd."
-                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]" 
+                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]"
                 />
               </div>
 
               <div className="space-y-1">
                 <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Tax Identification ID (GSTIN/EIN) *</label>
-                <input 
-                  type="text" 
-                  name="taxId" 
-                  required 
+                <input
+                  type="text"
+                  name="taxId"
+                  required
                   placeholder="e.g. 27AAAAA1111A1Z1"
-                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]" 
+                  className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Machine Count</label>
-                  <input 
-                    type="number" 
-                    name="machineCount" 
+                  <input
+                    type="number"
+                    name="machineCount"
                     min={0}
                     defaultValue={1}
-                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]" 
+                    className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]"
                   />
                 </div>
                 <div className="space-y-1">
                   <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Primary Capability *</label>
-                  <select 
+                  <select
                     name="primaryCapability"
                     required
                     className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084]"
@@ -3093,25 +3063,25 @@ export default function ProfilePage() {
 
               <div className="space-y-1">
                 <label className="block text-[10px] font-bold text-slate-text-secondary uppercase">Business Address *</label>
-                <textarea 
-                  name="businessAddress" 
-                  required 
-                  rows={2} 
+                <textarea
+                  name="businessAddress"
+                  required
+                  rows={2}
                   placeholder="Street, City, Zip Code..."
                   className="w-full text-xs font-bold p-3 border border-slate-border rounded-lg bg-slate-bg/30 text-slate-text-primary focus:outline-none focus:border-[#007084] resize-none"
                 ></textarea>
               </div>
 
               <div className="flex gap-3 pt-2">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowKYCModal(false)}
                   className="flex-1 py-3 rounded-lg border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={togglingSeller}
                   className="flex-1 bg-[#0B1528] hover:bg-slate-900 text-white py-3 rounded-lg text-xs font-extrabold cursor-pointer transition-colors flex items-center justify-center gap-1.5"
                 >
@@ -3127,15 +3097,15 @@ export default function ProfilePage() {
   );
 }
 
-function QuotationChatsTab({ 
-  profile, 
-  showToast, 
+function QuotationChatsTab({
+  profile,
+  showToast,
   onUnreadChange,
   initialActiveRfqId,
   onClearInitialActiveRfqId
-}: { 
-  profile: any; 
-  showToast: any; 
+}: {
+  profile: any;
+  showToast: any;
   onUnreadChange?: () => void;
   initialActiveRfqId: string | null;
   onClearInitialActiveRfqId: () => void;
@@ -3163,6 +3133,7 @@ function QuotationChatsTab({
   const [showCounterForm, setShowCounterForm] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
+  // Auto-scroll the chat messages log container to the bottom when new messages arrive
   useEffect(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
@@ -3172,8 +3143,7 @@ function QuotationChatsTab({
     }
   }, [messages]);
 
-
-
+  // Focus and activate a specific RFQ chat thread when navigated from order details/dashboard cards
   useEffect(() => {
     if (initialActiveRfqId && threads.length > 0) {
       const thread = threads.find(t => t.rfqId === initialActiveRfqId);
@@ -3384,7 +3354,7 @@ function QuotationChatsTab({
   const selectThread = async (thread: ChatThread) => {
     setActiveThread(thread);
     setShowCounterForm(false);
-    
+
     if (thread.machiningQuote) {
       setOfferPrice(thread.machiningQuote.offer_price || 0);
       setOfferQuantity(thread.machiningQuote.quantity || 1);
@@ -3749,15 +3719,14 @@ function QuotationChatsTab({
                 <div
                   key={t.quoteId}
                   onClick={() => selectThread(t)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 text-left ${
-                    isAccepted
+                  className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 text-left ${isAccepted
                       ? activeThread?.quoteId === t.quoteId
                         ? 'border-emerald bg-emerald-500/10 ring-1 ring-emerald/20'
                         : 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
                       : activeThread?.quoteId === t.quoteId
-                      ? 'border-cobalt bg-cobalt/5 ring-1 ring-cobalt/10'
-                      : 'border-slate-border hover:bg-slate-bg/50'
-                  }`}
+                        ? 'border-cobalt bg-cobalt/5 ring-1 ring-cobalt/10'
+                        : 'border-slate-border hover:bg-slate-bg/50'
+                    }`}
                 >
                   <div className="flex justify-between items-start gap-2">
                     <h4 className="text-xs font-black text-slate-text-primary line-clamp-1 flex-1 flex items-center gap-1.5">
@@ -3767,13 +3736,12 @@ function QuotationChatsTab({
                       {t.rfqTitle}
                     </h4>
                     <div className="flex flex-col items-end gap-1 shrink-0">
-                      <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
-                        isAccepted
+                      <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${isAccepted
                           ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
                           : t.status === 'REJECTED'
-                          ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                          : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                      }`}>
+                            ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                            : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                        }`}>
                         {isAccepted ? 'ACCEPTED' : t.status}
                       </span>
                       {isAccepted && t.machiningQuote?.offer_price && (
@@ -3893,11 +3861,10 @@ function QuotationChatsTab({
                   return (
                     <div key={m.id} className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'self-end ml-auto items-end' : 'self-start mr-auto items-start'}`}>
                       <span className="text-[9px] font-bold text-slate-text-muted mb-0.5 px-1">{m.sender_name}</span>
-                      <div className={`p-3 rounded-xl border text-xs font-semibold leading-relaxed ${
-                        isOwnMessage
+                      <div className={`p-3 rounded-xl border text-xs font-semibold leading-relaxed ${isOwnMessage
                           ? 'bg-cobalt text-white border-cobalt shadow-sm'
                           : 'bg-white text-slate-text-primary border-slate-border shadow-sm'
-                      }`}>
+                        }`}>
                         <p>{m.message_text}</p>
                         {m.file_attachment_path && (
                           <div className={`mt-2 p-2 rounded-lg border flex items-center gap-2 ${isOwnMessage ? 'bg-white/10 border-white/20' : 'bg-slate-bg border-slate-border'}`}>
@@ -3939,340 +3906,339 @@ function QuotationChatsTab({
             </div>
 
             {/* Contextual Quoting Workflow Card */}
-            {activeThread.machiningQuote && 
-             activeThread.status !== 'ACCEPTED' && 
-             (activeThread.machiningQuote.status as string) !== 'Accepted' && (
-              <div className="mx-4 mb-4 p-4 rounded-xl border bg-slate-bg/40 border-slate-border/60 space-y-3">
-                <div className="flex justify-between items-center pb-2 border-b border-slate-border/50">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
-                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-text-primary">
-                      Quote Request Status: {activeThread.machiningQuote.status}
-                    </span>
+            {activeThread.machiningQuote &&
+              activeThread.status !== 'ACCEPTED' &&
+              (activeThread.machiningQuote.status as string) !== 'Accepted' && (
+                <div className="mx-4 mb-4 p-4 rounded-xl border bg-slate-bg/40 border-slate-border/60 space-y-3">
+                  <div className="flex justify-between items-center pb-2 border-b border-slate-border/50">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-text-primary">
+                        Quote Request Status: {activeThread.machiningQuote.status}
+                      </span>
+                    </div>
+                    {activeThread.machiningQuote.status === 'Pending' && !profile.is_seller && (
+                      <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded animate-pulse">
+                        Awaiting Fabricator Pricing
+                      </span>
+                    )}
+                    {activeThread.machiningQuote.status === 'Offered' && profile.is_seller && (
+                      <span className="text-[9px] font-bold text-[#06B6D4] bg-[#06B6D4]/10 border border-[#06B6D4]/20 px-2 py-0.5 rounded">
+                        Awaiting Customer Approval
+                      </span>
+                    )}
+                    {activeThread.machiningQuote.status === 'Accepted' && (
+                      <span className="text-[9px] font-bold text-emerald bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Order Placed
+                      </span>
+                    )}
                   </div>
-                  {activeThread.machiningQuote.status === 'Pending' && !profile.is_seller && (
-                    <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded animate-pulse">
-                      Awaiting Fabricator Pricing
-                    </span>
-                  )}
-                  {activeThread.machiningQuote.status === 'Offered' && profile.is_seller && (
-                    <span className="text-[9px] font-bold text-[#06B6D4] bg-[#06B6D4]/10 border border-[#06B6D4]/20 px-2 py-0.5 rounded">
-                      Awaiting Customer Approval
-                    </span>
-                  )}
-                  {activeThread.machiningQuote.status === 'Accepted' && (
-                    <span className="text-[9px] font-bold text-emerald bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Order Placed
-                    </span>
-                  )}
-                </div>
 
-                {activeThread.machiningQuote.status === 'Pending' && profile.is_seller && (
-                  /* Seller: Submit Offer Form */
-                  <form onSubmit={handleOfferSubmit} className="space-y-3 text-xs font-bold">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <div className="space-y-1">
-                        <label className="block text-[8px] text-slate-text-secondary uppercase">Material</label>
-                        <select
-                          value={offerMaterial}
-                          onChange={(e) => setOfferMaterial(e.target.value)}
-                          className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
-                        >
-                          {(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="block text-[8px] text-slate-text-secondary uppercase">Finish</label>
-                        <select
-                          value={offerFinish}
-                          onChange={(e) => setOfferFinish(e.target.value)}
-                          className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
-                        >
-                          {(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f) => (
-                            <option key={f} value={f}>{f}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="block text-[8px] text-slate-text-secondary uppercase">Qty (Units)</label>
-                        <input
-                          type="number"
-                          required
-                          min={1}
-                          value={offerQuantity}
-                          onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
-                          className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <label className="block text-[8px] text-slate-text-secondary uppercase">Total Price (₹)</label>
-                        <input
-                          type="number"
-                          required
-                          min={1}
-                          value={offerPrice || ''}
-                          placeholder="0"
-                          onChange={(e) => setOfferPrice(Number(e.target.value))}
-                          className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label className="block text-[8px] text-slate-text-secondary uppercase">Notes / Inspection Feedback</label>
-                      <input
-                        type="text"
-                        placeholder="Detail tolerancing check, recommended tooling modifications, etc..."
-                        value={sellerNotes}
-                        onChange={(e) => setSellerNotes(e.target.value)}
-                        className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={submittingOffer}
-                      className="w-full py-2 bg-cobalt hover:bg-[#06b6d4] text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      {submittingOffer ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <>
-                          <CircleDollarSign className="w-3.5 h-3.5" />
-                          <span>Submit Price Offer to Buyer</span>
-                        </>
-                      )}
-                    </button>
-                  </form>
-                )}
-
-                {activeThread.machiningQuote.status === 'Offered' && (
-                  /* Offer / Counter-Offer Negotiation Details */
-                  <div className="space-y-4">
-                    {/* Offer Details Card */}
-                    <div className="bg-white border border-slate-border/60 p-4 rounded-xl space-y-3">
-                      <div className="flex justify-between items-center pb-2 border-b border-slate-border/40">
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                          <span className="text-[10px] font-black text-slate-text-primary uppercase tracking-wider">
-                            Latest Proposal (By {activeThread.machiningQuote.last_offered_by === 'BUYER' ? 'Buyer' : 'Seller'})
-                          </span>
-                        </div>
-                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${
-                          activeThread.machiningQuote.last_offered_by === 'BUYER'
-                            ? profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
-                            : !profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
-                        }`}>
-                          {activeThread.machiningQuote.last_offered_by === 'BUYER'
-                            ? profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Seller Response'
-                            : !profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Buyer Response'}
-                        </span>
-                      </div>
-
-                      <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
-                        <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-[10px] text-slate-text-secondary font-bold font-mono">
-                          <div>Material: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_material}</span></div>
-                          <div>Finish: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_finish}</span></div>
-                          <div>Quantity: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.quantity} Units</span></div>
-                        </div>
-                        <div className="flex items-baseline gap-1 self-start md:self-auto">
-                          <span className="text-[9px] text-slate-text-muted uppercase">Proposed Price:</span>
-                          <span className="text-sm font-black text-coral">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span>
-                        </div>
-                      </div>
-
-                      {activeThread.machiningQuote.seller_notes && (
-                        <p className="text-[10px] text-slate-text-muted italic border-t border-slate-border/40 pt-1.5 mt-1">
-                          Notes: "{activeThread.machiningQuote.seller_notes}"
-                        </p>
-                      )}
-
-                      {/* Action Buttons when form is hidden */}
-                      {!showCounterForm && (
-                        <div className="flex gap-3 pt-2">
-                          {/* 1. If buyer receives seller's offer: can Accept or Counter */}
-                          {!profile.is_seller && activeThread.machiningQuote.last_offered_by !== 'BUYER' && (
-                            <>
-                              <button
-                                onClick={handleAcceptOffer}
-                                className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow"
-                              >
-                                <CheckCircle2 className="w-4 h-4" />
-                                <span>Accept Offer & Place Order</span>
-                              </button>
-                              <button
-                                onClick={() => setShowCounterForm(true)}
-                                className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
-                              >
-                                Counter-Offer
-                              </button>
-                            </>
-                          )}
-
-                          {/* 2. If seller receives buyer's counter: can Accept or Counter */}
-                          {profile.is_seller && activeThread.machiningQuote.last_offered_by === 'BUYER' && (
-                            <>
-                              <button
-                                onClick={handleAcceptOfferBySeller}
-                                className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow"
-                              >
-                                <CheckCircle2 className="w-4 h-4" />
-                                <span>Accept Counter-Offer</span>
-                              </button>
-                              <button
-                                onClick={() => setShowCounterForm(true)}
-                                className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
-                              >
-                                Counter-Offer
-                              </button>
-                            </>
-                          )}
-
-                          {/* 3. If buyer is waiting for seller: can modify their counter */}
-                          {!profile.is_seller && activeThread.machiningQuote.last_offered_by === 'BUYER' && (
-                            <button
-                              onClick={() => setShowCounterForm(true)}
-                              className="w-full py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                            >
-                              <CircleDollarSign className="w-3.5 h-3.5" />
-                              Modify My Counter-Offer
-                            </button>
-                          )}
-
-                          {/* 4. If seller is waiting for buyer: can modify their offer */}
-                          {profile.is_seller && activeThread.machiningQuote.last_offered_by !== 'BUYER' && (
-                            <button
-                              onClick={() => setShowCounterForm(true)}
-                              className="w-full py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                            >
-                              <CircleDollarSign className="w-3.5 h-3.5" />
-                              Modify My Offer
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Counter / Modification Form */}
-                    {showCounterForm && (
-                      <form onSubmit={profile.is_seller ? handleOfferSubmit : handleCounterOfferSubmit} className="bg-slate-bg/30 border border-slate-border/50 rounded-xl p-4 space-y-3 text-xs font-bold animate-slide-in">
-                        <div className="flex justify-between items-center pb-1 border-b border-slate-border/30">
-                          <span className="text-[10px] text-slate-text-primary uppercase tracking-wider">
-                            {profile.is_seller ? 'Modify Offer to Buyer' : 'Submit Counter-Offer to Fabricator'}
-                          </span>
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono">
-                          <div className="space-y-1 font-sans">
-                            <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Material</label>
-                            <select
-                              value={offerMaterial}
-                              onChange={(e) => setOfferMaterial(e.target.value)}
-                              className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
-                            >
-                              {(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m) => (
-                                <option key={m} value={m}>{m}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="space-y-1 font-sans">
-                            <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Finish</label>
-                            <select
-                              value={offerFinish}
-                              onChange={(e) => setOfferFinish(e.target.value)}
-                              className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
-                            >
-                              {(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f) => (
-                                <option key={f} value={f}>{f}</option>
-                              ))}
-                            </select>
-                          </div>
-
-                          <div className="space-y-1">
-                            <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Qty (Units)</label>
-                            <input
-                              type="number"
-                              required
-                              min={1}
-                              value={offerQuantity}
-                              onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
-                              className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-bold"
-                            />
-                          </div>
-
-                          <div className="space-y-1">
-                            <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Price (₹)</label>
-                            <input
-                              type="number"
-                              required
-                              min={1}
-                              value={offerPrice || ''}
-                              placeholder="0"
-                              onChange={(e) => setOfferPrice(Number(e.target.value))}
-                              className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-bold"
-                            />
-                          </div>
+                  {activeThread.machiningQuote.status === 'Pending' && profile.is_seller && (
+                    /* Seller: Submit Offer Form */
+                    <form onSubmit={handleOfferSubmit} className="space-y-3 text-xs font-bold">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="space-y-1">
+                          <label className="block text-[8px] text-slate-text-secondary uppercase">Material</label>
+                          <select
+                            value={offerMaterial}
+                            onChange={(e) => setOfferMaterial(e.target.value)}
+                            className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                          >
+                            {(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m) => (
+                              <option key={m} value={m}>{m}</option>
+                            ))}
+                          </select>
                         </div>
 
                         <div className="space-y-1">
-                          <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Proposal Notes</label>
+                          <label className="block text-[8px] text-slate-text-secondary uppercase">Finish</label>
+                          <select
+                            value={offerFinish}
+                            onChange={(e) => setOfferFinish(e.target.value)}
+                            className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                          >
+                            {(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f) => (
+                              <option key={f} value={f}>{f}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="block text-[8px] text-slate-text-secondary uppercase">Qty (Units)</label>
                           <input
-                            type="text"
-                            placeholder="Add explanation for counter-offer..."
-                            value={sellerNotes}
-                            onChange={(e) => setSellerNotes(e.target.value)}
-                            className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-semibold font-sans"
+                            type="number"
+                            required
+                            min={1}
+                            value={offerQuantity}
+                            onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
+                            className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
                           />
                         </div>
 
-                        <div className="flex gap-3 pt-1">
-                          <button
-                            type="submit"
-                            disabled={submittingOffer}
-                            className="flex-1 py-2 bg-cobalt hover:bg-[#06b6d4] text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                          >
-                            {submittingOffer ? (
-                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
+                        <div className="space-y-1">
+                          <label className="block text-[8px] text-slate-text-secondary uppercase">Total Price (₹)</label>
+                          <input
+                            type="number"
+                            required
+                            min={1}
+                            value={offerPrice || ''}
+                            placeholder="0"
+                            onChange={(e) => setOfferPrice(Number(e.target.value))}
+                            className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="block text-[8px] text-slate-text-secondary uppercase">Notes / Inspection Feedback</label>
+                        <input
+                          type="text"
+                          placeholder="Detail tolerancing check, recommended tooling modifications, etc..."
+                          value={sellerNotes}
+                          onChange={(e) => setSellerNotes(e.target.value)}
+                          className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={submittingOffer}
+                        className="w-full py-2 bg-cobalt hover:bg-[#06b6d4] text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        {submittingOffer ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <>
+                            <CircleDollarSign className="w-3.5 h-3.5" />
+                            <span>Submit Price Offer to Buyer</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  )}
+
+                  {activeThread.machiningQuote.status === 'Offered' && (
+                    /* Offer / Counter-Offer Negotiation Details */
+                    <div className="space-y-4">
+                      {/* Offer Details Card */}
+                      <div className="bg-white border border-slate-border/60 p-4 rounded-xl space-y-3">
+                        <div className="flex justify-between items-center pb-2 border-b border-slate-border/40">
+                          <div className="flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            <span className="text-[10px] font-black text-slate-text-primary uppercase tracking-wider">
+                              Latest Proposal (By {activeThread.machiningQuote.last_offered_by === 'BUYER' ? 'Buyer' : 'Seller'})
+                            </span>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${activeThread.machiningQuote.last_offered_by === 'BUYER'
+                              ? profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
+                              : !profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
+                            }`}>
+                            {activeThread.machiningQuote.last_offered_by === 'BUYER'
+                              ? profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Seller Response'
+                              : !profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Buyer Response'}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
+                          <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-[10px] text-slate-text-secondary font-bold font-mono">
+                            <div>Material: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_material}</span></div>
+                            <div>Finish: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_finish}</span></div>
+                            <div>Quantity: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.quantity} Units</span></div>
+                          </div>
+                          <div className="flex items-baseline gap-1 self-start md:self-auto">
+                            <span className="text-[9px] text-slate-text-muted uppercase">Proposed Price:</span>
+                            <span className="text-sm font-black text-coral">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span>
+                          </div>
+                        </div>
+
+                        {activeThread.machiningQuote.seller_notes && (
+                          <p className="text-[10px] text-slate-text-muted italic border-t border-slate-border/40 pt-1.5 mt-1">
+                            Notes: "{activeThread.machiningQuote.seller_notes}"
+                          </p>
+                        )}
+
+                        {/* Action Buttons when form is hidden */}
+                        {!showCounterForm && (
+                          <div className="flex gap-3 pt-2">
+                            {/* 1. If buyer receives seller's offer: can Accept or Counter */}
+                            {!profile.is_seller && activeThread.machiningQuote.last_offered_by !== 'BUYER' && (
                               <>
-                                <Send className="w-3.5 h-3.5" />
-                                <span>Send Proposal</span>
+                                <button
+                                  onClick={handleAcceptOffer}
+                                  className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow"
+                                >
+                                  <CheckCircle2 className="w-4 h-4" />
+                                  <span>Accept Offer & Place Order</span>
+                                </button>
+                                <button
+                                  onClick={() => setShowCounterForm(true)}
+                                  className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
+                                >
+                                  Counter-Offer
+                                </button>
                               </>
                             )}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setShowCounterForm(false)}
-                            className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </form>
-                    )}
-                  </div>
-                )}
 
-                {activeThread.machiningQuote.status === 'Accepted' && (
-                  /* Accepted Offer Summary */
-                  <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-lg text-[10px] font-bold text-slate-text-secondary space-y-1">
-                    <p className="text-emerald font-black">Contract Terms Finalized & Accepted</p>
-                    <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-slate-text-secondary">
-                      <div>Material: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_material}</span></div>
-                      <div>Finish: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_finish}</span></div>
-                      <div>Quantity: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.quantity} Units</span></div>
-                      <div className="ml-auto">Price: <span className="text-coral font-black">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span></div>
+                            {/* 2. If seller receives buyer's counter: can Accept or Counter */}
+                            {profile.is_seller && activeThread.machiningQuote.last_offered_by === 'BUYER' && (
+                              <>
+                                <button
+                                  onClick={handleAcceptOfferBySeller}
+                                  className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow"
+                                >
+                                  <CheckCircle2 className="w-4 h-4" />
+                                  <span>Accept Counter-Offer</span>
+                                </button>
+                                <button
+                                  onClick={() => setShowCounterForm(true)}
+                                  className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
+                                >
+                                  Counter-Offer
+                                </button>
+                              </>
+                            )}
+
+                            {/* 3. If buyer is waiting for seller: can modify their counter */}
+                            {!profile.is_seller && activeThread.machiningQuote.last_offered_by === 'BUYER' && (
+                              <button
+                                onClick={() => setShowCounterForm(true)}
+                                className="w-full py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                              >
+                                <CircleDollarSign className="w-3.5 h-3.5" />
+                                Modify My Counter-Offer
+                              </button>
+                            )}
+
+                            {/* 4. If seller is waiting for buyer: can modify their offer */}
+                            {profile.is_seller && activeThread.machiningQuote.last_offered_by !== 'BUYER' && (
+                              <button
+                                onClick={() => setShowCounterForm(true)}
+                                className="w-full py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                              >
+                                <CircleDollarSign className="w-3.5 h-3.5" />
+                                Modify My Offer
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Counter / Modification Form */}
+                      {showCounterForm && (
+                        <form onSubmit={profile.is_seller ? handleOfferSubmit : handleCounterOfferSubmit} className="bg-slate-bg/30 border border-slate-border/50 rounded-xl p-4 space-y-3 text-xs font-bold animate-slide-in">
+                          <div className="flex justify-between items-center pb-1 border-b border-slate-border/30">
+                            <span className="text-[10px] text-slate-text-primary uppercase tracking-wider">
+                              {profile.is_seller ? 'Modify Offer to Buyer' : 'Submit Counter-Offer to Fabricator'}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono">
+                            <div className="space-y-1 font-sans">
+                              <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Material</label>
+                              <select
+                                value={offerMaterial}
+                                onChange={(e) => setOfferMaterial(e.target.value)}
+                                className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                              >
+                                {(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m) => (
+                                  <option key={m} value={m}>{m}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="space-y-1 font-sans">
+                              <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Finish</label>
+                              <select
+                                value={offerFinish}
+                                onChange={(e) => setOfferFinish(e.target.value)}
+                                className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none"
+                              >
+                                {(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f) => (
+                                  <option key={f} value={f}>{f}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Qty (Units)</label>
+                              <input
+                                type="number"
+                                required
+                                min={1}
+                                value={offerQuantity}
+                                onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
+                                className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-bold"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Price (₹)</label>
+                              <input
+                                type="number"
+                                required
+                                min={1}
+                                value={offerPrice || ''}
+                                placeholder="0"
+                                onChange={(e) => setOfferPrice(Number(e.target.value))}
+                                className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-bold"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <label className="block text-[8px] text-slate-text-secondary uppercase font-sans">Proposal Notes</label>
+                            <input
+                              type="text"
+                              placeholder="Add explanation for counter-offer..."
+                              value={sellerNotes}
+                              onChange={(e) => setSellerNotes(e.target.value)}
+                              className="w-full p-2 border border-slate-border rounded-lg bg-white text-slate-text-primary focus:outline-none font-semibold font-sans"
+                            />
+                          </div>
+
+                          <div className="flex gap-3 pt-1">
+                            <button
+                              type="submit"
+                              disabled={submittingOffer}
+                              className="flex-1 py-2 bg-cobalt hover:bg-[#06b6d4] text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                            >
+                              {submittingOffer ? (
+                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <>
+                                  <Send className="w-3.5 h-3.5" />
+                                  <span>Send Proposal</span>
+                                </>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setShowCounterForm(false)}
+                              className="px-4 py-2 border border-slate-border hover:bg-slate-bg text-xs font-bold text-slate-text-secondary rounded-lg transition-colors cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </form>
+                      )}
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+
+                  {activeThread.machiningQuote.status === 'Accepted' && (
+                    /* Accepted Offer Summary */
+                    <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-lg text-[10px] font-bold text-slate-text-secondary space-y-1">
+                      <p className="text-emerald font-black">Contract Terms Finalized & Accepted</p>
+                      <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-slate-text-secondary">
+                        <div>Material: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_material}</span></div>
+                        <div>Finish: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.selected_finish}</span></div>
+                        <div>Quantity: <span className="text-slate-text-primary font-black">{activeThread.machiningQuote.quantity} Units</span></div>
+                        <div className="ml-auto">Price: <span className="text-coral font-black">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
             {/* Input message bar */}
             <form onSubmit={handleSendMessage} className="border-t border-slate-border/50 pt-4 flex gap-2">
