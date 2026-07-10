@@ -813,12 +813,53 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   // Map order records into "completedJobs" if they are Completed or Delivered
   const completedJobs = (orders || [])
     .filter(o => o.status === 'Completed' || o.status === 'Delivered')
-    .map((o: any) => ({
-      id: o.id,
-      status: o.status,
-      created_at: o.created_at,
-      total_cost: o.total_amount,
-    }));
+    .map((o: any) => {
+      let rfqTitle = `Order #${o.id} - ${o.items_count} Units`;
+      let rfqId = '';
+      if (o.id.startsWith('RFQ-')) {
+        const orderSuffix = o.id.replace('RFQ-', '').toUpperCase();
+        const matchedGeneralQuote = (myQuotes || []).find(
+          q => q.id.substring(0, 8).toUpperCase() === orderSuffix
+        );
+        if (matchedGeneralQuote) {
+          rfqId = matchedGeneralQuote.rfq_id;
+          if (matchedGeneralQuote.rfq?.title) {
+            rfqTitle = `${matchedGeneralQuote.rfq.title} (${o.items_count} Pcs)`;
+          }
+        } else {
+          const matchedMachQuote = (machQuotes || []).find(
+            mq => mq.id.substring(0, 8).toUpperCase() === orderSuffix
+          );
+          if (matchedMachQuote) {
+            rfqId = matchedMachQuote.rfq_id || '';
+            if (matchedMachQuote.rfq?.title) {
+              rfqTitle = `${matchedMachQuote.rfq.title} (${o.items_count} Pcs)`;
+            }
+          }
+        }
+      }
+      return {
+        id: o.id,
+        rfq_id: rfqId,
+        rfq: {
+          id: rfqId,
+          title: rfqTitle,
+        },
+        status: o.status,
+        created_at: o.created_at,
+        total_cost: o.total_amount,
+      };
+    });
+
+  // Calculate escrow balance (Processing or Shipped orders)
+  const escrowBalance = (orders || [])
+    .filter(o => o.status === 'Processing' || o.status === 'Shipped')
+    .reduce((sum, o) => sum + Number(o.total_amount), 0);
+
+  // Calculate cleared earnings (Completed or Delivered orders)
+  const clearedEarnings = (orders || [])
+    .filter(o => o.status === 'Completed' || o.status === 'Delivered')
+    .reduce((sum, o) => sum + Number(o.total_amount), 0);
 
   // Calculate monthly earnings based on completed / active mechatronic orders + accepted custom quotes
   const monthlyEarnings = (orders || [])
@@ -830,7 +871,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   const msInDay = 24 * 60 * 60 * 1000;
   const weeklyEarnings = [0, 0, 0, 0, 0];
 
-  activeJobs.forEach(job => {
+  [...activeJobs, ...completedJobs].forEach(job => {
     const jobDate = new Date(job.created_at);
     const diffDays = Math.floor((now.getTime() - jobDate.getTime()) / msInDay);
 
@@ -886,6 +927,8 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     activeJobs: activeJobs || [],
     completedJobs: completedJobs || [],
     monthlyEarnings,
+    escrowBalance,
+    clearedEarnings,
     earningsVelocity,
     capabilities: capabilities || [],
     products: products || [],

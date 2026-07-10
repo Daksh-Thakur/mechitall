@@ -598,8 +598,8 @@ export default function ProfilePage() {
           {[
             { tab: 'seller_rfqs', label: 'Dashboard', icon: LayoutDashboard },
             { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
-            { tab: 'seller_listings', label: 'Listings', icon: Package },
-            { tab: 'seller_capabilities', label: 'Capabilities', icon: Cpu },
+            { tab: 'seller_listings', label: 'My Products', icon: Package },
+            { tab: 'seller_capabilities', label: 'My Services', icon: Cpu },
             { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
             { tab: 'chats', label: 'Chats', icon: MessageSquare },
           ].map(({ tab, label, icon: Icon }) => {
@@ -652,8 +652,8 @@ export default function ProfilePage() {
                   {[
                     { tab: 'seller_rfqs', label: 'Dashboard', icon: LayoutDashboard },
                     { tab: 'seller_orders', label: 'Orders', icon: ShoppingBag },
-                    { tab: 'seller_listings', label: 'My Listings', icon: Package },
-                    { tab: 'seller_capabilities', label: 'Capabilities', icon: Cpu },
+                    { tab: 'seller_listings', label: 'My Products', icon: Package },
+                    { tab: 'seller_capabilities', label: 'My Services', icon: Cpu },
                     { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
                     { tab: 'chats', label: 'Quotation Chats', icon: MessageSquare },
                   ].map(({ tab, label, icon: Icon }) => (
@@ -1576,10 +1576,24 @@ export default function ProfilePage() {
                       </span>
                       <div className="space-y-1">
                         <span className="text-3xl font-black text-[#0f172a] block tracking-tight">
-                          ₹{sellerData ? Number(sellerData.monthlyEarnings).toLocaleString('en-IN') : '0'}
+                          ₹{sellerData ? Number((sellerData as any).escrowBalance || 0).toLocaleString('en-IN') : '0'}
                         </span>
                         <span className="text-[10px] text-slate-text-muted font-bold block">
                           Escrow funds from active contracts
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white border border-[#E4E4E7] p-6 rounded shadow-sm space-y-4">
+                      <span className="block text-[9px] uppercase font-bold text-slate-text-muted tracking-wider font-mono text-emerald-600">
+                        Cleared Earnings
+                      </span>
+                      <div className="space-y-1">
+                        <span className="text-3xl font-black text-emerald-600 block tracking-tight">
+                          ₹{sellerData ? Number((sellerData as any).clearedEarnings || 0).toLocaleString('en-IN') : '0'}
+                        </span>
+                        <span className="text-[10px] text-slate-text-muted font-bold block">
+                          Released funds available for payout
                         </span>
                       </div>
                     </div>
@@ -1640,24 +1654,33 @@ export default function ProfilePage() {
                         </span>
                       </div>
                       
-                      {!sellerData || sellerData.activeJobs.length === 0 ? (
+                      {!sellerData || (sellerData.activeJobs.length === 0 && sellerData.completedJobs.length === 0) ? (
                         <div className="p-8 text-center text-xs font-semibold text-slate-text-muted">
                           No recent custom jobs completed or active.
                         </div>
                       ) : (
                         <div className="divide-y divide-[#E4E4E7] text-[11px]">
-                          {sellerData.activeJobs.map(job => (
-                            <div key={job.id} className="p-4 flex justify-between items-center hover:bg-[#F8FAFC]/50 transition-all font-semibold">
-                              <div>
-                                <span className="block text-[#0f172a] font-bold">{job.rfq?.title || 'Custom Machining Contract'}</span>
-                                <span className="block text-[10px] text-slate-text-muted font-mono mt-0.5">RFQ ID: {job.rfq_id.slice(0, 8).toUpperCase()}</span>
-                              </div>
-                              <div className="text-right">
-                                <span className="block text-[#0f172a] font-black">₹{Number(job.total_cost).toLocaleString('en-IN')}</span>
-                                <span className="block text-[9px] font-mono text-emerald uppercase tracking-wider font-bold">Escrow Active</span>
-                              </div>
-                            </div>
-                          ))}
+                          {[...(sellerData.activeJobs || []), ...(sellerData.completedJobs || [])]
+                            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                            .map(job => {
+                              const isCleared = job.status === 'Completed' || job.status === 'Delivered';
+                              return (
+                                <div key={job.id} className="p-4 flex justify-between items-center hover:bg-[#F8FAFC]/50 transition-all font-semibold">
+                                  <div>
+                                    <span className="block text-[#0f172a] font-bold">{job.rfq?.title || 'Custom Machining Contract'}</span>
+                                    <span className="block text-[10px] text-slate-text-muted font-mono mt-0.5">RFQ ID: {job.rfq_id?.slice(0, 8).toUpperCase() || 'N/A'}</span>
+                                  </div>
+                                  <div className="text-right">
+                                    <span className="block text-[#0f172a] font-black">₹{Number(job.total_cost).toLocaleString('en-IN')}</span>
+                                    <span className={`block text-[9px] font-mono uppercase tracking-wider font-bold ${
+                                      isCleared ? 'text-emerald-600' : 'text-slate-500'
+                                    }`}>
+                                      {isCleared ? 'Cleared' : 'Escrow Active'}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
                         </div>
                       )}
                     </div>
