@@ -741,9 +741,15 @@ export async function cancelQuoteNegotiation(
           .from('machining_quotes')
           .update({ status: 'Rejected' })
           .eq('id', machQuote.id);
+
+        const orderId = `RFQ-${machQuote.id.substring(0, 8).toUpperCase()}`;
+        await supabase
+          .from('orders')
+          .update({ status: 'Cancelled' })
+          .eq('id', orderId);
       }
     } catch (linkErr) {
-      console.warn('Failed to sync cancellation to machining_quotes:', linkErr);
+      console.warn('Failed to sync cancellation to machining_quotes/orders:', linkErr);
     }
 
     // 4. Send automatic message to the chat channel

@@ -19,7 +19,7 @@ import {
   ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus, 
   Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play, Upload,
   Send, Paperclip, FileText, ExternalLink, CircleDollarSign, IndianRupee, LayoutDashboard, ArrowRight,
-  Package, X, Camera, Loader2, Eye
+  Package, X, Camera, Loader2, Eye, XCircle
 } from 'lucide-react';
 import { 
   getOngoingChats, 
@@ -3841,6 +3841,23 @@ function QuotationChatsTab({
                   >
                     <X className="w-3.5 h-3.5" />
                     <span>Reject</span>
+                  </button>
+                )}
+                {activeThread.status !== 'REJECTED' && (
+                  <button
+                    onClick={handleCancelQuote}
+                    disabled={cancelling}
+                    className="flex items-center gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
+                    title="Cancel Quote/Production"
+                  >
+                    {cancelling ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <>
+                        <XCircle className="w-3.5 h-3.5" />
+                        <span>{activeThread.status === 'ACCEPTED' || activeThread.machiningQuote?.status === 'Accepted' ? 'Cancel Production' : 'Cancel'}</span>
+                      </>
+                    )}
                   </button>
                 )}
               </div>
