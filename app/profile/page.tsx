@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useTransition } from 'react';
+import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
@@ -3161,6 +3161,13 @@ function QuotationChatsTab({
   const [sellerNotes, setSellerNotes] = useState('');
   const [submittingOffer, setSubmittingOffer] = useState(false);
   const [showCounterForm, setShowCounterForm] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (initialActiveRfqId && threads.length > 0) {
@@ -3924,6 +3931,8 @@ function QuotationChatsTab({
                   <p className="text-xs text-slate-text-muted font-bold italic">No messages sent yet. Send a message to start negotiation.</p>
                 </div>
               )}
+              {/* Dummy div to scroll to */}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Contextual Quoting Workflow Card */}
