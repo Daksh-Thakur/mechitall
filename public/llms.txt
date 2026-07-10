@@ -1,0 +1,29 @@
+# MechItAll - Robotics Marketplace & Custom Machining Platform
+
+MechItAll is a high-fidelity mechatronics marketplace and rapid custom manufacturing platform. It connects robotics developers, DIY makers, and hardware engineers with standard off-the-shelf components and local on-demand precision machining shops.
+
+## Platform Architecture
+
+MechItAll uses a dual-listing architecture to handle components and custom orders:
+
+1. **Standard Catalog (Off-The-Shelf)**
+   - Includes Hybrid Stepper Motors, Linear Actuators, Distance Sensors, STM32 Controller Boards, Brushless ESCs, and Planetary Gearboxes.
+   - Sourcing Policies: No Minimum Order Quantity (MOQ). Same-day dispatch for catalog orders placed before 14:00 IST.
+   - Route URL: `/products`
+
+2. **Custom Machining Hub (On-Demand RFQs)**
+   - Services: CNC Milling, Industrial SLS 3D Printing, Sheet Metal Fabrication, SLA Resin Printing, and Engineering Consultation.
+   - Workflow: Buyers upload CAD files (STEP, STL, PDF). Sellers parse the geometry and return custom quotes. Payments are secured in PayU Escrow.
+   - Route URL: `/machining`
+
+## Commissions & Fees
+
+- **Catalog Sourcing Commission**: Flat 5.0% commission on catalog components checkouts. No listing fees.
+- **Custom RFQ Commission**: 8.0% commission on custom contract checkouts. Covers digital escrow security setup and quality validation.
+
+## Nuts & Bolts Loyalty Program
+
+- **Earn Rate**: 1.0 Bolt earned for every ₹1 spent on catalog components.
+- **Redemption Rate**: 10 Bolts = ₹1.00 store credit value.
+- **Redemption Cap**: Maximum discount cap of 100 Bolts per order transaction.
+- **Expiration Rule**: Earned Bolts expire automatically after 45 days.

@@ -113,6 +113,60 @@ export default function Home() {
       <main className="flex-1 mt-0">
         <HeroSection onShuffle={handleShuffle} />
 
+        {/* WHY MECHITALL MATRIX */}
+        <section className="bg-zinc-900 text-zinc-100 py-16 border-b border-zinc-800">
+          <div className="max-w-7xl mx-auto px-6 space-y-10">
+            <div className="text-center space-y-2">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-emerald-400 bg-emerald-400/5 border border-emerald-400/15 px-3 py-1 rounded">
+                Why MechItAll?
+              </span>
+              <h2 className="text-3xl font-bold text-white tracking-tight font-['Space_Grotesk'] mt-2">Engineered for Reliability</h2>
+              <p className="text-xs text-zinc-400 max-w-lg mx-auto font-medium">We solve mechatronic sourcing fragmentation by offering verified hardware and rapid local manufacturing.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* PayU Escrow Protection */}
+              <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded-2xl space-y-4 hover:border-emerald-400/40 transition-all duration-300">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-base font-bold text-white font-['Space_Grotesk']">PayU Escrow Protection</h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed font-sans font-medium">
+                    Sellers are only paid once you inspect and approve the delivered parts. Zero risk of unfulfilled custom orders or counterfeit components.
+                  </p>
+                </div>
+              </div>
+
+              {/* Instant 3D File Estimations */}
+              <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded-2xl space-y-4 hover:border-blue-500/40 transition-all duration-300">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
+                  <FileUp className="w-5 h-5" />
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-base font-bold text-white font-['Space_Grotesk']">Instant 3D File Estimations</h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed font-sans font-medium">
+                    Upload your STEP, STL, or PDF files. Our manufacturing partners parse your CAD model to return instant cost estimations and lead times.
+                  </p>
+                </div>
+              </div>
+
+              {/* Same-Day Dispatch */}
+              <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded-2xl space-y-4 hover:border-emerald-400/40 transition-all duration-300">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-base font-bold text-white font-['Space_Grotesk']">Same-Day Dispatch</h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed font-sans font-medium">
+                    Catalog components ordered before <span className="font-mono text-emerald-400">14:00 IST</span> are dispatched same-day. Express logistics across pan-India routes.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* FEATURED PRODUCTS SECTION */}
         <section className="max-w-7xl mx-auto px-6 py-16 space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">

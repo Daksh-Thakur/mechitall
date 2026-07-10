@@ -25,7 +25,7 @@ export default function Footer() {
       <div className="h-[3px] w-full bg-gradient-to-r from-cobalt via-[#06B6D4] to-emerald"></div>
 
       <div className="relative max-w-7xl mx-auto px-6 py-12 z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
           
           {/* Brand Info */}
           <div className="space-y-4">
@@ -85,6 +85,40 @@ export default function Footer() {
               <li>
                 <Link href="/profile?tab=seller-mode" className="hover:text-white transition-colors flex items-center gap-1">
                   <span>&gt;</span> Verified Seller Center
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Company & Case Studies */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-white border-l-2 border-[#06B6D4] pl-2">
+              Company &amp; Resources
+            </h4>
+            <ul className="space-y-2.5 text-xs text-zinc-400 font-mono">
+              <li>
+                <Link href="/about" className="hover:text-white transition-colors flex items-center gap-1">
+                  <span>&gt;</span> About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/pricing" className="hover:text-white transition-colors flex items-center gap-1">
+                  <span>&gt;</span> Pricing Matrix
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="hover:text-white transition-colors flex items-center gap-1">
+                  <span>&gt;</span> Contact
+                </Link>
+              </li>
+              <li>
+                <Link href="/about#case-studies" className="hover:text-white transition-colors flex items-center gap-1">
+                  <span>&gt;</span> Case Studies
+                </Link>
+              </li>
+              <li>
+                <Link href="/about#blog" className="hover:text-white transition-colors flex items-center gap-1">
+                  <span>&gt;</span> Blog/Resources
                 </Link>
               </li>
             </ul>

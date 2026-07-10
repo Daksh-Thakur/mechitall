@@ -158,16 +158,21 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
 
       <div className="max-w-7xl mx-auto px-6 py-8 md:py-0 w-full flex flex-col md:flex-row items-center gap-8 md:gap-16 relative z-10">
         <div className="flex-1 space-y-8">
+          <div className="space-y-2.5">
+            <span className="inline-block font-mono text-[10px] font-extrabold uppercase tracking-[0.25em] text-emerald-600 bg-emerald-500/5 border border-emerald-500/10 px-2.5 py-1 rounded">
+              BUILD. UPGRADE. CREATE.
+            </span>
+            <p className="text-xs md:text-sm text-slate-text-secondary max-w-xl leading-relaxed font-semibold">
+              Stop wrestling with fragmented sourcing and machining delays. The all-in-one hub for off-the-shelf components and instant custom CAD quoting.
+            </p>
+          </div>
+
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-[#0F172A] leading-[1.05] font-['Space_Grotesk']">
-            Shop Premium<br />
+            Off-The-Shelf &amp;<br />
             <span className="bg-gradient-to-r from-cobalt via-blue-500 to-emerald bg-clip-text text-transparent">
-              Mechatronic Hardware
+              Custom CAD Sourcing
             </span>
           </h1>
-
-          <p className="text-sm md:text-base text-[#45464d] max-w-xl font-medium leading-relaxed">
-            Buy actuators, sensors, controllers, and premium components for makers, engineers, and businesses. Same-day dispatch and quality verification on all items.
-          </p>
 
           <div className="flex flex-wrap gap-4 pt-2">
             <Link
