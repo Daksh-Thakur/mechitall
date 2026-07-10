@@ -3658,15 +3658,6 @@ function QuotationChatsTab({
                     <span>Reject</span>
                   </button>
                 )}
-                <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${
-                  activeThread.status === 'ACCEPTED'
-                    ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
-                    : activeThread.status === 'REJECTED'
-                    ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                    : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                }`}>
-                  {activeThread.status}
-                </span>
               </div>
             </div>
 
