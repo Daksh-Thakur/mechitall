@@ -44,7 +44,7 @@ export default function ContactPage() {
                 Get in Touch
               </h1>
               <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-                Have questions about mechatronic parts specifications, our digital RFQ custom machining pipelines, or B2B payments? Our engineering team is ready to assist.
+                Have questions about mechatronic parts specifications, our digital RFQ custom machining pipelines, or escrow payments? Our engineering team is ready to assist.
               </p>
             </div>
 

@@ -160,7 +160,7 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
         <div className="flex-1 space-y-8 animate-fade-in">
           <div className="space-y-2.5">
             <span className="inline-block font-mono text-[10px] font-extrabold uppercase tracking-[0.25em] text-emerald-400 bg-emerald-400/5 border border-emerald-400/15 px-2.5 py-1 rounded">
-              BUILD. UPGRADE. CREATE.
+              Browse. Buy. Build
             </span>
             <p className="text-xs md:text-sm text-zinc-400 max-w-xl leading-relaxed font-semibold">
               Stop wrestling with fragmented sourcing and machining delays. The all-in-one hub for off-the-shelf components and instant custom CAD quoting.

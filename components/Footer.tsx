@@ -47,7 +47,7 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-              Precision B2B mechatronics platform supply chains. Connecting designers, builders, and precision machining shops.
+              Precision mechatronics platform supply chains. Connecting designers, builders, and precision machining shops.
             </p>
             <div className="space-y-1.5 font-mono text-[9px] uppercase font-bold text-zinc-400 tracking-wider">
               <div className="flex items-center gap-1.5">
@@ -127,7 +127,7 @@ export default function Footer() {
           {/* Quick Specifications / Resources */}
           <div className="space-y-4">
             <h4 className="text-xs font-mono font-bold uppercase tracking-widest text-white border-l-2 border-emerald pl-2">
-              B2B Operations
+              Operations
             </h4>
             <ul className="space-y-2 text-xs text-zinc-400 font-sans">
               <li className="flex items-start gap-2">

@@ -32,7 +32,7 @@ export default function AboutPage() {
             </div>
             <h2 className="text-xl font-bold text-white font-['Space_Grotesk']">Our Mission</h2>
             <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-              To empower the DIY robotics community and B2B hardware developers by providing instant, unified access to high-fidelity mechatronics. We aim to eradicate sourcing delays, eliminate order minimums, and guarantee part specs with every single transaction.
+              To empower the DIY robotics community, hobbyists, and professional hardware developers by providing instant, unified access to high-fidelity mechatronics. We aim to eradicate sourcing delays, eliminate order minimums, and guarantee part specs with every single transaction.
             </p>
           </div>
 
@@ -79,36 +79,10 @@ export default function AboutPage() {
             <p className="text-xs text-zinc-400 max-w-lg mx-auto">See how academic labs and hardware companies prototype faster on MechItAll.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded-2xl flex flex-col justify-between hover:border-emerald-400/25 transition-all">
-              <div className="space-y-3">
-                <span className="inline-block text-[9px] uppercase tracking-widest font-mono text-emerald-400 bg-emerald-400/5 px-2 py-0.5 border border-emerald-400/10 rounded">
-                  Aerospace Kinematics
-                </span>
-                <h3 className="text-lg font-bold text-white font-['Space_Grotesk']">Drone Actuation Custom SLA Prototyping</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-                  Sourced custom light-weight SLA resins for aerodynamic joints. Reduced turnaround time from <span className="font-mono text-emerald-400">14 days</span> to <span className="font-mono text-emerald-400">4 days</span> with instant escrow verification.
-                </p>
-              </div>
-              <a href="#" className="mt-6 flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 hover:text-emerald-300">
-                Read Study <ChevronRight className="w-3 h-3" />
-              </a>
-            </div>
-
-            <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded-2xl flex flex-col justify-between hover:border-blue-500/25 transition-all">
-              <div className="space-y-3">
-                <span className="inline-block text-[9px] uppercase tracking-widest font-mono text-blue-400 bg-blue-500/5 px-2 py-0.5 border border-blue-500/10 rounded">
-                  Autonomous Rovers
-                </span>
-                <h3 className="text-lg font-bold text-white font-['Space_Grotesk']">Closed-Loop NEMA 23 Drive Integration</h3>
-                <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-                  DIY roboticists integrated closed-loop stepper motor drivers. Integrated telemetry checks showed <span className="font-mono text-blue-500">99.8% precision alignment</span>.
-                </p>
-              </div>
-              <a href="#" className="mt-6 flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-blue-400 hover:text-blue-300">
-                Read Study <ChevronRight className="w-3 h-3" />
-              </a>
-            </div>
+          <div className="text-center py-16 border border-dashed border-zinc-800 bg-zinc-900/40 rounded-2xl">
+            <Target className="w-10 h-10 text-zinc-650 mx-auto mb-3" />
+            <p className="text-sm font-bold text-white">No deployments found</p>
+            <p className="text-xs text-zinc-500">Check back later for new aerospace and autonomous rover case studies.</p>
           </div>
         </section>
 
@@ -122,23 +96,10 @@ export default function AboutPage() {
             <p className="text-xs text-zinc-400 max-w-lg mx-auto">Get firmware architectures, sensor integration templates, and mechatronic design guides.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              { title: 'Choosing the Right Stepper vs Brushless Motor', desc: 'A deep dive into torque profiles, field-oriented control (FOC) telemetry, and mechanical load sizing.', date: '12 JUN 2026' },
-              { title: 'Optimal CAD Export Formats for Quoting', desc: 'Understanding STEP, IGES, and STL differences to ensure automated seller cost estimation algorithms parse geometry correctly.', date: '04 JUN 2026' },
-              { title: 'Digital Escrow Safety Models in B2B', desc: 'How PayU digital escrow protects hardware contractors against sourcing fragmentation and unfulfilled design jobs.', date: '28 MAY 2026' },
-            ].map((post) => (
-              <div key={post.title} className="bg-zinc-800 border border-zinc-700/60 p-5 rounded-2xl flex flex-col justify-between hover:border-zinc-600 transition-colors">
-                <div className="space-y-3">
-                  <span className="block text-[9px] font-mono font-bold text-zinc-500">{post.date}</span>
-                  <h4 className="text-sm font-bold text-white font-['Space_Grotesk'] leading-snug">{post.title}</h4>
-                  <p className="text-xs text-zinc-400 leading-relaxed font-sans">{post.desc}</p>
-                </div>
-                <a href="#" className="mt-4 flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-400 hover:underline">
-                  Read Article <ChevronRight className="w-3 h-3" />
-                </a>
-              </div>
-            ))}
+          <div className="text-center py-16 border border-dashed border-zinc-800 bg-zinc-900/40 rounded-2xl">
+            <Eye className="w-10 h-10 text-zinc-650 mx-auto mb-3" />
+            <p className="text-sm font-bold text-white">No articles found</p>
+            <p className="text-xs text-zinc-500">Tutorials, design guides, and mechatronic sizing resources are coming soon.</p>
           </div>
         </section>
       </main>

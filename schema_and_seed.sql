@@ -207,7 +207,7 @@ INSERT INTO public.products (part_number, title, category, price, stock, descrip
   '{"dimensions": "60mm x 60mm x 120mm", "temperatureRange": "0C to +40C", "mtbf": "40,000 Hours", "ingressProtection": "IP65", "electricalRating": "220VAC, 2.5A"}'
 );
 
--- Seed services (5 B2B manufacturing services)
+-- Seed services (5 manufacturing services)
 INSERT INTO public.services (title, category, description, base_price, lead_time, features, gradient_class) VALUES
 (
   'CNC Milling & Turning',
