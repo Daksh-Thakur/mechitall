@@ -95,13 +95,7 @@ export default function Navbar() {
 
           {/* Right controls */}
           <div className="flex items-center gap-3">
-            {/* Get Started CTA */}
-            <Link
-              href={user ? "/profile" : "/login"}
-              className="inline-flex items-center justify-center px-3.5 py-1.5 border border-emerald-400/30 bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/20 transition-all text-xs font-mono font-bold uppercase tracking-wider rounded-md cursor-pointer"
-            >
-              Get Started
-            </Link>
+
 
             {/* Rewards Wallet Widget with Hover Rules Card */}
             <div className="hidden sm:block relative group/rewards">
@@ -314,16 +308,7 @@ export default function Navbar() {
             })}
           </nav>
 
-          {/* Prominent Get Started CTA for Mobile */}
-          <div className="pt-2 border-t border-zinc-800/80">
-            <Link
-              href={user ? "/profile" : "/login"}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="w-full inline-flex items-center justify-center py-2.5 border border-emerald-400/30 bg-emerald-400/10 text-emerald-400 hover:bg-emerald-400/20 transition-all text-xs font-mono font-bold uppercase tracking-wider rounded-md cursor-pointer text-center"
-            >
-              Get Started
-            </Link>
-          </div>
+
 
           {profile && (
             <div className="border-t border-zinc-800/80 pt-3 px-1 flex items-center justify-between text-[10px] font-bold text-zinc-400 font-mono uppercase tracking-wider">
