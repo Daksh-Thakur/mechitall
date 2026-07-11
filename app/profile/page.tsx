@@ -1242,7 +1242,7 @@ export default function ProfilePage() {
                     const nextStatusMap = {
                       'Processing': 'Shipped',
                       'Shipped': 'Delivered',
-                      'Delivered': 'Completed',
+                      'Delivered': null, // Buyer must upload photo to trigger Completed status
                       'Completed': null
                     };
                     const nextStatus = nextStatusMap[order.status as keyof typeof nextStatusMap];
