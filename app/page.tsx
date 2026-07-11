@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ProductCard from '../components/ProductCard';
+import ServiceCard from '../components/ServiceCard';
 import ProductModal from '../components/ProductModal';
 import ServiceModal from '../components/ServiceModal';
 import HeroSection from '../components/HeroSection';
@@ -41,11 +43,16 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [allParts, setAllParts] = useState<Part[]>([]);
   const [allServices, setAllServices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPart, setSelectedPart] = useState<Part | null>(null);
   const [selectedService, setSelectedService] = useState<any | null>(null);
+
+  const handleGetQuote = useCallback((service: any) => {
+    router.push(`/machining?quote=${service.id}`);
+  }, [router]);
 
   // Shuffled subsets for discovery
   const [displayedParts, setDisplayedParts] = useState<Part[]>([]);
@@ -81,6 +88,8 @@ export default function Home() {
           datasheetUrl: p.datasheet_url || '',
           cadFile: p.cad_file || '',
           extendedSpecs: p.extended_specs || { dimensions: '', temperatureRange: '', mtbf: '', ingressProtection: '' },
+          imageData: p.image_data || undefined,
+          imagesData: p.images_data || []
         }));
 
         setAllParts(mappedParts);
@@ -345,84 +354,9 @@ export default function Home() {
           {/* Featured machining service cards */}
           {displayedMachining.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-              {displayedMachining.slice(0, 3).map((service: any) => {
-                const gradientClass =
-                  service.process_type === 'CNC Machining'
-                    ? 'from-blue-600/20 to-zinc-900/5'
-                    : service.process_type === '3D Printing'
-                    ? 'from-violet-500/20 to-zinc-900/5'
-                    : service.process_type === 'Sheet Metal'
-                    ? 'from-amber-500/20 to-zinc-900/5'
-                    : 'from-red-500/20 to-zinc-900/5';
-
-                const ProcessIcon =
-                  service.process_type === 'CNC Machining'
-                    ? Settings
-                    : service.process_type === '3D Printing'
-                    ? Layers
-                    : service.process_type === 'Sheet Metal'
-                    ? Settings
-                    : Zap;
-
-                return (
-                  <div 
-                    key={service.id} 
-                    onClick={() => setSelectedService(service)}
-                    className="bg-zinc-800 border border-zinc-700/60 overflow-hidden flex flex-col justify-between hover:border-blue-500/40 hover:-translate-y-1 transition-all duration-200 cursor-pointer group relative"
-                    style={{
-                      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -2px rgba(0,0,0,0.2)',
-                    }}
-                  >
-                    <div className="h-40 bg-zinc-900/50 overflow-hidden relative border-b border-zinc-700/60">
-                      <div className={`w-full h-full bg-gradient-to-br ${gradientClass} group-hover:scale-105 transition-transform duration-500 flex items-center justify-center`}>
-                        <ProcessIcon className="w-12 h-12 text-white opacity-25 group-hover:rotate-12 transition-transform duration-500" />
-                      </div>
-                      <div className="absolute top-2 right-2">
-                        <span className="bg-zinc-900 border border-zinc-700 text-zinc-300 text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider font-bold">
-                          {service.lead_time}
-                        </span>
-                      </div>
-                      <div className="absolute top-2 left-2">
-                        <span className={`text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider border font-bold ${
-                          service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                          : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
-                          : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                          : 'bg-red-500/10 text-red-405 border-red-500/20'
-                        }`}>
-                          {service.process_type}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="p-5 flex flex-col flex-1 justify-between space-y-4">
-                      <div>
-                        <div className="mb-2">
-                          <h3 className="font-['Space_Grotesk'] text-sm font-semibold text-white leading-tight group-hover:text-blue-400 transition-colors line-clamp-1">
-                            {service.title}
-                          </h3>
-                          <p className="text-[10px] text-zinc-500 mt-0.5 font-semibold">by {service.seller_name}</p>
-                        </div>
-                        <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed font-semibold opacity-85">{service.description}</p>
-                      </div>
-
-                      <div className="pt-4 border-t border-zinc-700/60 flex items-center justify-between">
-                        <div>
-                          <p className="text-[9px] font-['Inter'] text-zinc-500 uppercase tracking-wider mb-0.5">Setup Fee</p>
-                          <p className="font-mono text-sm font-bold text-white">
-                            ₹{Number(service.base_price).toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                        <button
-                          onClick={e => { e.stopPropagation(); setSelectedService(service); }}
-                          className="px-3.5 py-2 bg-blue-500 text-white hover:bg-blue-400 transition-colors flex items-center justify-center gap-1.5 font-bold text-xs font-['Inter'] cursor-pointer"
-                        >
-                          <span>Get Quote</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {displayedMachining.slice(0, 3).map((service: any) => (
+                <ServiceCard key={service.id} service={service} onGetQuote={handleGetQuote} />
+              ))}
             </div>
           )}
 
