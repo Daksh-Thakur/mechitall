@@ -593,7 +593,7 @@ export async function acceptQuoteOfferBySeller(quoteId: string) {
         profile_id: quote.buyer_profile_id,
         total_amount: quote.offer_price,
         items_count: quote.quantity,
-        status: 'Processing',
+        status: 'Pending Payment',
         rewards_claimed: false,
         seller_id: sellerId || null,
       },

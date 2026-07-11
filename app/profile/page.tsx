@@ -11,6 +11,7 @@ import {
   updateSellerOrderStatus, deleteSellerCapability, submitServiceListing, deleteSellerProduct,
   deleteSellerService, Profile, BoltsTransaction, confirmDeliveryAndClaimBolts, simulateOrderStatus
 } from '@/app/actions/rewards';
+import { initiatePayUExistingOrderPayment, disputeOrder } from '@/app/actions/orders';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import LoginPage from '../login/page';
@@ -95,7 +96,7 @@ export default function ProfilePage() {
     }
   }, [profile]);
 
-  // Load tab from URL query params
+  // Load tab from URL query params and check PayU payment redirects
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -103,8 +104,22 @@ export default function ProfilePage() {
       if (tabParam && ['orders', 'rewards', 'wishlist', 'settings', 'address', 'support', 'chats', 'seller_orders', 'seller_rfqs', 'seller_listings', 'seller_capabilities', 'seller_earnings'].includes(tabParam)) {
         setActiveTab(tabParam as any);
       }
+
+      const paymentStatus = params.get('payment');
+      if (paymentStatus === 'success') {
+        const orderId = params.get('orderId') || '';
+        showToast(`Payment Verified Successfully! Order ${orderId} is now in Processing.`, 'success');
+        window.history.replaceState({}, '', window.location.pathname + '?tab=orders');
+      } else if (paymentStatus === 'failed') {
+        const reason = params.get('reason') || '';
+        const msg = reason === 'hash_invalid' 
+          ? 'Security hash verification failed.' 
+          : 'Transaction was cancelled or failed.';
+        showToast(`Payment Failed: ${msg}`, 'error');
+        window.history.replaceState({}, '', window.location.pathname + '?tab=orders');
+      }
     }
-  }, []);
+  }, [showToast]);
 
   // Switch tabs dynamically when toggling Seller Mode
   useEffect(() => {
@@ -1951,9 +1966,19 @@ export default function ProfilePage() {
                       </svg>
                       Shipment Tracking: <span className="font-mono">{selectedOrder.id}</span>
                     </span>
-                    <span className={`px-2.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-blue-500/10 text-cobalt border border-blue-500/20`}>
-                      {selectedOrder.status === 'Completed' ? 'DELIVERED' : selectedOrder.status === 'Delivered' ? 'OUT FOR DELIVERY' : 'IN PROCESSING'}
-                    </span>
+                    {selectedOrder.disputed ? (
+                      <span className={`px-2.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-rose-500/10 text-rose-500 border border-rose-500/20`}>
+                        DISPUTED (FROZEN)
+                      </span>
+                    ) : (
+                      <span className={`px-2.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest ${
+                        selectedOrder.status === 'Pending Payment'
+                          ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                          : 'bg-blue-500/10 text-cobalt border border-blue-500/20'
+                      }`}>
+                        {selectedOrder.status === 'Completed' ? 'DELIVERED' : selectedOrder.status === 'Delivered' ? 'OUT FOR DELIVERY' : selectedOrder.status === 'Pending Payment' ? 'PENDING PAYMENT' : 'IN PROCESSING'}
+                      </span>
+                    )}
                   </div>
 
                   {/* Horizontal visual progress meter */}
@@ -2043,7 +2068,75 @@ export default function ProfilePage() {
                         </button>
                       )}
 
-                      {selectedOrder.status === 'Processing' && (
+                      {/* Pay Now Button for Pending Payment orders */}
+                      {selectedOrder.status === 'Pending Payment' && (
+                        <button
+                          onClick={async () => {
+                            try {
+                              const res = await initiatePayUExistingOrderPayment(selectedOrder.id);
+                              if (res.success && res.payuParams) {
+                                const { payuParams, payuUrl } = res;
+                                if (payuUrl.startsWith('/')) {
+                                  const searchParams = new URLSearchParams(payuParams as any);
+                                  window.location.href = `${payuUrl}?${searchParams.toString()}`;
+                                } else {
+                                  const form = document.createElement('form');
+                                  form.method = 'POST';
+                                  form.action = payuUrl;
+                                  Object.entries(payuParams).forEach(([k, v]) => {
+                                    const input = document.createElement('input');
+                                    input.type = 'hidden';
+                                    input.name = k;
+                                    input.value = String(v);
+                                    form.appendChild(input);
+                                  });
+                                  document.body.appendChild(form);
+                                  form.submit();
+                                }
+                              } else {
+                                showToast(res.error || 'Failed to initiate payment', 'error');
+                              }
+                            } catch (e: any) {
+                              showToast(e.message || 'Payment initiation error', 'error');
+                            }
+                          }}
+                          className="bg-[#A3E635] hover:bg-[#bef264] text-zinc-950 font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase tracking-wider cursor-pointer transition-all shadow"
+                        >
+                          Pay Now (PayU)
+                        </button>
+                      )}
+
+                      {/* Dispute / Report Issue Button */}
+                      {!selectedOrder.disputed && selectedOrder.status !== 'Completed' && selectedOrder.status !== 'Pending Payment' && (
+                        <button
+                          onClick={async () => {
+                            const reason = window.prompt('Please enter the reason for reporting an issue / disputing this order:');
+                            if (!reason) return;
+                            try {
+                              const res = await disputeOrder(selectedOrder.id, reason);
+                              if (res.success) {
+                                showToast('Issue reported successfully. Escrow funds have been frozen.', 'success');
+                                await fetchOrders();
+                              } else {
+                                showToast(res.error || 'Failed to file dispute', 'error');
+                              }
+                            } catch (e: any) {
+                              showToast(e.message || 'Dispute submission failed', 'error');
+                            }
+                          }}
+                          className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase tracking-wider border border-rose-500/20 cursor-pointer transition-all"
+                        >
+                          Report an Issue
+                        </button>
+                      )}
+
+                      {selectedOrder.disputed && (
+                        <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider bg-rose-500/5 px-3 py-1.5 rounded border border-rose-500/10">
+                          Mediation Active: Funds Locked (72h)
+                        </span>
+                      )}
+
+                      {!selectedOrder.disputed && selectedOrder.status === 'Processing' && (
                         <button
                           onClick={() => handleSimulateStatus(selectedOrder.id, 'Shipped')}
                           disabled={isPending}
@@ -2052,7 +2145,7 @@ export default function ProfilePage() {
                           {isPending ? 'Processing...' : 'Simulate Ship'}
                         </button>
                       )}
-                      {selectedOrder.status === 'Shipped' && (
+                      {!selectedOrder.disputed && selectedOrder.status === 'Shipped' && (
                         <button
                           onClick={() => handleSimulateStatus(selectedOrder.id, 'Delivered')}
                           disabled={isPending}
@@ -2988,8 +3081,13 @@ export default function ProfilePage() {
               const machineCount = parseInt(target.machineCount.value) || 0;
               const businessAddress = target.businessAddress.value.trim();
               const primaryCapability = target.primaryCapability.value;
+              const legalName = target.legalName.value.trim();
+              const bankAccountNumber = target.bankAccountNumber.value.trim();
+              const ifscCode = target.ifscCode.value.trim();
+              const pan = target.pan.value.trim();
+              const gstin = target.gstin.value.trim();
 
-              if (!companyName || !taxId || !businessAddress || !primaryCapability) {
+              if (!companyName || !taxId || !businessAddress || !primaryCapability || !legalName || !bankAccountNumber || !ifscCode || !pan) {
                 showToast('Please fill in all required fields.', 'error');
                 return;
               }
@@ -3001,9 +3099,14 @@ export default function ProfilePage() {
                   taxId,
                   machineCount,
                   businessAddress,
-                  primaryCapability
+                  primaryCapability,
+                  legalName,
+                  bankAccountNumber,
+                  ifscCode,
+                  pan,
+                  gstin
                 });
-                showToast('KYC Verified & Seller Mode Activated!', 'success');
+                showToast('KYC Verified & Seller Mode Activated! PayU sub-account created.', 'success');
                 setShowKYCModal(false);
                 await fetchProfile();
               } catch (err: any) {
@@ -3012,6 +3115,62 @@ export default function ProfilePage() {
                 setTogglingSeller(false);
               }
             }} className="space-y-4 text-left">
+
+              <div className="space-y-1">
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase">Legal Name (as in Bank Account) *</label>
+                <input
+                  type="text"
+                  name="legalName"
+                  required
+                  placeholder="e.g. John Doe"
+                  className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#007084]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase">Bank Account Number *</label>
+                  <input
+                    type="text"
+                    name="bankAccountNumber"
+                    required
+                    placeholder="e.g. 918273645019"
+                    className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#007084]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase">IFSC Code *</label>
+                  <input
+                    type="text"
+                    name="ifscCode"
+                    required
+                    placeholder="e.g. UTIB0000293"
+                    className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#007084]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase">PAN Number *</label>
+                  <input
+                    type="text"
+                    name="pan"
+                    required
+                    placeholder="e.g. ABCDE1234F"
+                    className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#007084]"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase">GSTIN (Optional)</label>
+                  <input
+                    type="text"
+                    name="gstin"
+                    placeholder="e.g. 27AAAAA1111A1Z1"
+                    className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#007084]"
+                  />
+                </div>
+              </div>
 
               <div className="space-y-1">
                 <label className="block text-[10px] font-bold text-zinc-500 uppercase">Company / Shop Name *</label>
@@ -3558,37 +3717,53 @@ function QuotationChatsTab({
   };
 
   const handleAcceptOffer = async () => {
-    if (!activeThread || !activeThread.machiningQuote) return;
+    if (!activeThread || !activeThread.machiningQuote || !profile) return;
     try {
-      const res = await acceptQuoteOffer(activeThread.machiningQuote.id);
-      showToast(`Offer accepted! Order ${res.orderId} placed.`, 'success');
-
-      // Update local state
-      const updatedMachQuote = {
-        ...activeThread.machiningQuote,
-        status: 'Accepted' as const,
-      };
-
-      const updatedThread = {
-        ...activeThread,
-        status: 'ACCEPTED' as any,
-        machiningQuote: updatedMachQuote,
-      };
-
-      setActiveThread(updatedThread);
-      setThreads(prev => prev.map(t => t.quoteId === activeThread.quoteId ? updatedThread : t));
-
-      // Send a system message in the chat
-      await sendChatMessage({
-        rfqId: activeThread.rfqId,
-        quoteId: activeThread.quoteId,
-        messageText: `[SYSTEM] Quote offer accepted! Order ${res.orderId} has been placed.`,
+      // Initiate PayU payment with split settlements
+      const response = await fetch('/api/payu/initiate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          profileId: profile.id,
+          totalAmount: activeThread.machiningQuote.offer_price,
+          itemsCount: activeThread.machiningQuote.quantity,
+          orderType: 'quote',
+          quoteId: activeThread.machiningQuote.id,
+        }),
       });
 
-      // Update local storage seen state
-      markThreadAsSeen(activeThread.quoteId, new Date().toISOString(), 'ACCEPTED');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to initiate payment');
+      }
 
-      await loadThreads();
+      const paymentData = await response.json();
+      const { payuParams, payuUrl } = paymentData;
+
+      // Redirect to payment gateway or simulator
+      if (payuUrl.startsWith('/')) {
+        // Local simulation: redirect using GET query params to avoid Next.js Page POST errors
+        const searchParams = new URLSearchParams(payuParams as any);
+        window.location.href = `${payuUrl}?${searchParams.toString()}`;
+      } else {
+        // Real PayU payment gateway: redirect via hidden form POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = payuUrl;
+
+        Object.entries(payuParams).forEach(([k, v]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = k;
+          input.value = String(v);
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+      }
     } catch (err: any) {
       showToast(err.message || 'Failed to accept offer.', 'error');
     }

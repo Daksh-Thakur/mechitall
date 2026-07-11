@@ -283,32 +283,58 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           unit_price: item.pricePerUnit,
         }));
 
-      const dbOrder = await createDbOrder(
-        activeProfile.id,
-        cartSummary.total,
-        cart.length,
-        cartSummary.boltsToDeduct,
-        stockItems
-      );
+      // 2. Initiate PayU payment with split settlements
+      const payuResponse = await fetch('/api/payu/initiate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          profileId: activeProfile.id,
+          totalAmount: cartSummary.total,
+          itemsCount: cart.reduce((sum, item) => sum + item.quantity, 0),
+          boltsSpent: isBoltsDiscountApplied ? cartSummary.boltsToDeduct : 0,
+          cartItems: stockItems,
+          orderType: 'shop',
+        }),
+      });
 
-      const newOrder: SubmittedOrder = {
-        orderId: dbOrder.id,
-        date: new Date(dbOrder.created_at).toISOString().split('T')[0],
-        type: 'Shop Purchase',
-        itemsCount: dbOrder.items_count,
-        total: Number(dbOrder.total_amount),
-        status: dbOrder.status as any,
-      };
+      if (!payuResponse.ok) {
+        const errorData = await payuResponse.json();
+        throw new Error(errorData.error || 'Failed to initiate payment');
+      }
 
-      setSubmittedOrders(prev => [newOrder, ...prev]);
-      setLastPlacedOrder(newOrder);
+      const paymentData = await payuResponse.json();
+      const { payuParams, payuUrl } = paymentData;
+
+      // Reset cart and checkout states
       setCart([]);
-      setCheckoutStatus('success');
       setIsBoltsDiscountApplied(false);
-      showToast('Order created successfully!', 'success');
+      setCheckoutStatus('idle');
 
-      // Refresh profile rewards information
-      await fetchProfile();
+      // 3. Redirect to payment gateway or simulator
+      if (payuUrl.startsWith('/')) {
+        // Local simulation: redirect using GET query params to avoid Next.js Page POST errors
+        const searchParams = new URLSearchParams(payuParams as any);
+        window.location.href = `${payuUrl}?${searchParams.toString()}`;
+      } else {
+        // Real PayU payment gateway: redirect via hidden form POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = payuUrl;
+
+        Object.entries(payuParams).forEach(([k, v]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = k;
+          input.value = String(v);
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+      }
+      return;
     } catch (err) {
       console.error('Checkout process failed:', err);
       setCheckoutStatus('idle');
