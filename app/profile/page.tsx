@@ -684,8 +684,8 @@ export default function ProfilePage() {
                     key={tab}
                     onClick={() => setActiveTab(tab as any)}
                     className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === tab
-                        ? 'bg-[#0f172a] text-white shadow-md'
-                        : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                      ? 'bg-[#0f172a] text-white shadow-md'
+                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                       }`}
                   >
                     <Icon className={`w-4 h-4 shrink-0 ${activeTab === tab ? 'text-[#06B6D4]' : 'text-zinc-500'}`} />
@@ -753,8 +753,8 @@ export default function ProfilePage() {
                 <button
                   onClick={() => setActiveTab('orders')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'orders'
-                      ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                    ? 'bg-[#0f172a] text-white shadow'
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <ShoppingBag className="w-4 h-4 shrink-0" />
@@ -764,8 +764,8 @@ export default function ProfilePage() {
                 <button
                   onClick={() => setActiveTab('rewards')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'rewards'
-                      ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                    ? 'bg-[#0f172a] text-white shadow'
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <Gift className="w-4 h-4 shrink-0" />
@@ -775,16 +775,16 @@ export default function ProfilePage() {
                 <button
                   onClick={() => setActiveTab('wishlist')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'wishlist'
-                      ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                    ? 'bg-[#0f172a] text-white shadow'
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <Heart className="w-4 h-4 shrink-0" />
                   <span>Wishlist</span>
                   {wishlist.length > 0 && (
                     <span className={`ml-auto text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${activeTab === 'wishlist'
-                        ? 'bg-zinc-800/20 text-white'
-                        : 'bg-cobalt/10 text-cobalt border border-cobalt/20'
+                      ? 'bg-zinc-800/20 text-white'
+                      : 'bg-cobalt/10 text-cobalt border border-cobalt/20'
                       }`}>
                       {wishlist.length}
                     </span>
@@ -794,8 +794,8 @@ export default function ProfilePage() {
                 <button
                   onClick={() => setActiveTab('settings')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'settings'
-                      ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                    ? 'bg-[#0f172a] text-white shadow'
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <Settings className="w-4 h-4 shrink-0" />
@@ -805,8 +805,8 @@ export default function ProfilePage() {
                 <button
                   onClick={() => setActiveTab('address')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'address'
-                      ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                    ? 'bg-[#0f172a] text-white shadow'
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <MapPin className="w-4 h-4 shrink-0" />
@@ -816,8 +816,8 @@ export default function ProfilePage() {
                 <button
                   onClick={() => setActiveTab('support')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'support'
-                      ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                    ? 'bg-[#0f172a] text-white shadow'
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <MessageSquare className="w-4 h-4 shrink-0" />
@@ -827,8 +827,8 @@ export default function ProfilePage() {
                 <button
                   onClick={() => setActiveTab('chats')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'chats'
-                      ? 'bg-[#0f172a] text-white shadow'
-                      : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                    ? 'bg-[#0f172a] text-white shadow'
+                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
                   <MessageSquare className="w-4 h-4 shrink-0" />
@@ -845,8 +845,8 @@ export default function ProfilePage() {
               <div className="hidden md:flex justify-between items-center text-[10px] font-bold text-zinc-500 font-mono uppercase tracking-wider">
                 <span>Seller Account</span>
                 <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${profile.seller_kyc_completed
-                    ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
-                    : 'bg-zinc-900 text-zinc-500 border border-zinc-700/60'
+                  ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
+                  : 'bg-zinc-900 text-zinc-500 border border-zinc-700/60'
                   }`}>
                   {profile.seller_kyc_completed ? 'Active' : 'Inactive'}
                 </span>
@@ -855,8 +855,8 @@ export default function ProfilePage() {
                 disabled={togglingSeller}
                 onClick={handleToggleSellerMode}
                 className={`w-full transition-all py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer ${profile.is_seller
-                    ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
-                    : 'border border-zinc-700/60 text-zinc-400 hover:text-white hover:border-[#0f172a] bg-zinc-900'
+                  ? 'border border-rose-200 text-rose-500 hover:bg-rose-50'
+                  : 'border border-zinc-700/60 text-zinc-400 hover:text-white hover:border-[#0f172a] bg-zinc-900'
                   }`}
               >
                 <ArrowLeftRight className="w-4 h-4 shrink-0" />
@@ -892,8 +892,8 @@ export default function ProfilePage() {
                     <div
                       key={idx}
                       className={`border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-all ${stat.isDark
-                          ? 'bg-[#0B1528] border-zinc-800 text-white'
-                          : 'bg-zinc-800 border-zinc-700/60 text-white'
+                        ? 'bg-[#0B1528] border-zinc-800 text-white'
+                        : 'bg-zinc-800 border-zinc-700/60 text-white'
                         }`}
                     >
                       <div className="space-y-1">
@@ -945,8 +945,8 @@ export default function ProfilePage() {
                               {/* Header Badge & Code */}
                               <div className="flex justify-between items-center text-[9px] font-black tracking-wider uppercase">
                                 <span className={`px-2 py-0.5 rounded ${idx === 0
-                                    ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                                    : 'bg-slate-100 text-slate-600 border'
+                                  ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                                  : 'bg-slate-100 text-slate-600 border'
                                   }`}>
                                   {idx === 0 ? 'HIGH PRIORITY' : 'STANDARD'}
                                 </span>
@@ -960,11 +960,11 @@ export default function ProfilePage() {
                               <div className="grid grid-cols-2 gap-4 border-t border-b border-zinc-700/60/30 py-3.5">
                                 <div>
                                   <span className="block text-[8px] font-black uppercase text-slate-400">Material</span>
-                                  <span className="text-[10px] font-black text-zinc-350 truncate block">{rfq.material_preference || 'Ti-6Al-4V'}</span>
+                                  <span className="text-[10px] font-black text-zinc-500 truncate block">{rfq.material_preference || 'Ti-6Al-4V'}</span>
                                 </div>
                                 <div>
                                   <span className="block text-[8px] font-black uppercase text-slate-400">Quantity</span>
-                                  <span className="text-[10px] font-black text-zinc-350 truncate block">{rfq.quantity} Units</span>
+                                  <span className="text-[10px] font-black text-zinc-500 truncate block">{rfq.quantity} Units</span>
                                 </div>
                               </div>
                             </div>
@@ -1016,8 +1016,8 @@ export default function ProfilePage() {
                                   <h5 className="text-xs font-black text-white mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</h5>
                                 </div>
                                 <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${isShipped
-                                    ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                                    : 'bg-sky-500/10 text-sky-600 border-sky-500/20'
+                                  ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                                  : 'bg-sky-500/10 text-sky-600 border-sky-500/20'
                                   }`}>
                                   {isShipped ? 'SHIPPED' : 'PROCESSING'}
                                 </span>
@@ -1026,7 +1026,7 @@ export default function ProfilePage() {
                               <div className="space-y-1.5">
                                 <div className="flex justify-between text-[8px] font-black uppercase text-slate-400 tracking-wider">
                                   <span>Progress</span>
-                                  <span className="font-mono font-black text-[9px] text-zinc-350">{progress}%</span>
+                                  <span className="font-mono font-black text-[9px] text-zinc-500">{progress}%</span>
                                 </div>
                                 <div className="w-full bg-zinc-900 border border-zinc-700/60/50 h-2 rounded-full overflow-hidden">
                                   <div
@@ -1097,7 +1097,7 @@ export default function ProfilePage() {
                                   <td className="py-3 font-mono font-black text-white">
                                     #{job.id.substring(0, 12).toUpperCase()}
                                   </td>
-                                  <td className="py-3 px-3 font-bold text-zinc-350">
+                                  <td className="py-3 px-3 font-bold text-zinc-500">
                                     Standard Delivery
                                   </td>
                                   <td className="py-3 text-right">
@@ -1152,8 +1152,8 @@ export default function ProfilePage() {
                                 </span>
                                 <div
                                   className={`w-7 rounded-t-lg transition-all duration-300 ${isActive
-                                      ? 'bg-[#00D0F5] shadow-lg shadow-[#00D0F5]/20 hover:brightness-105'
-                                      : 'bg-[#F1F5F9] border border-slate-200 hover:border-slate-400'
+                                    ? 'bg-[#00D0F5] shadow-lg shadow-[#00D0F5]/20 hover:brightness-105'
+                                    : 'bg-[#F1F5F9] border border-slate-200 hover:border-slate-400'
                                     }`}
                                   style={{ height: `${height}px` }}
                                 ></div>
@@ -1256,12 +1256,12 @@ export default function ProfilePage() {
                               {order.id}
                             </span>
                             <span className={`text-[9px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${order.status === 'Completed'
-                                ? 'bg-emerald/8 text-emerald border-emerald/20'
-                                : order.status === 'Delivered'
-                                  ? 'bg-sky-500/8 text-sky-600 border-sky-500/20'
-                                  : order.status === 'Shipped'
-                                    ? 'bg-amber-500/8 text-amber-600 border-amber-500/20'
-                                    : 'bg-slate-500/8 text-slate-600 border-slate-500/20'
+                              ? 'bg-emerald/8 text-emerald border-emerald/20'
+                              : order.status === 'Delivered'
+                                ? 'bg-sky-500/8 text-sky-600 border-sky-500/20'
+                                : order.status === 'Shipped'
+                                  ? 'bg-amber-500/8 text-amber-600 border-amber-500/20'
+                                  : 'bg-slate-500/8 text-slate-600 border-slate-500/20'
                               }`}>
                               {order.status}
                             </span>
@@ -1269,7 +1269,7 @@ export default function ProfilePage() {
 
                           <div className="space-y-1">
                             <h4 className="text-xs font-black text-white">
-                              Buyer: <span className="text-zinc-350">{order.buyer_name}</span>
+                              Buyer: <span className="text-zinc-500">{order.buyer_name}</span>
                               <span className="text-[10px] text-zinc-400 font-normal font-mono ml-2">({order.buyer_email})</span>
                             </h4>
                             <p className="text-[11px] text-zinc-400 font-semibold">
@@ -1514,16 +1514,16 @@ export default function ProfilePage() {
 
                           <div className="space-y-1.5 pt-2 border-t border-zinc-700/60/65 text-[10px]">
                             {cap.material_capabilities?.length > 0 && (
-                              <p className="text-zinc-350 font-semibold">
+                              <p className="text-zinc-500 font-semibold">
                                 <span className="text-zinc-400 font-bold">Materials:</span> {cap.material_capabilities.join(', ')}
                               </p>
                             )}
                             {cap.finish_options?.length > 0 && (
-                              <p className="text-zinc-350 font-semibold">
+                              <p className="text-zinc-500 font-semibold">
                                 <span className="text-zinc-400 font-bold">Finishes:</span> {cap.finish_options.join(', ')}
                               </p>
                             )}
-                            <p className="text-zinc-350 font-semibold">
+                            <p className="text-zinc-500 font-semibold">
                               <span className="text-zinc-400 font-bold">Lead Time:</span> {cap.lead_time || '3-5 Days'}
                             </p>
                           </div>
@@ -1608,7 +1608,7 @@ export default function ProfilePage() {
                       <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono">
                         Payout Preferences
                       </span>
-                      <div className="space-y-1 bg-zinc-900/70 border border-zinc-700/60/40 p-3 rounded text-[11px] font-semibold text-zinc-350">
+                      <div className="space-y-1 bg-zinc-900/70 border border-zinc-700/60/40 p-3 rounded text-[11px] font-semibold text-zinc-500">
                         <p className="flex justify-between">
                           <span>Bank Account:</span>
                           <span className="text-slate-900 font-bold">•••• 4820</span>
@@ -1828,16 +1828,16 @@ export default function ProfilePage() {
                           <div className="flex justify-between items-start">
                             <span className="font-mono text-[10px] font-black text-white">{ord.id}</span>
                             <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${ord.status === 'Delivered' || ord.status === 'Completed'
-                                ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
-                                : ord.status === 'Shipped'
-                                  ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
-                                  : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                              ? 'bg-emerald-500/10 text-emerald border-emerald-500/20'
+                              : ord.status === 'Shipped'
+                                ? 'bg-blue-500/10 text-cobalt border-blue-500/20'
+                                : 'bg-amber-500/10 text-amber-600 border-amber-500/20'
                               }`}>
                               {ord.status}
                             </span>
                           </div>
 
-                          <div className="space-y-1 text-zinc-350 text-xs">
+                          <div className="space-y-1 text-zinc-500 text-xs">
                             {ord.rfq_title && (
                               <h4 className="text-[10px] font-black text-white mb-1.5 line-clamp-1">{ord.rfq_title}</h4>
                             )}
@@ -1853,10 +1853,10 @@ export default function ProfilePage() {
 
                           <div className="w-full bg-zinc-900 h-1.5 rounded-full overflow-hidden border border-zinc-700/60/50">
                             <div className={`h-full rounded-full ${ord.status === 'Delivered' || ord.status === 'Completed'
-                                ? 'bg-emerald w-full'
-                                : ord.status === 'Shipped'
-                                  ? 'bg-cobalt w-2/3'
-                                  : 'bg-amber-500 w-1/3'
+                              ? 'bg-emerald w-full'
+                              : ord.status === 'Shipped'
+                                ? 'bg-cobalt w-2/3'
+                                : 'bg-amber-500 w-1/3'
                               }`}></div>
                           </div>
                         </div>
@@ -1960,16 +1960,16 @@ export default function ProfilePage() {
                   <div className="relative pt-6 pb-2">
                     <div className="absolute top-1/2 left-0 right-0 h-1 bg-zinc-900 -translate-y-1/2 rounded-full overflow-hidden border border-zinc-700/60/50">
                       <div className={`h-full rounded-full bg-cobalt transition-all duration-500 ${selectedOrder.status === 'Completed'
-                          ? 'w-full'
-                          : selectedOrder.status === 'Delivered'
-                            ? 'w-3/4'
-                            : selectedOrder.status === 'Shipped'
-                              ? 'w-1/2'
-                              : 'w-1/4'
+                        ? 'w-full'
+                        : selectedOrder.status === 'Delivered'
+                          ? 'w-3/4'
+                          : selectedOrder.status === 'Shipped'
+                            ? 'w-1/2'
+                            : 'w-1/4'
                         }`}></div>
                     </div>
 
-                    <div className="relative flex justify-between text-center text-[10px] font-bold text-zinc-350 z-10">
+                    <div className="relative flex justify-between text-center text-[10px] font-bold text-zinc-500 z-10">
                       <div className="space-y-1">
                         <div className="w-6 h-6 rounded-full bg-cobalt text-white flex items-center justify-center mx-auto border-2 border-white shadow-md">✓</div>
                         <span className="block font-bold">Order Placed</span>
@@ -1978,8 +1978,8 @@ export default function ProfilePage() {
 
                       <div className="space-y-1">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status !== 'Processing' && selectedOrder.status !== 'idle'
-                            ? 'bg-cobalt text-white'
-                            : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
+                          ? 'bg-cobalt text-white'
+                          : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
                           }`}>
                           {selectedOrder.status === 'Processing' ? '●' : '✓'}
                         </div>
@@ -1989,8 +1989,8 @@ export default function ProfilePage() {
 
                       <div className="space-y-1">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Shipped' || selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
-                            ? 'bg-cobalt text-white'
-                            : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
+                          ? 'bg-cobalt text-white'
+                          : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
                           }`}>
                           {selectedOrder.status === 'Shipped' ? '●' : selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed' ? '✓' : '3'}
                         </div>
@@ -2000,8 +2000,8 @@ export default function ProfilePage() {
 
                       <div className="space-y-1">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
-                            ? 'bg-cobalt text-white'
-                            : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
+                          ? 'bg-cobalt text-white'
+                          : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
                           }`}>
                           {selectedOrder.status === 'Delivered' ? '●' : selectedOrder.status === 'Completed' ? '✓' : '4'}
                         </div>
@@ -2011,8 +2011,8 @@ export default function ProfilePage() {
 
                       <div className="space-y-1">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Completed'
-                            ? 'bg-emerald text-white'
-                            : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
+                          ? 'bg-emerald text-white'
+                          : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
                           }`}>
                           {selectedOrder.status === 'Completed' ? '✓' : '5'}
                         </div>
@@ -2148,7 +2148,7 @@ export default function ProfilePage() {
                         <th className="p-3">Date</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-border/50 text-zinc-350">
+                    <tbody className="divide-y divide-slate-border/50 text-zinc-500">
                       {transactions.map((tx) => (
                         <tr key={tx.id} className="hover:bg-zinc-900/30">
                           <td className="p-3 font-bold text-white">{tx.description}</td>
@@ -2246,7 +2246,7 @@ export default function ProfilePage() {
 
               <form onSubmit={handleUpdateNameSubmit} className="space-y-4 max-w-md">
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-zinc-350 uppercase tracking-wider">
+                  <label className="block text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
                     Email Address
                   </label>
                   <input
@@ -2259,7 +2259,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[11px] font-bold text-zinc-350 uppercase tracking-wider">
+                  <label className="block text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
                     Full Name
                   </label>
                   <input
@@ -2306,7 +2306,7 @@ export default function ProfilePage() {
                   <span className="absolute top-3 right-3 px-2 py-0.5 rounded text-[8px] font-black uppercase bg-zinc-900 text-zinc-400 border">Default</span>
                   <div className="space-y-1">
                     <span className="block text-xs font-black text-white">Elias Thorne</span>
-                    <span className="block text-[11px] text-zinc-350 font-semibold">
+                    <span className="block text-[11px] text-zinc-500 font-semibold">
                       12, Industrial Development Block C<br />
                       Peenya Phase 1, Bangalore<br />
                       Karnataka - 560058, India
@@ -2344,11 +2344,11 @@ export default function ProfilePage() {
 
                 <form onSubmit={(e) => { e.preventDefault(); showToast('Support ticket raised successfully.', 'success'); }} className="space-y-3">
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-zinc-350 uppercase">Subject</label>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase">Subject</label>
                     <input type="text" placeholder="e.g. NEMA 23 CAD model dimensions" className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-cobalt" />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-zinc-350 uppercase">Message details</label>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase">Message details</label>
                     <textarea rows={3} placeholder="Please specify your request details..." className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-cobalt resize-none"></textarea>
                   </div>
                   <button type="submit" className="w-full btn-cobalt py-3 rounded-lg text-xs font-bold cursor-pointer">Submit Ticket</button>
@@ -3014,7 +3014,7 @@ export default function ProfilePage() {
             }} className="space-y-4 text-left">
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-zinc-350 uppercase">Company / Shop Name *</label>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase">Company / Shop Name *</label>
                 <input
                   type="text"
                   name="companyName"
@@ -3025,7 +3025,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-zinc-350 uppercase">Tax Identification ID (GSTIN/EIN) *</label>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase">Tax Identification ID (GSTIN/EIN) *</label>
                 <input
                   type="text"
                   name="taxId"
@@ -3037,7 +3037,7 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-zinc-350 uppercase">Machine Count</label>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase">Machine Count</label>
                   <input
                     type="number"
                     name="machineCount"
@@ -3047,7 +3047,7 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-zinc-350 uppercase">Primary Capability *</label>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase">Primary Capability *</label>
                   <select
                     name="primaryCapability"
                     required
@@ -3062,7 +3062,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-zinc-350 uppercase">Business Address *</label>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase">Business Address *</label>
                 <textarea
                   name="businessAddress"
                   required
@@ -3076,7 +3076,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowKYCModal(false)}
-                  className="flex-1 py-3 rounded-lg border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 cursor-pointer transition-colors"
+                  className="flex-1 py-3 rounded-lg border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
@@ -3720,12 +3720,12 @@ function QuotationChatsTab({
                   key={t.quoteId}
                   onClick={() => selectThread(t)}
                   className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 text-left ${isAccepted
-                      ? activeThread?.quoteId === t.quoteId
-                        ? 'border-emerald bg-emerald-500/10 ring-1 ring-emerald/20'
-                        : 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
-                      : activeThread?.quoteId === t.quoteId
-                        ? 'border-cobalt bg-cobalt/5 ring-1 ring-cobalt/10'
-                        : 'border-zinc-700/60 hover:bg-zinc-900/50'
+                    ? activeThread?.quoteId === t.quoteId
+                      ? 'border-emerald bg-emerald-500/10 ring-1 ring-emerald/20'
+                      : 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
+                    : activeThread?.quoteId === t.quoteId
+                      ? 'border-cobalt bg-cobalt/5 ring-1 ring-cobalt/10'
+                      : 'border-zinc-700/60 hover:bg-zinc-900/50'
                     }`}
                 >
                   <div className="flex justify-between items-start gap-2">
@@ -3737,10 +3737,10 @@ function QuotationChatsTab({
                     </h4>
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${isAccepted
-                          ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
-                          : t.status === 'REJECTED'
-                            ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                            : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                        ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
+                        : t.status === 'REJECTED'
+                          ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                          : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
                         }`}>
                         {isAccepted ? 'ACCEPTED' : t.status}
                       </span>
@@ -3755,7 +3755,7 @@ function QuotationChatsTab({
                     <div className="flex items-center gap-1.5 font-mono">
                       <span className="text-[#007084] font-black">#CHAT-{t.quoteId.substring(0, 8).toUpperCase()}</span>
                       <span className="text-slate-400">|</span>
-                      <span className="font-bold text-zinc-350">With: {t.otherParticipantName}</span>
+                      <span className="font-bold text-zinc-500">With: {t.otherParticipantName}</span>
                     </div>
                     {t.lastMessageTime && (
                       <span className="font-mono text-[9px]">{new Date(t.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -3862,8 +3862,8 @@ function QuotationChatsTab({
                     <div key={m.id} className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'self-end ml-auto items-end' : 'self-start mr-auto items-start'}`}>
                       <span className="text-[9px] font-bold text-zinc-400 mb-0.5 px-1">{m.sender_name}</span>
                       <div className={`p-3 rounded-xl border text-xs font-semibold leading-relaxed ${isOwnMessage
-                          ? 'bg-cobalt text-white border-cobalt shadow-sm'
-                          : 'bg-zinc-800 text-white border-zinc-700/60 shadow-sm'
+                        ? 'bg-cobalt text-white border-cobalt shadow-sm'
+                        : 'bg-zinc-800 text-white border-zinc-700/60 shadow-sm'
                         }`}>
                         <p>{m.message_text}</p>
                         {m.file_attachment_path && (
@@ -3884,7 +3884,7 @@ function QuotationChatsTab({
                                   showToast('Failed to open attachment link.', 'error');
                                 }
                               }}
-                              className={`p-1 rounded hover:bg-black/10 text-xs cursor-pointer ${isOwnMessage ? 'text-white' : 'text-zinc-350'}`}
+                              className={`p-1 rounded hover:bg-black/10 text-xs cursor-pointer ${isOwnMessage ? 'text-white' : 'text-zinc-500'}`}
                               title="Download Attachment"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
@@ -3939,7 +3939,7 @@ function QuotationChatsTab({
                     <form onSubmit={handleOfferSubmit} className="space-y-3 text-xs font-bold">
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="space-y-1">
-                          <label className="block text-[8px] text-zinc-350 uppercase">Material</label>
+                          <label className="block text-[8px] text-zinc-500 uppercase">Material</label>
                           <select
                             value={offerMaterial}
                             onChange={(e) => setOfferMaterial(e.target.value)}
@@ -3952,7 +3952,7 @@ function QuotationChatsTab({
                         </div>
 
                         <div className="space-y-1">
-                          <label className="block text-[8px] text-zinc-350 uppercase">Finish</label>
+                          <label className="block text-[8px] text-zinc-500 uppercase">Finish</label>
                           <select
                             value={offerFinish}
                             onChange={(e) => setOfferFinish(e.target.value)}
@@ -3965,7 +3965,7 @@ function QuotationChatsTab({
                         </div>
 
                         <div className="space-y-1">
-                          <label className="block text-[8px] text-zinc-350 uppercase">Qty (Units)</label>
+                          <label className="block text-[8px] text-zinc-500 uppercase">Qty (Units)</label>
                           <input
                             type="number"
                             required
@@ -3977,7 +3977,7 @@ function QuotationChatsTab({
                         </div>
 
                         <div className="space-y-1">
-                          <label className="block text-[8px] text-zinc-350 uppercase">Total Price (₹)</label>
+                          <label className="block text-[8px] text-zinc-500 uppercase">Total Price (₹)</label>
                           <input
                             type="number"
                             required
@@ -3991,7 +3991,7 @@ function QuotationChatsTab({
                       </div>
 
                       <div className="space-y-1">
-                        <label className="block text-[8px] text-zinc-350 uppercase">Notes / Inspection Feedback</label>
+                        <label className="block text-[8px] text-zinc-500 uppercase">Notes / Inspection Feedback</label>
                         <input
                           type="text"
                           placeholder="Detail tolerancing check, recommended tooling modifications, etc..."
@@ -4031,8 +4031,8 @@ function QuotationChatsTab({
                             </span>
                           </div>
                           <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${activeThread.machiningQuote.last_offered_by === 'BUYER'
-                              ? profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
-                              : !profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
+                            ? profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
+                            : !profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
                             }`}>
                             {activeThread.machiningQuote.last_offered_by === 'BUYER'
                               ? profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Seller Response'
@@ -4041,7 +4041,7 @@ function QuotationChatsTab({
                         </div>
 
                         <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
-                          <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-[10px] text-zinc-350 font-bold font-mono">
+                          <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-[10px] text-zinc-500 font-bold font-mono">
                             <div>Material: <span className="text-white font-black">{activeThread.machiningQuote.selected_material}</span></div>
                             <div>Finish: <span className="text-white font-black">{activeThread.machiningQuote.selected_finish}</span></div>
                             <div>Quantity: <span className="text-white font-black">{activeThread.machiningQuote.quantity} Units</span></div>
@@ -4073,7 +4073,7 @@ function QuotationChatsTab({
                                 </button>
                                 <button
                                   onClick={() => setShowCounterForm(true)}
-                                  className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 rounded-lg transition-colors cursor-pointer"
+                                  className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 rounded-lg transition-colors cursor-pointer"
                                 >
                                   Counter-Offer
                                 </button>
@@ -4092,7 +4092,7 @@ function QuotationChatsTab({
                                 </button>
                                 <button
                                   onClick={() => setShowCounterForm(true)}
-                                  className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 rounded-lg transition-colors cursor-pointer"
+                                  className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 rounded-lg transition-colors cursor-pointer"
                                 >
                                   Counter-Offer
                                 </button>
@@ -4103,7 +4103,7 @@ function QuotationChatsTab({
                             {!profile.is_seller && activeThread.machiningQuote.last_offered_by === 'BUYER' && (
                               <button
                                 onClick={() => setShowCounterForm(true)}
-                                className="w-full py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                                className="w-full py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                               >
                                 <CircleDollarSign className="w-3.5 h-3.5" />
                                 Modify My Counter-Offer
@@ -4114,7 +4114,7 @@ function QuotationChatsTab({
                             {profile.is_seller && activeThread.machiningQuote.last_offered_by !== 'BUYER' && (
                               <button
                                 onClick={() => setShowCounterForm(true)}
-                                className="w-full py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                                className="w-full py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                               >
                                 <CircleDollarSign className="w-3.5 h-3.5" />
                                 Modify My Offer
@@ -4135,7 +4135,7 @@ function QuotationChatsTab({
 
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono">
                             <div className="space-y-1 font-sans">
-                              <label className="block text-[8px] text-zinc-350 uppercase font-sans">Material</label>
+                              <label className="block text-[8px] text-zinc-500 uppercase font-sans">Material</label>
                               <select
                                 value={offerMaterial}
                                 onChange={(e) => setOfferMaterial(e.target.value)}
@@ -4148,7 +4148,7 @@ function QuotationChatsTab({
                             </div>
 
                             <div className="space-y-1 font-sans">
-                              <label className="block text-[8px] text-zinc-350 uppercase font-sans">Finish</label>
+                              <label className="block text-[8px] text-zinc-500 uppercase font-sans">Finish</label>
                               <select
                                 value={offerFinish}
                                 onChange={(e) => setOfferFinish(e.target.value)}
@@ -4161,7 +4161,7 @@ function QuotationChatsTab({
                             </div>
 
                             <div className="space-y-1">
-                              <label className="block text-[8px] text-zinc-350 uppercase font-sans">Qty (Units)</label>
+                              <label className="block text-[8px] text-zinc-500 uppercase font-sans">Qty (Units)</label>
                               <input
                                 type="number"
                                 required
@@ -4173,7 +4173,7 @@ function QuotationChatsTab({
                             </div>
 
                             <div className="space-y-1">
-                              <label className="block text-[8px] text-zinc-350 uppercase font-sans">Price (₹)</label>
+                              <label className="block text-[8px] text-zinc-500 uppercase font-sans">Price (₹)</label>
                               <input
                                 type="number"
                                 required
@@ -4187,7 +4187,7 @@ function QuotationChatsTab({
                           </div>
 
                           <div className="space-y-1">
-                            <label className="block text-[8px] text-zinc-350 uppercase font-sans">Proposal Notes</label>
+                            <label className="block text-[8px] text-zinc-500 uppercase font-sans">Proposal Notes</label>
                             <input
                               type="text"
                               placeholder="Add explanation for counter-offer..."
@@ -4215,7 +4215,7 @@ function QuotationChatsTab({
                             <button
                               type="button"
                               onClick={() => setShowCounterForm(false)}
-                              className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 rounded-lg transition-colors cursor-pointer"
+                              className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 rounded-lg transition-colors cursor-pointer"
                             >
                               Cancel
                             </button>
@@ -4227,9 +4227,9 @@ function QuotationChatsTab({
 
                   {activeThread.machiningQuote.status === 'Accepted' && (
                     /* Accepted Offer Summary */
-                    <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-lg text-[10px] font-bold text-zinc-350 space-y-1">
+                    <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-lg text-[10px] font-bold text-zinc-500 space-y-1">
                       <p className="text-emerald font-black">Contract Terms Finalized & Accepted</p>
-                      <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-zinc-350">
+                      <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-zinc-500">
                         <div>Material: <span className="text-white font-black">{activeThread.machiningQuote.selected_material}</span></div>
                         <div>Finish: <span className="text-white font-black">{activeThread.machiningQuote.selected_finish}</span></div>
                         <div>Quantity: <span className="text-white font-black">{activeThread.machiningQuote.quantity} Units</span></div>
@@ -4243,7 +4243,7 @@ function QuotationChatsTab({
             {/* Input message bar */}
             <form onSubmit={handleSendMessage} className="border-t border-zinc-700/60/50 pt-4 flex gap-2">
               <label className="btn-secondary p-3 rounded-lg border border-zinc-700/60 cursor-pointer flex items-center justify-center shrink-0 hover:bg-zinc-900 transition-colors" title="Attach file">
-                <Paperclip className={`w-4 h-4 ${uploading ? 'animate-pulse text-cobalt' : 'text-zinc-350'}`} />
+                <Paperclip className={`w-4 h-4 ${uploading ? 'animate-pulse text-cobalt' : 'text-zinc-500'}`} />
                 <input type="file" onChange={handleFileUpload} disabled={uploading || sending} className="hidden" />
               </label>
               <input
@@ -4304,7 +4304,7 @@ function QuotationChatsTab({
 
             <form onSubmit={handleRejectQuote} className="space-y-4">
               <div className="space-y-1">
-                <label className="block text-[10px] font-bold text-zinc-350 uppercase">
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase">
                   Rejection Reason / Feedback *
                 </label>
                 <textarea
@@ -4321,7 +4321,7 @@ function QuotationChatsTab({
                 <button
                   type="button"
                   onClick={() => setShowRejectForm(false)}
-                  className="flex-1 py-2.5 rounded-lg border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-350 cursor-pointer transition-colors"
+                  className="flex-1 py-2.5 rounded-lg border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>

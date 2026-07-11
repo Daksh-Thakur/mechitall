@@ -7,14 +7,14 @@ import { useCart } from '@/components/CartProvider';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ServiceCard from '@/components/ServiceCard';
-import { 
-  getMachiningServices, listMachiningService, requestMachiningQuote, 
-  MachiningService 
+import {
+  getMachiningServices, listMachiningService, requestMachiningQuote,
+  MachiningService
 } from '@/app/actions/marketplace';
-import { 
-  Cpu, FileUp, Settings, Plus, Sparkles, CheckCircle2, Clock, 
-  ShieldCheck, ShoppingBag, Send, Layers, 
-  ChevronRight, Info, X, Upload, File, Trash2, Eye, ArrowRight, 
+import {
+  Cpu, FileUp, Settings, Plus, Sparkles, CheckCircle2, Clock,
+  ShieldCheck, ShoppingBag, Send, Layers,
+  ChevronRight, Info, X, Upload, File, Trash2, Eye, ArrowRight,
   Zap, RotateCcw, Package, Search, SlidersHorizontal, SlidersVertical
 } from 'lucide-react';
 import { getChatUploadSignedUrl, getUploadSignedUrl, sendChatMessage } from '@/app/actions/machining-workflow';
@@ -220,7 +220,7 @@ export default function MachiningMarketplacePage() {
         const signedRes = await getUploadSignedUrl(quoteId, uploadedFile.name);
         if (signedRes.success && signedRes.data) {
           const { token, path, signedUrl } = signedRes.data;
-          
+
           // Upload with progress using XMLHttpRequest
           await new Promise<void>((resolve, reject) => {
             const xhr = new XMLHttpRequest();
@@ -357,21 +357,19 @@ export default function MachiningMarketplacePage() {
                 <div className="grid grid-cols-2 gap-1 bg-zinc-800 p-1 rounded">
                   <button
                     onClick={() => setActiveView('buyer')}
-                    className={`py-1.5 text-xs font-bold text-center transition-all cursor-pointer rounded ${
-                      activeView === 'buyer'
+                    className={`py-1.5 text-xs font-bold text-center transition-all cursor-pointer rounded ${activeView === 'buyer'
                         ? 'bg-blue-500 text-zinc-950 font-bold'
                         : 'text-zinc-400 hover:text-white'
-                    }`}
+                      }`}
                   >
                     Buyer Hub
                   </button>
                   <button
                     onClick={() => setActiveView('seller')}
-                    className={`py-1.5 text-xs font-bold text-center transition-all cursor-pointer rounded ${
-                      activeView === 'seller'
+                    className={`py-1.5 text-xs font-bold text-center transition-all cursor-pointer rounded ${activeView === 'seller'
                         ? 'bg-blue-500 text-zinc-950 font-bold'
                         : 'text-zinc-400 hover:text-white'
-                    }`}
+                      }`}
                   >
                     Seller Hub
                   </button>
@@ -415,11 +413,10 @@ export default function MachiningMarketplacePage() {
               <button
                 key={proc}
                 onClick={() => setSelectedProcess(proc)}
-                className={`flex items-center gap-3 px-3 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-left transition-all cursor-pointer rounded-md ${
-                  selectedProcess === proc
+                className={`flex items-center gap-3 px-3 py-2.5 text-xs font-mono font-bold uppercase tracking-wider text-left transition-all cursor-pointer rounded-md ${selectedProcess === proc
                     ? 'bg-blue-500/10 text-blue-400 border border-blue-500/25 font-bold'
                     : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-                }`}
+                  }`}
               >
                 {proc === 'All' ? 'All Processes' : proc}
               </button>
@@ -464,7 +461,7 @@ export default function MachiningMarketplacePage() {
               <div>
                 <h1 className="font-['Space_Grotesk'] text-lg font-bold text-white">On-Demand Manufacturing</h1>
                 <p className="font-['Inter'] text-xs text-zinc-400 mt-0.5">
-                  Connect with verified fabrication facilities, upload CAD files, and receive custom quotes.
+                  Connect with verified fabrication facilities, upload design files, and receive custom quotes.
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -554,11 +551,10 @@ export default function MachiningMarketplacePage() {
                   <button
                     key={proc}
                     onClick={() => setSelectedProcess(proc)}
-                    className={`shrink-0 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-md transition-all cursor-pointer ${
-                      selectedProcess === proc
+                    className={`shrink-0 px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-wider border rounded-md transition-all cursor-pointer ${selectedProcess === proc
                         ? 'bg-blue-500 text-zinc-950 border-blue-500 font-bold'
                         : 'bg-zinc-800 text-zinc-450 border-zinc-700/60 hover:border-zinc-500'
-                    }`}
+                      }`}
                   >
                     {proc}
                   </button>
@@ -618,12 +614,11 @@ export default function MachiningMarketplacePage() {
                   {myServices.map((service) => (
                     <div key={service.id} className="bg-zinc-800 border border-zinc-700/60 overflow-hidden flex flex-col justify-between hover:border-blue-500 transition-all relative rounded-xl">
                       <div className="h-28 bg-zinc-900/50 border-b border-zinc-850 flex items-center justify-center relative">
-                        <div className={`w-full h-full bg-gradient-to-br ${
-                          service.process_type === 'CNC Machining' ? 'from-blue-600/10 to-indigo-600/5'
-                          : service.process_type === '3D Printing' ? 'from-violet-500/10 to-purple-500/5'
-                          : service.process_type === 'Sheet Metal' ? 'from-amber-500/10 to-orange-500/5'
-                          : 'from-red-500/10 to-pink-500/5'
-                        } flex items-center justify-center`}>
+                        <div className={`w-full h-full bg-gradient-to-br ${service.process_type === 'CNC Machining' ? 'from-blue-600/10 to-indigo-600/5'
+                            : service.process_type === '3D Printing' ? 'from-violet-500/10 to-purple-500/5'
+                              : service.process_type === 'Sheet Metal' ? 'from-amber-500/10 to-orange-500/5'
+                                : 'from-red-500/10 to-pink-500/5'
+                          } flex items-center justify-center`}>
                           <Settings className="w-8 h-8 text-white opacity-25" />
                         </div>
                         <div className="absolute top-2 right-2">
@@ -632,12 +627,11 @@ export default function MachiningMarketplacePage() {
                           </span>
                         </div>
                         <div className="absolute top-2 left-2">
-                          <span className={`text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider border font-semibold ${
-                            service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                            : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
-                            : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                            : 'bg-red-500/10 text-red-400 border-red-500/20'
-                          }`}>
+                          <span className={`text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider border font-semibold ${service.process_type === 'CNC Machining' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                              : service.process_type === '3D Printing' ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
+                                : service.process_type === 'Sheet Metal' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                  : 'bg-red-500/10 text-red-400 border-red-500/20'
+                            }`}>
                             {service.process_type}
                           </span>
                         </div>
@@ -707,21 +701,19 @@ export default function MachiningMarketplacePage() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => { setActiveView('buyer'); setShowFilterDrawer(false); }}
-                  className={`px-3 py-2.5 border text-xs font-bold transition-all cursor-pointer text-center rounded-md ${
-                    activeView === 'buyer'
+                  className={`px-3 py-2.5 border text-xs font-bold transition-all cursor-pointer text-center rounded-md ${activeView === 'buyer'
                       ? 'bg-blue-500/10 text-blue-400 border-blue-500/25'
                       : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:bg-zinc-800'
-                  }`}
+                    }`}
                 >
                   Buyer Hub
                 </button>
                 <button
                   onClick={() => { setActiveView('seller'); setShowFilterDrawer(false); }}
-                  className={`px-3 py-2.5 border text-xs font-bold transition-all cursor-pointer text-center rounded-md ${
-                    activeView === 'seller'
+                  className={`px-3 py-2.5 border text-xs font-bold transition-all cursor-pointer text-center rounded-md ${activeView === 'seller'
                       ? 'bg-blue-500/10 text-blue-400 border-blue-500/25'
                       : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:bg-zinc-800'
-                  }`}
+                    }`}
                 >
                   Seller Hub
                 </button>
@@ -737,11 +729,10 @@ export default function MachiningMarketplacePage() {
                 <button
                   key={proc}
                   onClick={() => { setSelectedProcess(proc); setShowFilterDrawer(false); }}
-                  className={`px-3 py-2.5 border text-xs font-['JetBrains_Mono'] text-left transition-colors cursor-pointer rounded-md ${
-                    selectedProcess === proc
+                  className={`px-3 py-2.5 border text-xs font-['JetBrains_Mono'] text-left transition-colors cursor-pointer rounded-md ${selectedProcess === proc
                       ? 'bg-blue-500/10 text-blue-400 border-blue-500/25'
                       : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'
-                  }`}
+                    }`}
                 >
                   {proc}
                 </button>
@@ -786,7 +777,7 @@ export default function MachiningMarketplacePage() {
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
- 
+
             <form onSubmit={handleQuoteSubmit} className="space-y-4">
               {/* Drop Zone */}
               <div>
@@ -799,11 +790,10 @@ export default function MachiningMarketplacePage() {
                     onDragLeave={() => setIsDragging(false)}
                     onDrop={handleFileDrop}
                     onClick={() => fileInputRef.current?.click()}
-                    className={`border border-dashed rounded p-6 text-center cursor-pointer transition-all ${
-                      isDragging 
-                        ? 'border-blue-500 bg-blue-500/5' 
+                    className={`border border-dashed rounded p-6 text-center cursor-pointer transition-all ${isDragging
+                        ? 'border-blue-500 bg-blue-500/5'
                         : 'border-zinc-700 bg-zinc-900/50 hover:border-blue-500 hover:bg-zinc-900'
-                    }`}
+                      }`}
                   >
                     <Upload className={`w-6 h-6 mx-auto mb-2 transition-colors ${isDragging ? 'text-blue-500' : 'text-zinc-500'}`} />
                     <p className="text-xs font-bold text-white">
@@ -840,14 +830,14 @@ export default function MachiningMarketplacePage() {
                   onChange={handleFileSelect}
                 />
               </div>
- 
+
               <div className="bg-zinc-950/40 border border-zinc-750/50 p-3.5 rounded text-[10px] text-zinc-400 leading-relaxed">
                 <div className="text-blue-400 flex items-center gap-1.5 mb-1 font-bold font-mono uppercase tracking-wider">
                   <Info className="w-3.5 h-3.5" /> Request Process
                 </div>
                 Your design model will be shared securely with this manufacturer. They will analyze geometric tolerances, recommend optimal materials, and send you a mechatronic RFQ quote.
               </div>
- 
+
               {uploadProgress !== null && (
                 <div className="space-y-1.5 bg-zinc-900 border border-zinc-700/60 p-3 rounded-lg">
                   <div className="flex justify-between text-[10px] font-bold text-blue-400 uppercase tracking-wider font-mono">
@@ -855,7 +845,7 @@ export default function MachiningMarketplacePage() {
                     <span>{uploadProgress}%</span>
                   </div>
                   <div className="w-full bg-zinc-800 h-2 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-blue-500 transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     ></div>

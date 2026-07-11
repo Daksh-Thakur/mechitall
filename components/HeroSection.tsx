@@ -146,7 +146,7 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
   ];
 
   return (
-    <section 
+    <section
       className="relative overflow-hidden bg-zinc-900 border-b border-zinc-800 min-h-[calc(100vh-3.5rem)] md:h-[calc(100vh-3.5rem)] flex items-center justify-center mt-0 text-zinc-100"
       style={{
         backgroundImage: 'linear-gradient(to right, rgba(59,130,246,0.02) 1px, transparent 1px), linear-gradient(to bottom, rgba(59,130,246,0.02) 1px, transparent 1px)',
@@ -162,17 +162,18 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
             <span className="inline-block font-mono text-[10px] font-extrabold uppercase tracking-[0.25em] text-emerald-400 bg-emerald-400/5 border border-emerald-400/15 px-2.5 py-1 rounded">
               Browse. Buy. Build
             </span>
-            <p className="text-xs md:text-sm text-zinc-400 max-w-xl leading-relaxed font-semibold">
-              Stop wrestling with fragmented sourcing and machining delays. The all-in-one hub for off-the-shelf components and instant custom CAD quoting.
-            </p>
+
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white leading-[1.05] font-['Space_Grotesk']">
-            Off-The-Shelf &amp;<br />
+            Off-The-Shelf Parts &amp;<br />
             <span className="bg-gradient-to-r from-blue-400 via-blue-500 to-emerald-400 bg-clip-text text-transparent">
-              Custom CAD Sourcing
+              Custom Machining
             </span>
           </h1>
+          <p className="text-xs md:text-sm text-zinc-400 max-w-xl leading-relaxed font-semibold">
+            From blueprint to build, idea to reality. We connect passionate hobbyists with manufacturing pros in one seamless hub for off-the-shelf parts and custom machining."
+          </p>
 
           <div className="flex flex-wrap gap-4 pt-2">
             <Link
@@ -208,7 +209,7 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
         </div>
 
         <div className="w-full md:w-[460px] z-10 shrink-0 select-none">
-          <div 
+          <div
             className={`bg-zinc-800 border border-zinc-700/60 p-6 rounded-2xl shadow-lg flex flex-col justify-between h-[360px] transition-all duration-500 bg-gradient-to-br ${adSlides[currentAdSlide].gradient}`}
             style={{
               boxShadow: '0 10px 15px -3px rgba(0,0,0,0.3), 0 4px 6px -4px rgba(0,0,0,0.3)',
@@ -219,14 +220,14 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
                 {adSlides[currentAdSlide].badge}
               </span>
               <div className="flex items-center gap-1">
-                <button 
+                <button
                   onClick={() => setCurrentAdSlide((prev) => (prev - 1 + AD_SLIDE_COUNT) % AD_SLIDE_COUNT)}
                   className="p-1 rounded hover:bg-zinc-700/60 text-zinc-400 hover:text-white transition-colors cursor-pointer"
                   aria-label="Previous Slide"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
-                <button 
+                <button
                   onClick={() => setCurrentAdSlide((prev) => (prev + 1) % AD_SLIDE_COUNT)}
                   className="p-1 rounded hover:bg-zinc-700/60 text-zinc-400 hover:text-white transition-colors cursor-pointer"
                   aria-label="Next Slide"
@@ -267,11 +268,10 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
                   <button
                     key={idx}
                     onClick={() => setCurrentAdSlide(idx)}
-                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                      currentAdSlide === idx
-                        ? 'bg-blue-400 w-4'
-                        : 'w-1.5 bg-zinc-750 hover:bg-zinc-600'
-                    }`}
+                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${currentAdSlide === idx
+                      ? 'bg-blue-400 w-4'
+                      : 'w-1.5 bg-zinc-750 hover:bg-zinc-600'
+                      }`}
                     aria-label={`Go to slide ${idx + 1}`}
                   />
                 ))}
