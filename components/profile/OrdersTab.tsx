@@ -13,108 +13,60 @@ export default function OrdersTab(props: any) {
       
       <div className="space-y-6">
 
-              {/* Profile Overview Banner */}
-              <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row items-center gap-6 justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-cobalt/20 to-cobalt/5 border border-cobalt/25 flex items-center justify-center font-extrabold text-cobalt">
-                    <User className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-base font-black text-white leading-none">{profile.full_name}</h2>
-                      <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald rounded border border-emerald-500/20">
-                        Verified Customer
-                      </span>
-                    </div>
-                    <span className="block text-[11px] text-zinc-400 font-bold font-mono mt-1.5">{profile.email || 'guest@mechitall.io'}</span>
-                  </div>
-                </div>
-
-                {/* Stats grid */}
-                <div className="flex items-center gap-8 text-center">
-                  <div>
-                    <span className="block text-[8px] uppercase tracking-wider text-zinc-400 font-bold">Total Orders</span>
-                    <span className="text-xl font-mono font-black text-white">{orders.length}</span>
-                  </div>
-                  <div className="border-l border-zinc-700/60 h-8"></div>
-                  <div>
-                    <span className="block text-[8px] uppercase tracking-wider text-zinc-400 font-bold">Active Shipments</span>
-                    <span className="text-xl font-mono font-black text-cobalt">{activeShipmentsCount}</span>
-                  </div>
-                  <div className="border-l border-zinc-700/60 h-8"></div>
-                  <div>
-                    <span className="block text-[8px] uppercase tracking-wider text-zinc-400 font-bold">Wishlist Items</span>
-                    <span className="text-xl font-mono font-black text-white">{wishlist.length}</span>
-                  </div>
-                </div>
+        {/* PREMIUM STATS ROW */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 shadow-sm hover:border-[#00D0F5]/50 hover:shadow-[#00D0F5]/10 transition-all flex flex-col justify-between group cursor-pointer" onClick={() => setActiveTab('orders')}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Total Orders</span>
+              <div className="w-8 h-8 rounded bg-[#00D0F5]/10 text-[#00D0F5] flex items-center justify-center group-hover:scale-110 transition-transform">
+                <ShoppingBag className="w-4 h-4" />
               </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-black text-white font-mono">{orders.length}</span>
+            </div>
+          </div>
 
-              {/* Bolts Wallet Card */}
-              <div className="bg-zinc-800 border border-zinc-700/60 rounded p-6 shadow-sm relative overflow-hidden text-white flex flex-col md:flex-row justify-between gap-6">
-                <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:16px_16px] opacity-60 pointer-events-none"></div>
-
-                <div className="space-y-4 z-10 flex-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-500">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="w-5 h-5 text-amber-500 animate-pulse"
-                      >
-                        <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
-                        <line x1="10" y1="3" x2="10" y2="11" />
-                        <line x1="14" y1="3" x2="14" y2="11" />
-                        <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
-                        <line x1="9" y1="13.5" x2="15" y2="12" />
-                        <line x1="9" y1="16" x2="15" y2="14.5" />
-                        <line x1="9" y1="18.5" x2="15" y2="17" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-xs font-mono font-extrabold tracking-wider text-white">BOLTS WALLET</h3>
-                      <span className="block text-[8px] text-zinc-500 font-bold font-mono uppercase tracking-wider">Nuts &amp; Bolts Reward Program</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider block font-mono">Current Balance</span>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-3xl font-mono font-black text-amber-600">{profile.wallet_balance}</span>
-                      <span className="text-[10px] text-amber-600 font-extrabold uppercase tracking-wider font-mono">BOLTS</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Progress bar + Action */}
-                <div className="z-10 md:w-5/12 flex flex-col justify-between text-xs space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between font-bold text-[9px] uppercase text-zinc-500 font-mono tracking-wider">
-                      <span>Redemption Limit</span>
-                      <span>100 Bolts / Order</span>
-                    </div>
-                    <div className="w-full bg-zinc-900 h-2 rounded border border-zinc-700/60 overflow-hidden">
-                      <div className="bg-gradient-to-r from-amber-500 to-amber-600 h-full rounded" style={{ width: `${boltsProgressPercent}%` }}></div>
-                    </div>
-                    <span className="block text-[8px] text-zinc-500 font-bold font-mono uppercase tracking-wide">
-                      *10 Bolts = ₹1.00 store credit. 45-day window applies.
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      showToast('Bolt balance applied automatically in the Cart drawer!', 'success');
-                    }}
-                    className="w-full bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all shadow-sm"
-                  >
-                    Redeem Now
-                  </button>
-                </div>
+          <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 shadow-sm hover:border-amber-500/50 hover:shadow-amber-500/10 transition-all flex flex-col justify-between group cursor-pointer" onClick={() => setActiveTab('rewards')}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Bolts Balance</span>
+              <div className="w-8 h-8 rounded bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Gift className="w-4 h-4" />
               </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-black text-white font-mono">{profile.wallet_balance}</span>
+              <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Bolts</span>
+            </div>
+            <div className="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden border border-zinc-700/30">
+              <div className="bg-amber-500 h-full rounded-full" style={{ width: `${boltsProgressPercent}%` }}></div>
+            </div>
+          </div>
+
+          <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 shadow-sm hover:border-emerald-500/50 hover:shadow-emerald-500/10 transition-all flex flex-col justify-between group">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Active Shipments</span>
+              <div className="w-8 h-8 rounded bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Package className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-black text-white font-mono">{activeShipmentsCount}</span>
+            </div>
+          </div>
+
+          <div className="bg-zinc-900/50 backdrop-blur-md border border-zinc-700/60 rounded-xl p-4 shadow-sm hover:border-indigo-500/50 hover:shadow-indigo-500/10 transition-all flex flex-col justify-between group cursor-pointer" onClick={() => setActiveTab('wishlist')}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Wishlist Items</span>
+              <div className="w-8 h-8 rounded bg-indigo-500/10 text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Heart className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-black text-white font-mono">{wishlist.length}</span>
+            </div>
+          </div>
+        </div>
 
               {/* Recent Purchases List */}
               <div className="space-y-3">

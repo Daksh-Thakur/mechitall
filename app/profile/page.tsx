@@ -31,7 +31,7 @@ import {
   ArrowLeftRight, ShieldCheck, Cpu, ChevronRight, Download, Plus,
   Trash2, RefreshCw, ShoppingCart, Clock, CheckCircle2, AlertTriangle, Play, Upload,
   Send, Paperclip, FileText, ExternalLink, CircleDollarSign, IndianRupee, LayoutDashboard, ArrowRight,
-  Package, X, Camera, Loader2, Eye, XCircle
+  Package, X, Camera, Loader2, Eye, XCircle, LifeBuoy
 } from 'lucide-react';
 import {
   getOngoingChats,
@@ -670,6 +670,7 @@ export default function ProfilePage() {
             { tab: 'wishlist', label: 'Wishlist', icon: Heart },
             { tab: 'chats', label: 'Chats', icon: MessageSquare },
             { tab: 'settings', label: 'Settings', icon: Settings },
+            { tab: 'support', label: 'Support', icon: LifeBuoy },
           ].map(({ tab, label, icon: Icon }) => {
             const isActive = activeTab === tab;
             return (
@@ -703,6 +704,7 @@ export default function ProfilePage() {
             { tab: 'seller_listings', label: 'My Products', icon: Package },
             { tab: 'seller_earnings', label: 'Earnings', icon: IndianRupee },
             { tab: 'chats', label: 'Chats', icon: MessageSquare },
+            { tab: 'support', label: 'Support', icon: LifeBuoy },
           ].map(({ tab, label, icon: Icon }) => {
             const isActive = activeTab === tab;
             return (
@@ -791,7 +793,18 @@ export default function ProfilePage() {
             </div>
 
             {/* Exit/Deactivate Seller Mode */}
-            <div className="pt-0 md:pt-4 md:border-t border-zinc-700/60">
+            <div className="pt-0 md:pt-4 md:border-t border-zinc-700/60 space-y-2">
+              <button
+                onClick={() => setActiveTab('support')}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'support'
+                  ? 'bg-[#0f172a] text-white shadow-md'
+                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                  }`}
+              >
+                <LifeBuoy className="w-4 h-4 shrink-0" />
+                <span>Customer Support</span>
+              </button>
+
               <button
                 disabled={togglingSeller}
                 onClick={handleToggleSellerMode}
@@ -900,17 +913,6 @@ export default function ProfilePage() {
                 </button>
 
                 <button
-                  onClick={() => setActiveTab('support')}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'support'
-                    ? 'bg-[#0f172a] text-white shadow'
-                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
-                    }`}
-                >
-                  <MessageSquare className="w-4 h-4 shrink-0" />
-                  <span>Customer Support</span>
-                </button>
-
-                <button
                   onClick={() => setActiveTab('chats')}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'chats'
                     ? 'bg-[#0f172a] text-white shadow'
@@ -928,6 +930,17 @@ export default function ProfilePage() {
 
             {/* Switch/Activate Seller Mode */}
             <div className="pt-0 md:pt-6 md:border-t border-zinc-700/60 md:mt-8 space-y-2">
+              <button
+                onClick={() => setActiveTab('support')}
+                className={`w-full flex items-center gap-3 px-4 py-3 text-xs font-mono font-bold uppercase tracking-wider rounded transition-all cursor-pointer ${activeTab === 'support'
+                  ? 'bg-[#0f172a] text-white shadow'
+                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                  }`}
+              >
+                <LifeBuoy className="w-4 h-4 shrink-0" />
+                <span>Customer Support</span>
+              </button>
+              
               <div className="hidden md:flex justify-between items-center text-[10px] font-bold text-zinc-500 font-mono uppercase tracking-wider">
                 <span>Seller Account</span>
                 <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold uppercase ${profile.seller_kyc_completed
