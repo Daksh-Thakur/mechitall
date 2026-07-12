@@ -15,6 +15,8 @@ export interface MachiningService {
   finish_options: string[];
   created_at: string;
   seller_name?: string;
+  image_data?: string;
+  images_data?: string[];
 }
 
 export interface MachiningQuote {
@@ -100,10 +102,21 @@ export async function getMachiningServices() {
     return [];
   }
 
-  return (services || []).map((s: any) => ({
-    ...s,
-    seller_name: s.profiles?.full_name || 'Expert Maker',
-  })) as MachiningService[];
+  const { data: generalServices } = await supabase
+    .from('services')
+    .select('title, seller_profile_id, image_data, images_data');
+
+  return (services || []).map((s: any) => {
+    const matchedService = (generalServices || []).find(
+      (gs: any) => gs.title === s.title && gs.seller_profile_id === s.seller_profile_id
+    );
+    return {
+      ...s,
+      seller_name: s.profiles?.full_name || 'Expert Maker',
+      image_data: matchedService?.image_data || undefined,
+      images_data: matchedService?.images_data || [],
+    };
+  }) as MachiningService[];
 }
 
 /**

@@ -947,17 +947,29 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   // Calculate escrow balance (Processing or Shipped orders)
   const escrowBalance = (orders || [])
     .filter((o: any) => o.status === 'Processing' || o.status === 'Shipped')
-    .reduce((sum: number, o: any) => sum + Number(o.total_amount), 0);
+    .reduce((sum: number, o: any) => {
+      const isCustom = o.id.startsWith('RFQ-');
+      const feeRate = isCustom ? 0.08 : 0.05;
+      return sum + Number(o.total_amount) * (1 - feeRate);
+    }, 0);
 
   // Calculate cleared earnings (Completed or Delivered orders)
   const clearedEarnings = (orders || [])
     .filter((o: any) => o.status === 'Completed' || o.status === 'Delivered')
-    .reduce((sum: number, o: any) => sum + Number(o.total_amount), 0);
+    .reduce((sum: number, o: any) => {
+      const isCustom = o.id.startsWith('RFQ-');
+      const feeRate = isCustom ? 0.08 : 0.05;
+      return sum + Number(o.total_amount) * (1 - feeRate);
+    }, 0);
 
   // Calculate monthly earnings based on completed / active mechatronic orders + accepted custom quotes
   const monthlyEarnings = (orders || [])
     .filter((o: any) => o.status !== 'Cancelled' && o.status !== 'Rejected')
-    .reduce((sum: number, o: any) => sum + Number(o.total_amount), 0);
+    .reduce((sum: number, o: any) => {
+      const isCustom = o.id.startsWith('RFQ-');
+      const feeRate = isCustom ? 0.08 : 0.05;
+      return sum + Number(o.total_amount) * (1 - feeRate);
+    }, 0);
 
   // Calculate dynamic weekly earnings based on calendar
   const now = new Date();
@@ -967,17 +979,20 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   [...activeJobs, ...completedJobs].forEach(job => {
     const jobDate = new Date(job.created_at);
     const diffDays = Math.floor((now.getTime() - jobDate.getTime()) / msInDay);
+    const isCustom = job.id.startsWith('RFQ-');
+    const feeRate = isCustom ? 0.08 : 0.05;
+    const netCost = Number(job.total_cost) * (1 - feeRate);
 
     if (diffDays >= 0 && diffDays < 7) {
-      weeklyEarnings[4] += Number(job.total_cost);
+      weeklyEarnings[4] += netCost;
     } else if (diffDays >= 7 && diffDays < 14) {
-      weeklyEarnings[3] += Number(job.total_cost);
+      weeklyEarnings[3] += netCost;
     } else if (diffDays >= 14 && diffDays < 21) {
-      weeklyEarnings[2] += Number(job.total_cost);
+      weeklyEarnings[2] += netCost;
     } else if (diffDays >= 21 && diffDays < 28) {
-      weeklyEarnings[1] += Number(job.total_cost);
+      weeklyEarnings[1] += netCost;
     } else if (diffDays >= 28 && diffDays < 35) {
-      weeklyEarnings[0] += Number(job.total_cost);
+      weeklyEarnings[0] += netCost;
     }
   });
 
@@ -1014,6 +1029,16 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     .eq('seller_profile_id', sellerProfileId)
     .order('created_at', { ascending: false });
 
+  // Map image data to capabilities
+  const mappedCapabilities = (capabilities || []).map((cap: any) => {
+    const matchedService = (services || []).find((s: any) => s.title === cap.title);
+    return {
+      ...cap,
+      image_data: matchedService?.image_data || undefined,
+      images_data: matchedService?.images_data || [],
+    };
+  });
+
   return {
     openRfqs: openRfqs || [],
     myQuotes: myQuotes || [],
@@ -1023,7 +1048,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     escrowBalance,
     clearedEarnings,
     earningsVelocity,
-    capabilities: capabilities || [],
+    capabilities: mappedCapabilities,
     products: products || [],
     services: services || []
   };

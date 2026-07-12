@@ -53,6 +53,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'orders' | 'rewards' | 'wishlist' | 'settings' | 'address' | 'support' | 'chats' | 'seller_orders' | 'seller_rfqs' | 'seller_listings' | 'seller_earnings'>('orders');
   const [unreadChatsCount, setUnreadChatsCount] = useState(0);
   const [activeChatRfqId, setActiveChatRfqId] = useState<string | null>(null);
+  const [hasNewBuyerOrder, setHasNewBuyerOrder] = useState(false);
+  const [hasNewSellerOrder, setHasNewSellerOrder] = useState(false);
 
   const checkUnreadChats = async () => {
     try {
@@ -106,6 +108,8 @@ export default function ProfilePage() {
       };
     }
   }, [profile]);
+
+
 
   // Load tab from URL query params and check PayU payment redirects
   useEffect(() => {
@@ -427,6 +431,50 @@ export default function ProfilePage() {
     }
   }, [profile?.id, activeTab]);
 
+  // Fetch buyer & seller orders on initial load / profile load to determine notifications immediately
+  useEffect(() => {
+    if (profile?.id) {
+      fetchOrders();
+      if (profile.is_seller) {
+        fetchSellerData();
+      }
+    }
+  }, [profile?.id]);
+
+  // Sync seen buyer orders to display notification badge if there are unseen ones
+  useEffect(() => {
+    if (orders.length > 0 && typeof window !== 'undefined') {
+      const seenStr = localStorage.getItem('mechitall_seen_buyer_orders');
+      const seenIds = seenStr ? JSON.parse(seenStr) : [];
+      
+      if (activeTab === 'orders') {
+        const currentIds = orders.map(o => o.id);
+        localStorage.setItem('mechitall_seen_buyer_orders', JSON.stringify(currentIds));
+        setHasNewBuyerOrder(false);
+      } else {
+        const hasUnseen = orders.some(o => !seenIds.includes(o.id));
+        setHasNewBuyerOrder(hasUnseen);
+      }
+    }
+  }, [orders, activeTab]);
+
+  // Sync seen seller orders to display notification badge if there are unseen ones
+  useEffect(() => {
+    if (sellerOrders.length > 0 && typeof window !== 'undefined') {
+      const seenStr = localStorage.getItem('mechitall_seen_seller_orders');
+      const seenIds = seenStr ? JSON.parse(seenStr) : [];
+      
+      if (activeTab === 'seller_orders') {
+        const currentIds = sellerOrders.map(o => o.id);
+        localStorage.setItem('mechitall_seen_seller_orders', JSON.stringify(currentIds));
+        setHasNewSellerOrder(false);
+      } else {
+        const hasUnseen = sellerOrders.some(o => !seenIds.includes(o.id));
+        setHasNewSellerOrder(hasUnseen);
+      }
+    }
+  }, [sellerOrders, activeTab]);
+
   // Handle mock photo upload and claiming rewards (escrow release)
   const handlePhotoUploadAndClaim = async (orderId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     if (!event.target.files || event.target.files.length === 0 || !profile) return;
@@ -637,6 +685,9 @@ export default function ProfilePage() {
                 {tab === 'chats' && unreadChatsCount > 0 && (
                   <span className="absolute top-1 right-5 w-1.5 h-1.5 rounded-full bg-[#00D0F5] animate-pulse"></span>
                 )}
+                {tab === 'orders' && hasNewBuyerOrder && (
+                  <span className="absolute top-1 right-5 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                )}
               </button>
             );
           })}
@@ -666,6 +717,9 @@ export default function ProfilePage() {
                 </span>
                 {tab === 'chats' && unreadChatsCount > 0 && (
                   <span className="absolute top-1 right-5 w-1.5 h-1.5 rounded-full bg-[#00D0F5] animate-pulse"></span>
+                )}
+                {tab === 'seller_orders' && hasNewSellerOrder && (
+                  <span className="absolute top-1 right-5 w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
                 )}
               </button>
             );
@@ -718,6 +772,9 @@ export default function ProfilePage() {
                     <span>{label}</span>
                     {tab === 'chats' && unreadChatsCount > 0 && (
                       <span className="ml-auto w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
+                    )}
+                    {tab === 'seller_orders' && hasNewSellerOrder && (
+                      <span className="ml-auto w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0"></span>
                     )}
                   </button>
                 ))}
@@ -785,6 +842,9 @@ export default function ProfilePage() {
                 >
                   <ShoppingBag className="w-4 h-4 shrink-0" />
                   <span>My Orders</span>
+                  {hasNewBuyerOrder && (
+                    <span className="ml-auto w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0"></span>
+                  )}
                 </button>
 
                 <button

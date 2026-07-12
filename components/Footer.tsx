@@ -168,7 +168,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-cobalt shrink-0" />
-                <span className="font-mono">support@mechitall.com</span>
+                <span className="font-mono">mechitallsupport@gmail.com</span>
               </div>
             </div>
 

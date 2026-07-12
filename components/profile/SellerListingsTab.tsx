@@ -110,9 +110,15 @@ export default function SellerListingsTab(props: any) {
                           return (
                             <div key={item.id} className="flex justify-between items-center p-3 border border-zinc-700/60 bg-zinc-900/50 rounded text-xs font-medium gap-3">
                               <div className="flex items-center gap-3 min-w-0 flex-1">
-                                <div className="w-8 h-8 rounded border border-zinc-700/60 bg-zinc-800 text-zinc-500 flex items-center justify-center shrink-0">
-                                  <Cpu className="w-4 h-4 text-zinc-400" />
-                                </div>
+                                {item.image_data ? (
+                                  <div className="w-8 h-8 rounded border border-zinc-700/60 overflow-hidden bg-zinc-800 shrink-0">
+                                    <img src={item.image_data} alt={item.title} className="w-full h-full object-cover" />
+                                  </div>
+                                ) : (
+                                  <div className="w-8 h-8 rounded border border-zinc-700/60 bg-zinc-800 text-zinc-500 flex items-center justify-center shrink-0">
+                                    <Cpu className="w-4 h-4 text-zinc-400" />
+                                  </div>
+                                )}
                                 <div className="space-y-0.5 min-w-0 flex-1">
                                   <span className="block text-[8px] font-mono text-zinc-500 uppercase tracking-wider truncate">{item.process_type}</span>
                                   <span className="block font-semibold text-white truncate">{item.title}</span>

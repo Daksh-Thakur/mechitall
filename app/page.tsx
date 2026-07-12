@@ -96,10 +96,17 @@ export default function Home() {
         setAllServices(servicesData || []);
         setDisplayedParts(shuffle(mappedParts).slice(0, 4));
         setDisplayedServices(shuffle(servicesData || []).slice(0, 4));
-        setDisplayedMachining((machiningData || []).map((s: any) => ({
-          ...s,
-          seller_name: s.profiles?.full_name || 'Expert Maker'
-        })));
+        setDisplayedMachining((machiningData || []).map((s: any) => {
+          const matchedService = (servicesData || []).find(
+            (gs: any) => gs.title === s.title && gs.seller_profile_id === s.seller_profile_id
+          );
+          return {
+            ...s,
+            seller_name: s.profiles?.full_name || 'Expert Maker',
+            image_data: matchedService?.image_data || undefined,
+            images_data: matchedService?.images_data || [],
+          };
+        }));
       } catch (err) {
         console.error('Error loading data:', err);
       } finally {

@@ -48,10 +48,14 @@ export default function ServiceCard({ service, onGetQuote }: ServiceCardProps) {
         }}
       >
         {/* Visual representation / icon header */}
-        <div className="h-40 bg-zinc-900/50 overflow-hidden relative border-b border-zinc-850">
-          <div className={`w-full h-full bg-gradient-to-br ${gradientClass} group-hover:scale-105 transition-transform duration-500 flex items-center justify-center`}>
-            <ProcessIcon className="w-12 h-12 text-white opacity-25 group-hover:rotate-12 transition-transform duration-500" />
-          </div>
+        <div className="h-40 bg-zinc-900/50 overflow-hidden relative border-b border-zinc-850 flex items-center justify-center shrink-0">
+          {service.image_data ? (
+            <img src={service.image_data} alt={service.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          ) : (
+            <div className={`w-full h-full bg-gradient-to-br ${gradientClass} group-hover:scale-105 transition-transform duration-500 flex items-center justify-center`}>
+              <ProcessIcon className="w-12 h-12 text-white opacity-25 group-hover:rotate-12 transition-transform duration-500" />
+            </div>
+          )}
           {/* Lead time badge */}
           <div className="absolute top-2 right-2">
             <span className="bg-zinc-900 text-zinc-400 text-[9px] font-mono px-1.5 py-0.5 uppercase tracking-wider flex items-center gap-1 font-bold border border-zinc-750 rounded">
@@ -125,10 +129,14 @@ export default function ServiceCard({ service, onGetQuote }: ServiceCardProps) {
         className="md:hidden flex bg-zinc-800 border border-zinc-700/60 overflow-hidden cursor-pointer product-card-mobile active:scale-[0.98] transition-transform w-full rounded-xl"
       >
         {/* Left: visual 1/3 */}
-        <div className="w-1/3 relative bg-zinc-900/50 border-r border-zinc-800 shrink-0">
-          <div className={`w-full h-full min-h-[120px] bg-gradient-to-br ${gradientClass} flex items-center justify-center`}>
-            <ProcessIcon className="w-8 h-8 text-white opacity-20" />
-          </div>
+        <div className="w-1/3 relative bg-zinc-900/50 border-r border-zinc-800 shrink-0 flex items-center justify-center">
+          {service.image_data ? (
+            <img src={service.image_data} alt={service.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className={`w-full h-full min-h-[120px] bg-gradient-to-br ${gradientClass} flex items-center justify-center`}>
+              <ProcessIcon className="w-8 h-8 text-white opacity-20" />
+            </div>
+          )}
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             <span className="bg-zinc-900 text-zinc-400 border border-zinc-750 text-[8px] font-mono px-1.5 py-0.5 uppercase tracking-wider rounded">

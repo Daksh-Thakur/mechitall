@@ -59,7 +59,7 @@ export function OrganizationSchema({
       '@type': 'ContactPoint',
       telephone: '+91-120-490-8800',
       contactType: 'customer service',
-      email: 'support@mechitall.com',
+      email: 'mechitallsupport@gmail.com',
       areaServed: 'IN',
       availableLanguage: ['en', 'hi']
     }

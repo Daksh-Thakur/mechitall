@@ -55,7 +55,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <span className="block text-[10px] font-bold text-white uppercase font-mono">Email Address</span>
-                  <span className="text-xs text-zinc-400 font-mono">support@mechitall.com</span>
+                  <span className="text-xs text-zinc-400 font-mono">mechitallsupport@gmail.com</span>
                 </div>
               </div>
 
