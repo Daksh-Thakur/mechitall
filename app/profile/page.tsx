@@ -20,7 +20,8 @@ import {
   getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode,
   submitSellerKYC, getSellerDashboardData, submitProductListing, getSellerOrders,
   updateSellerOrderStatus, deleteSellerCapability, submitServiceListing, deleteSellerProduct,
-  deleteSellerService, Profile, BoltsTransaction, confirmDeliveryAndClaimBolts, simulateOrderStatus, updateProfilePhoto
+  deleteSellerService, Profile, BoltsTransaction, confirmDeliveryAndClaimBolts, simulateOrderStatus, updateProfilePhoto,
+  updateProductListing, updateSellerCapability
 } from '@/app/actions/rewards';
 import { initiatePayUExistingOrderPayment, disputeOrder } from '@/app/actions/orders';
 import Navbar from '@/components/Navbar';
@@ -169,6 +170,8 @@ export default function ProfilePage() {
   const [togglingSeller, setTogglingSeller] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [showAddListingModal, setShowAddListingModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [editingService, setEditingService] = useState<any | null>(null);
   const [listingType, setListingType] = useState<'Product' | 'Service'>('Product');
   const [selectedCategory, setSelectedCategory] = useState<string>('Actuators');
   const [selectedProcessType, setSelectedProcessType] = useState<string>('CNC Machining');
@@ -237,6 +240,8 @@ export default function ProfilePage() {
   const [localServices, setLocalServices] = useState<any[]>([]);
 
   const openAddListingModal = () => {
+    setEditingProduct(null);
+    setEditingService(null);
     setListingType('Product');
     setSelectedCategory('Actuators');
     setSelectedProcessType('CNC Machining');
@@ -246,6 +251,54 @@ export default function ProfilePage() {
     setDatasheetFile(null);
     setCadFile(null);
     setCustomSpecs([]);
+    setShowAddListingModal(true);
+  };
+
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product);
+    setEditingService(null);
+    setListingType('Product');
+    const standardCategories = ['Actuators', 'Sensors', 'Controllers', 'Mechanical', 'Power Supplies', 'Optics'];
+    if (product.category && !standardCategories.includes(product.category)) {
+      setSelectedCategory('Other');
+    } else {
+      setSelectedCategory(product.category || 'Actuators');
+    }
+
+    setEnableBulkPricing(Array.isArray(product.bulk_pricing) && product.bulk_pricing.length > 0);
+    setImagePreviews(product.images_data || (product.image_data ? [product.image_data] : []));
+    setImageFileNames(new Array(product.images_data?.length || (product.image_data ? 1 : 0)).fill('Product Image'));
+    setDatasheetFile(product.datasheet_url ? { name: 'Technical Datasheet.pdf', size: 'Unknown Size', dataUrl: product.datasheet_url } : null);
+    setCadFile(product.cad_file ? { name: '3D CAD Model.step', size: 'Unknown Size', dataUrl: product.cad_file } : null);
+    
+    if (product.specs) {
+      const specsList = Object.entries(product.specs).map(([key, value]) => ({
+        id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(),
+        key,
+        value: String(value)
+      }));
+      setCustomSpecs(specsList);
+    } else {
+      setCustomSpecs([]);
+    }
+
+    setShowAddListingModal(true);
+  };
+
+  const handleEditService = (service: any) => {
+    setEditingService(service);
+    setEditingProduct(null);
+    setListingType('Service');
+    const standardProcesses = ['CNC Machining', '3D Printing', 'Sheet Metal', 'Laser Cutting'];
+    if (service.process_type && !standardProcesses.includes(service.process_type)) {
+      setSelectedProcessType('Other');
+    } else {
+      setSelectedProcessType(service.process_type || 'CNC Machining');
+    }
+
+    setImagePreviews(service.images_data || (service.image_data ? [service.image_data] : []));
+    setImageFileNames(new Array(service.images_data?.length || (service.image_data ? 1 : 0)).fill('Service Image'));
+    
     setShowAddListingModal(true);
   };
 
@@ -679,7 +732,7 @@ export default function ProfilePage() {
   const isMasterBuilder = profile.loyalty_tier === 'Master Builder';
   const boltsProgressPercent = Math.min(100, (profile.wallet_balance / 500) * 100);
 
-  const tabProps = { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, cadFile, checkUnreadChats, customSpecs, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleProfilePhotoUpload, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasTimedOut, imageFileNames, imagePreviews, isGuest, isPending, isUpdatingName, isUpdatingPhoto, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, openAddListingModal, orders, processFile, profile, publishingListing, router, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, startTransition, startTransitionStatus, supabase, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updatingOrderId, uploadingOrderId, wishlist, boltsProgressPercent, isMasterBuilder };
+  const tabProps = { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, cadFile, checkUnreadChats, customSpecs, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleProfilePhotoUpload, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasTimedOut, imageFileNames, imagePreviews, isGuest, isPending, isUpdatingName, isUpdatingPhoto, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, openAddListingModal, handleEditProduct, handleEditService, orders, processFile, profile, publishingListing, router, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, startTransition, startTransitionStatus, supabase, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updatingOrderId, uploadingOrderId, wishlist, boltsProgressPercent, isMasterBuilder };
   return (
     <div className="flex flex-col min-h-screen bg-zinc-900 font-sans">
       <Navbar />
@@ -1038,14 +1091,18 @@ export default function ProfilePage() {
             <div className="flex justify-between items-start pb-3 border-b border-zinc-700/60">
               <div className="space-y-0.5">
                 <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Seller Workspace</span>
-                <h3 className="text-base font-bold text-white uppercase font-['Space_Grotesk']">Create Technical Listing</h3>
+                <h3 className="text-base font-bold text-white uppercase font-['Space_Grotesk']">
+                  {editingProduct ? 'Edit Technical Product' : editingService ? 'Edit Technical Service' : 'Create Technical Listing'}
+                </h3>
               </div>
               <button onClick={() => setShowAddListingModal(false)} className="p-1.5 rounded hover:bg-zinc-900 border border-zinc-700/60 text-zinc-500 cursor-pointer">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <form onSubmit={async (e) => {
+            <form
+              key={editingProduct ? editingProduct.id : editingService ? editingService.id : 'new'}
+              onSubmit={async (e) => {
               e.preventDefault();
               if (publishingListing) return;
               setPublishingListing(true);
@@ -1063,8 +1120,7 @@ export default function ProfilePage() {
                   const category = selectedCategory === 'Other' ? target.customCategory.value.trim() : selectedCategory;
                   const stock = Number(target.stock.value) || 0;
 
-                  const newProduct = {
-                    id: crypto.randomUUID ? crypto.randomUUID() : 'prod-' + Math.random().toString(36).substr(2, 9),
+                  const productData = {
                     part_number: sku,
                     title: title,
                     category: category,
@@ -1093,36 +1149,38 @@ export default function ProfilePage() {
                     }
                   };
 
-                  const updatedProds = [...localProducts, newProduct];
-                  setLocalProducts(updatedProds);
-                  localStorage.setItem('local_listed_products', JSON.stringify(updatedProds));
+                  if (editingProduct) {
+                    try {
+                      await updateProductListing(editingProduct.id, productData);
+                      showToast(`Technical Product "${title}" (${sku}) updated successfully!`, 'success');
+                      await fetchSellerData();
+                    } catch (dbErr: any) {
+                      console.error('DB update failed:', dbErr?.message);
+                      showToast(`Product update failed: ${dbErr?.message || 'Unknown'}`, 'error');
+                    }
+                  } else {
+                    const newProduct = {
+                      id: crypto.randomUUID ? crypto.randomUUID() : 'prod-' + Math.random().toString(36).substr(2, 9),
+                      ...productData
+                    };
 
-                  // Submit to database via server action (handles auth + seller_profile_id)
-                  try {
-                    await submitProductListing({
-                      part_number: sku,
-                      title: title,
-                      category: category,
-                      price: price,
-                      stock: stock,
-                      description: desc,
-                      gradient_class: gradient,
-                      image_data: imagePreviews[0] || undefined,
-                      images_data: imagePreviews || [],
-                      specs: newProduct.specs,
-                      bulk_pricing: newProduct.bulk_pricing,
-                      datasheet_url: newProduct.datasheet_url,
-                      cad_file: newProduct.cad_file,
-                      extended_specs: newProduct.extended_specs,
-                    });
-                    // Remove from localStorage once DB confirmed
-                    const withoutNew = updatedProds.filter((p: any) => p.id !== newProduct.id);
-                    setLocalProducts(withoutNew);
-                    localStorage.setItem('local_listed_products', JSON.stringify(withoutNew));
-                    showToast(`Technical Product "${title}" (${sku}) published and live in marketplace!`, 'success');
-                  } catch (dbErr: any) {
-                    console.warn('DB insert failed, product saved locally:', dbErr?.message);
-                    showToast(`Product saved locally. DB error: ${dbErr?.message || 'Unknown'}`, 'error');
+                    const updatedProds = [...localProducts, newProduct];
+                    setLocalProducts(updatedProds);
+                    localStorage.setItem('local_listed_products', JSON.stringify(updatedProds));
+
+                    // Submit to database via server action (handles auth + seller_profile_id)
+                    try {
+                      await submitProductListing(productData);
+                      // Remove from localStorage once DB confirmed
+                      const withoutNew = updatedProds.filter((p: any) => p.id !== newProduct.id);
+                      setLocalProducts(withoutNew);
+                      localStorage.setItem('local_listed_products', JSON.stringify(withoutNew));
+                      showToast(`Technical Product "${title}" (${sku}) published and live in marketplace!`, 'success');
+                      await fetchSellerData();
+                    } catch (dbErr: any) {
+                      console.warn('DB insert failed, product saved locally:', dbErr?.message);
+                      showToast(`Product saved locally. DB error: ${dbErr?.message || 'Unknown'}`, 'error');
+                    }
                   }
                 } else {
                   const processType = selectedProcessType === 'Other'
@@ -1132,57 +1190,76 @@ export default function ProfilePage() {
                   const materials = target.materials.value.trim();
                   const finishes = target.finishes.value.trim();
 
-                  const newService = {
-                    id: crypto.randomUUID ? crypto.randomUUID() : 'serv-' + Math.random().toString(36).substr(2, 9),
-                    title: title,
-                    category: processType,
-                    base_price: price,
-                    lead_time: `${leadTime} Lead`,
-                    features: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
-                    gradient_class: gradient,
-                    image_data: imagePreviews[0] || undefined,
-                    images_data: imagePreviews || []
-                  };
-
-                  const updatedServs = [...localServices, newService];
-                  setLocalServices(updatedServs);
-                  localStorage.setItem('local_listed_services', JSON.stringify(updatedServs));
-
-                  // 1. Submit general service listing via Server Action
-                  try {
-                    await submitServiceListing({
-                      title: newService.title,
-                      category: newService.category,
-                      description: desc,
-                      base_price: newService.base_price,
-                      lead_time: newService.lead_time,
-                      features: newService.features,
-                      gradient_class: newService.gradient_class,
-                      image_data: newService.image_data,
-                      images_data: newService.images_data
-                    });
-                  } catch (err) {
-                    console.warn('Failed to submit general service catalog listing:', err);
-                  }
-
-                  // 2. Submit custom machining capability via Server Action
-                  try {
-                    await listMachiningService(profile.id, {
+                  if (editingService) {
+                    try {
+                      await updateSellerCapability(editingService.id, {
+                        title: title,
+                        processType: processType as any,
+                        description: desc,
+                        basePrice: price,
+                        leadTime: leadTime,
+                        materials: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
+                        finishes: finishes.split(',').map((s: string) => s.trim()).filter(Boolean),
+                      });
+                      showToast(`Technical Service "${title}" (${processType}) updated successfully!`, 'success');
+                      await fetchSellerData();
+                    } catch (dbErr: any) {
+                      console.error('DB update failed:', dbErr?.message);
+                      showToast(`Service update failed: ${dbErr?.message || 'Unknown'}`, 'error');
+                    }
+                  } else {
+                    const newService = {
+                      id: crypto.randomUUID ? crypto.randomUUID() : 'serv-' + Math.random().toString(36).substr(2, 9),
                       title: title,
-                      processType: processType as any,
-                      description: desc,
-                      basePrice: price,
-                      leadTime: leadTime,
-                      materials: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
-                      finishes: finishes.split(',').map((s: string) => s.trim()).filter(Boolean),
-                    });
-                    // Refresh seller registry
-                    await fetchSellerData();
-                  } catch (err) {
-                    console.warn('Failed to submit custom machining capability:', err);
-                  }
+                      category: processType,
+                      base_price: price,
+                      lead_time: `${leadTime} Lead`,
+                      features: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
+                      gradient_class: gradient,
+                      image_data: imagePreviews[0] || undefined,
+                      images_data: imagePreviews || []
+                    };
 
-                  showToast(`Technical Service "${title}" (${processType}) published successfully!`, 'success');
+                    const updatedServs = [...localServices, newService];
+                    setLocalServices(updatedServs);
+                    localStorage.setItem('local_listed_services', JSON.stringify(updatedServs));
+
+                    // 1. Submit general service listing via Server Action
+                    try {
+                      await submitServiceListing({
+                        title: newService.title,
+                        category: newService.category,
+                        description: desc,
+                        base_price: newService.base_price,
+                        lead_time: newService.lead_time,
+                        features: newService.features,
+                        gradient_class: newService.gradient_class,
+                        image_data: newService.image_data,
+                        images_data: newService.images_data
+                      });
+                    } catch (err) {
+                      console.warn('Failed to submit general service catalog listing:', err);
+                    }
+
+                    // 2. Submit custom machining capability via Server Action
+                    try {
+                      await listMachiningService(profile.id, {
+                        title: title,
+                        processType: processType as any,
+                        description: desc,
+                        basePrice: price,
+                        leadTime: leadTime,
+                        materials: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
+                        finishes: finishes.split(',').map((s: string) => s.trim()).filter(Boolean),
+                      });
+                      // Refresh seller registry
+                      await fetchSellerData();
+                    } catch (err) {
+                      console.warn('Failed to submit custom machining capability:', err);
+                    }
+
+                    showToast(`Technical Service "${title}" (${processType}) published successfully!`, 'success');
+                  }
                 }
 
                 setImagePreviews([]);
@@ -1210,16 +1287,16 @@ export default function ProfilePage() {
                     </select>
                   </div>
 
-                  {listingType === 'Product' ? (
+                   {listingType === 'Product' ? (
                     <>
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase">Part Number / SKU *</label>
-                        <input required type="text" name="sku" placeholder="e.g. ACT-NEMA34-CL" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                        <input required type="text" name="sku" defaultValue={editingProduct?.part_number || editingProduct?.sku || ''} placeholder="e.g. ACT-NEMA34-CL" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase">Title / Name *</label>
-                        <input required type="text" name="title" placeholder="e.g. NEMA 34 Stepper Motor" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                        <input required type="text" name="title" defaultValue={editingProduct?.title || ''} placeholder="e.g. NEMA 34 Stepper Motor" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
@@ -1242,20 +1319,20 @@ export default function ProfilePage() {
                         </div>
                         <div className="space-y-1">
                           <label className="block text-[10px] font-bold text-zinc-500 uppercase">Stock Qty *</label>
-                          <input required type="number" name="stock" placeholder="e.g. 10" min={0} className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                          <input required type="number" name="stock" defaultValue={editingProduct?.stock !== undefined ? editingProduct.stock : ''} placeholder="e.g. 10" min={0} className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                         </div>
                       </div>
 
                       {selectedCategory === 'Other' && (
                         <div className="space-y-1 animate-slide-in">
                           <label className="block text-[10px] font-bold text-zinc-500 uppercase">Enter Custom Category *</label>
-                          <input required type="text" name="customCategory" placeholder="e.g. Pneumatics" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                          <input required type="text" name="customCategory" defaultValue={editingProduct?.category || ''} placeholder="e.g. Pneumatics" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                         </div>
                       )}
 
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase">Unit Price (INR) *</label>
-                        <input required type="number" name="price" placeholder="e.g. 24500" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                        <input required type="number" name="price" defaultValue={editingProduct?.price !== undefined ? editingProduct.price : ''} placeholder="e.g. 24500" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       {/* Technical Specifications */}
@@ -1310,7 +1387,7 @@ export default function ProfilePage() {
                     <>
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase">Service Title *</label>
-                        <input required type="text" name="title" placeholder="e.g. 5-Axis CNC Machining" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                        <input required type="text" name="title" defaultValue={editingService?.title || ''} placeholder="e.g. 5-Axis CNC Machining" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       <div className="space-y-1">
@@ -1332,18 +1409,18 @@ export default function ProfilePage() {
                       {selectedProcessType === 'Other' && (
                         <div className="space-y-1 animate-slide-in">
                           <label className="block text-[10px] font-bold text-zinc-500 uppercase">Enter Custom Process Type *</label>
-                          <input required type="text" name="customProcessType" placeholder="e.g. Waterjet Cutting" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                          <input required type="text" name="customProcessType" defaultValue={editingService?.process_type || ''} placeholder="e.g. Waterjet Cutting" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                         </div>
                       )}
 
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase">Base Cost / Setup Fee (INR) *</label>
-                        <input required type="number" name="price" placeholder="e.g. 7500" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                        <input required type="number" name="price" defaultValue={editingService?.base_price !== undefined ? editingService.base_price : ''} placeholder="e.g. 7500" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase">Estimated Lead Time *</label>
-                        <input required type="text" name="leadTime" placeholder="e.g. 3-5 Days" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                        <input required type="text" name="leadTime" defaultValue={editingService?.lead_time || ''} placeholder="e.g. 3-5 Days" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
                     </>
                   )}
@@ -1484,11 +1561,11 @@ export default function ProfilePage() {
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <label className="block text-[10px] font-bold text-zinc-500 uppercase">Ingress Rating</label>
-                          <input type="text" name="ipRating" placeholder="e.g. IP65" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                          <input type="text" name="ipRating" defaultValue={editingProduct?.extended_specs?.ingressProtection || ''} placeholder="e.g. IP65" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                         </div>
                         <div className="space-y-1">
                           <label className="block text-[10px] font-bold text-zinc-500 uppercase">MTBF Lifespan</label>
-                          <input type="text" name="mtbf" placeholder="e.g. 50,000 Hours" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                          <input type="text" name="mtbf" defaultValue={editingProduct?.extended_specs?.mtbf || ''} placeholder="e.g. 50,000 Hours" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                         </div>
                       </div>
 
@@ -1510,11 +1587,11 @@ export default function ProfilePage() {
                           <div className="space-y-2 border border-zinc-700/60 p-2.5 rounded bg-zinc-900 animate-slide-in">
                             <div className="flex gap-2 items-center">
                               <span className="text-[10px] text-zinc-500 font-bold font-mono w-[60px]">10+ Qty:</span>
-                              <input required type="number" name="tierPrice1" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none" />
+                              <input required type="number" name="tierPrice1" defaultValue={editingProduct?.bulk_pricing?.[0]?.pricePerUnit || ''} placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none" />
                             </div>
                             <div className="flex gap-2 items-center">
                               <span className="text-[10px] text-zinc-500 font-bold font-mono w-[60px]">50+ Qty:</span>
-                              <input required type="number" name="tierPrice2" placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none" />
+                              <input required type="number" name="tierPrice2" defaultValue={editingProduct?.bulk_pricing?.[1]?.pricePerUnit || ''} placeholder="Discount price (INR)" className="flex-1 text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none" />
                             </div>
                           </div>
                         )}
@@ -1524,12 +1601,12 @@ export default function ProfilePage() {
                     <>
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase">Material Capabilities (Comma-separated) *</label>
-                        <input required type="text" name="materials" placeholder="e.g. Aluminum 6061, Brass, Steel 1018, Delrin" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                        <input required type="text" name="materials" defaultValue={editingService?.material_capabilities ? editingService.material_capabilities.join(', ') : ''} placeholder="e.g. Aluminum 6061, Brass, Steel 1018, Delrin" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-zinc-500 uppercase">Finishing Options (Comma-separated) *</label>
-                        <input required type="text" name="finishes" placeholder="e.g. Anodized (Black/Clear), Bead Blasted, Raw" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
+                        <input required type="text" name="finishes" defaultValue={editingService?.finish_options ? editingService.finish_options.join(', ') : ''} placeholder="e.g. Anodized (Black/Clear), Bead Blasted, Raw" className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4]" />
                       </div>
 
                       {/* Image Upload Area for Service */}
@@ -1584,7 +1661,7 @@ export default function ProfilePage() {
 
                   <div className="space-y-1">
                     <label className="block text-[10px] font-bold text-zinc-500 uppercase">Description / Scope of Service</label>
-                    <textarea rows={listingType === 'Service' ? 5 : 2} name="description" placeholder="Specify technical details, machine tools, dimensional limits..." className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4] resize-none" />
+                    <textarea rows={listingType === 'Service' ? 5 : 2} name="description" defaultValue={editingProduct?.description || editingService?.description || ''} placeholder="Specify technical details, machine tools, dimensional limits..." className="w-full text-xs p-2 border border-zinc-700/60 rounded bg-zinc-800 text-white focus:outline-none focus:border-[#06b6d4] resize-none" />
                   </div>
                 </div>
 
@@ -1599,10 +1676,10 @@ export default function ProfilePage() {
                   {publishingListing ? (
                     <>
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Publishing...</span>
+                      <span>{editingProduct || editingService ? 'Saving...' : 'Publishing...'}</span>
                     </>
                   ) : (
-                    <span>Publish</span>
+                    <span>{editingProduct || editingService ? 'Save Changes' : 'Publish'}</span>
                   )}
                 </button>
                 <button type="button" onClick={() => setShowAddListingModal(false)} className="flex-1 border border-zinc-700/60 hover:bg-zinc-900 text-zinc-500 py-2.5 rounded text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center">

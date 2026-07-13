@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
 export default function SellerListingsTab(props: any) {
-    const { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, base64String, boltsProgressPercent, cadFile, channel, checkUnreadChats, customSpecs, data, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, file, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasNewMsg, hasNewStatus, hasTimedOut, imageFileNames, imagePreviews, isActive, isGuest, isMasterBuilder, isPending, isUpdatingName, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, mapped, msg, nextState, openAddListingModal, orderId, orders, params, paymentStatus, processFile, profile, publishingListing, reader, reason, res, response, router, sOrders, seen, seenChats, seenChatsStr, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, sizeStr, startTransition, startTransitionStatus, storedProds, storedServs, supabase, tabParam, timer, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updated, updatingOrderId, uploadingOrderId, wishlist } = props;
+    const { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, base64String, boltsProgressPercent, cadFile, channel, checkUnreadChats, customSpecs, data, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, file, handleEditProduct, handleEditService, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasNewMsg, hasNewStatus, hasTimedOut, imageFileNames, imagePreviews, isActive, isGuest, isMasterBuilder, isPending, isUpdatingName, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, mapped, msg, nextState, openAddListingModal, orderId, orders, params, paymentStatus, processFile, profile, publishingListing, reader, reason, res, response, router, sOrders, seen, seenChats, seenChatsStr, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, sizeStr, startTransition, startTransitionStatus, storedProds, storedServs, supabase, tabParam, timer, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updated, updatingOrderId, uploadingOrderId, wishlist } = props;
   return (
     <>
       {/* Replace props with actual destructured props below */}
@@ -53,9 +53,21 @@ export default function SellerListingsTab(props: any) {
                       ) : (
                         sellerData.products.map((item) => {
                           const isDeleting = deletingProductId === item.id;
+                          const isLowStock = item.stock < 5;
                           return (
-                            <div key={item.id} className="flex justify-between items-center p-3 border border-zinc-700/60 bg-zinc-900/50 rounded text-xs font-medium gap-3">
-                              <div className="flex gap-3 items-center min-w-0 flex-1">
+                            <div 
+                              key={item.id} 
+                              className={`flex justify-between items-center p-3 border rounded text-xs font-medium gap-3 transition-all ${
+                                isLowStock 
+                                  ? 'border-amber-500/50 bg-amber-500/5 ring-1 ring-amber-500/10 hover:border-amber-500' 
+                                  : 'border-zinc-700/60 bg-zinc-900/50 hover:border-zinc-600'
+                              }`}
+                            >
+                              <div
+                                onClick={() => handleEditProduct && handleEditProduct(item)}
+                                className="flex gap-3 items-center min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                                title="Click to edit product info"
+                              >
                                 {item.image_data || item.imageData ? (
                                   <img src={item.image_data || item.imageData} alt={item.title} className="w-8 h-8 object-cover rounded border bg-zinc-800 shrink-0" />
                                 ) : (
@@ -71,7 +83,9 @@ export default function SellerListingsTab(props: any) {
                               <div className="text-right shrink-0 flex items-center gap-4">
                                 <div>
                                   <span className="block font-bold text-coral">₹{Number(item.price).toLocaleString('en-IN')}</span>
-                                  <span className="block text-[8px] font-mono font-bold text-zinc-500 uppercase">{item.stock} units</span>
+                                  <span className={`block text-[8px] font-mono font-bold uppercase tracking-wider ${isLowStock ? 'text-amber-500 animate-pulse' : 'text-zinc-500'}`}>
+                                    {item.stock} units {isLowStock && '(LOW)'}
+                                  </span>
                                 </div>
                                 <button
                                   onClick={() => handleDeleteProduct(item.id)}
@@ -109,7 +123,11 @@ export default function SellerListingsTab(props: any) {
                           const isDeleting = deletingServiceId === item.id;
                           return (
                             <div key={item.id} className="flex justify-between items-center p-3 border border-zinc-700/60 bg-zinc-900/50 rounded text-xs font-medium gap-3">
-                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div
+                                onClick={() => handleEditService && handleEditService(item)}
+                                className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                                title="Click to edit service capability info"
+                              >
                                 {item.image_data ? (
                                   <div className="w-8 h-8 rounded border border-zinc-700/60 overflow-hidden bg-zinc-800 shrink-0">
                                     <img src={item.image_data} alt={item.title} className="w-full h-full object-cover" />

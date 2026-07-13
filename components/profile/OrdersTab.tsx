@@ -86,9 +86,21 @@ export default function OrdersTab(props: any) {
                       return (
                         <div
                           key={ord.id}
-                          onClick={() => setSelectedOrder(ord)}
-                          className={`bg-zinc-800 border rounded-xl p-4 shadow-sm space-y-3 cursor-pointer transition-all ${isSelected ? 'border-cobalt ring-2 ring-cobalt/25' : 'border-zinc-700/60 hover:border-slate-text-secondary/20'
-                            }`}
+                          onClick={() => {
+                            if (ord.rfq_id) {
+                              setActiveChatRfqId && setActiveChatRfqId(ord.rfq_id);
+                              setActiveTab && setActiveTab('chats');
+                            } else {
+                              setSelectedOrder(ord);
+                            }
+                          }}
+                          className={`bg-zinc-800 border rounded-xl p-4 shadow-sm space-y-3 cursor-pointer transition-all ${
+                            ord.rfq_id 
+                              ? 'border-zinc-700/60 hover:border-[#00D0F5]/50 hover:shadow-md' 
+                              : isSelected 
+                                ? 'border-cobalt ring-2 ring-cobalt/25' 
+                                : 'border-zinc-700/60 hover:border-slate-text-secondary/20'
+                          }`}
                         >
                           <div className="flex justify-between items-start">
                             <span className="font-mono text-[10px] font-black text-white">{ord.id}</span>

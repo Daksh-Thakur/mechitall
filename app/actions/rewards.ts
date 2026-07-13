@@ -883,6 +883,21 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     machQuotes = data || [];
   }
 
+  const submittedRfqIds = new Set<string>();
+  if (myQuotes) {
+    myQuotes.forEach((q: any) => {
+      if (q.rfq_id) submittedRfqIds.add(q.rfq_id);
+    });
+  }
+  if (machQuotes) {
+    machQuotes.forEach((mq: any) => {
+      if (mq.rfq_id) submittedRfqIds.add(mq.rfq_id);
+    });
+  }
+  const filteredOpenRfqs = (openRfqs || []).filter(
+    (rfq: any) => !submittedRfqIds.has(rfq.id)
+  );
+
   // Map order records into "activeJobs" if they are Processing or Shipped
   const activeJobs = (orders || [])
     .filter((o: any) => o.status === 'Processing' || o.status === 'Shipped')
@@ -968,8 +983,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   const escrowBalance = (orders || [])
     .filter((o: any) => o.status === 'Processing' || o.status === 'Shipped')
     .reduce((sum: number, o: any) => {
-      const isCustom = o.id.startsWith('RFQ-');
-      const feeRate = isCustom ? 0.08 : 0.05;
+      const feeRate = 0.01;
       return sum + Number(o.total_amount) * (1 - feeRate);
     }, 0);
 
@@ -977,8 +991,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   const clearedEarnings = (orders || [])
     .filter((o: any) => o.status === 'Completed' || o.status === 'Delivered')
     .reduce((sum: number, o: any) => {
-      const isCustom = o.id.startsWith('RFQ-');
-      const feeRate = isCustom ? 0.08 : 0.05;
+      const feeRate = 0.01;
       return sum + Number(o.total_amount) * (1 - feeRate);
     }, 0);
 
@@ -986,8 +999,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   const monthlyEarnings = (orders || [])
     .filter((o: any) => o.status !== 'Cancelled' && o.status !== 'Rejected')
     .reduce((sum: number, o: any) => {
-      const isCustom = o.id.startsWith('RFQ-');
-      const feeRate = isCustom ? 0.08 : 0.05;
+      const feeRate = 0.01;
       return sum + Number(o.total_amount) * (1 - feeRate);
     }, 0);
 
@@ -999,8 +1011,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   [...activeJobs, ...completedJobs].forEach(job => {
     const jobDate = new Date(job.created_at);
     const diffDays = Math.floor((now.getTime() - jobDate.getTime()) / msInDay);
-    const isCustom = job.id.startsWith('RFQ-');
-    const feeRate = isCustom ? 0.08 : 0.05;
+    const feeRate = 0.01;
     const netCost = Number(job.total_cost) * (1 - feeRate);
 
     if (diffDays >= 0 && diffDays < 7) {
@@ -1060,7 +1071,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   });
 
   return {
-    openRfqs: openRfqs || [],
+    openRfqs: filteredOpenRfqs,
     myQuotes: myQuotes || [],
     activeJobs: activeJobs || [],
     completedJobs: completedJobs || [],
@@ -1088,7 +1099,11 @@ export async function getSellerOrders(sellerProfileId: string) {
       *,
       profiles:profile_id (
         full_name,
-        email
+        email,
+        business_address
+      ),
+      order_items (
+        *
       )
     `)
     .eq('seller_id', sellerProfileId)
@@ -1103,6 +1118,8 @@ export async function getSellerOrders(sellerProfileId: string) {
     ...o,
     buyer_name: o.profiles?.full_name || 'Guest Buyer',
     buyer_email: o.profiles?.email || '',
+    buyer_address: o.profiles?.business_address || '12, Industrial Development Block C, Peenya Phase 1, Bangalore, Karnataka - 560508',
+    items: o.order_items || [],
   }));
 }
 
@@ -1151,6 +1168,62 @@ export async function deleteSellerCapability(serviceId: string, sellerProfileId:
   }
 
   return { success: true };
+}
+
+/**
+ * Updates a capability (custom machining service) listed by a seller.
+ */
+export async function updateSellerCapability(
+  serviceId: string,
+  data: {
+    title: string;
+    processType: 'CNC Machining' | '3D Printing' | 'Sheet Metal' | 'Laser Cutting';
+    description: string;
+    basePrice: number;
+    leadTime: string;
+    materials: string[];
+    finishes: string[];
+  }
+) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  // Must be authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be signed in to update a service capability.');
+
+  // Look up the seller's profile
+  const { data: sellerProfile } = await supabase
+    .from('profiles')
+    .select('id, is_seller')
+    .eq('user_id', user.id)
+    .single();
+
+  if (!sellerProfile) throw new Error('Seller profile not found.');
+  if (!sellerProfile.is_seller) throw new Error('You must be a verified seller.');
+
+  const { data: updatedService, error } = await supabase
+    .from('machining_services')
+    .update({
+      title: data.title,
+      process_type: data.processType,
+      description: data.description,
+      base_price: data.basePrice,
+      lead_time: data.leadTime,
+      material_capabilities: data.materials,
+      finish_options: data.finishes,
+    })
+    .eq('id', serviceId)
+    .eq('seller_profile_id', sellerProfile.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Capability update failed:', error.message);
+    throw new Error(`Failed to update capability: ${error.message}`);
+  }
+
+  return updatedService;
 }
 
 /**
@@ -1241,6 +1314,89 @@ export async function deleteSellerService(serviceId: string, sellerProfileId: st
   }
 
   return { success: true };
+}
+
+/**
+ * Updates an existing product listing from a verified seller.
+ */
+export async function updateProductListing(
+  productId: string,
+  productData: {
+    part_number: string;
+    title: string;
+    category: string;
+    price: number;
+    stock: number;
+    description: string;
+    gradient_class: string;
+    image_data?: string;
+    images_data?: string[];
+    specs: Record<string, string>;
+    bulk_pricing: Array<{ minQty: number; pricePerUnit: number }>;
+    datasheet_url: string;
+    cad_file: string;
+    extended_specs: Record<string, string>;
+  }
+) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  // Must be authenticated
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be signed in to update a listing.');
+
+  // Look up the seller's profile
+  const { data: sellerProfile } = await supabase
+    .from('profiles')
+    .select('id, is_seller')
+    .eq('user_id', user.id)
+    .single();
+
+  if (!sellerProfile) throw new Error('Seller profile not found.');
+  if (!sellerProfile.is_seller) throw new Error('You must be a verified seller to update products.');
+
+  const { data: updatedProduct, error } = await supabase
+    .from('products')
+    .update(productData)
+    .eq('id', productId)
+    .eq('seller_profile_id', sellerProfile.id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Product update failed:', error.message);
+    throw new Error(`Failed to update listing: ${error.message}`);
+  }
+
+  return updatedProduct;
+}
+
+/**
+ * Updates the seller's bank account details and IFS code.
+ */
+export async function updatePayoutPreferences(bankAccountNumber: string, ifscCode: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('You must be signed in.');
+
+  const { data: updatedProfile, error } = await supabase
+    .from('profiles')
+    .update({
+      bank_account_number: bankAccountNumber,
+      ifsc_code: ifscCode,
+      updated_at: new Date().toISOString()
+    })
+    .eq('user_id', user.id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update payout preferences: ${error.message}`);
+  }
+
+  return updatedProfile;
 }
 
 

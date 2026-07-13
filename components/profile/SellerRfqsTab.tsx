@@ -18,7 +18,7 @@ export default function SellerRfqsTab(props: any) {
             { label: 'ACTIVE RFQS', value: sellerData ? String(sellerData.openRfqs.length) : '0', icon: FileText, color: 'text-[#00D0F5] bg-[#00D0F5]/10 border-[#00D0F5]/20' },
             { label: 'ACTIVE JOBS', value: sellerData ? String(sellerData.activeJobs.length) : '0', icon: Cpu, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
             { label: 'ESCROW BALANCE', value: sellerData ? `₹${(sellerData.escrowBalance / 1000).toFixed(1)}k` : '₹0', icon: ShieldCheck, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
-            { label: 'CLEARED EARNINGS', value: sellerData ? `₹${(sellerData.clearedEarnings / 100000).toFixed(2)}L` : '₹0.0L', icon: IndianRupee, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
+            { label: 'CLEARED EARNINGS', value: sellerData ? `₹${Number(sellerData.clearedEarnings).toLocaleString('en-IN')}` : '₹0', icon: IndianRupee, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
           ].map((stat, idx) => {
             const StatIcon = stat.icon;
             return (
@@ -43,6 +43,49 @@ export default function SellerRfqsTab(props: any) {
 
           {/* Left Column (8/12) */}
           <div className="lg:w-8/12 space-y-6">
+
+            {/* INVENTORY ALERTS */}
+            {(() => {
+              const lowStockProducts = (sellerData?.products || []).filter((p: any) => p.stock < 5);
+              if (lowStockProducts.length === 0) return null;
+
+              return (
+                <div className="bg-zinc-800/80 border border-amber-500/30 rounded-2xl p-5 shadow-sm space-y-3 ring-1 ring-amber-500/10">
+                  <div className="flex items-center gap-2 pb-2 border-b border-zinc-700/60">
+                    <AlertTriangle className="w-4 h-4 text-amber-500 animate-pulse" />
+                    <h4 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                      Inventory Warning: Low Stock ({lowStockProducts.length})
+                    </h4>
+                  </div>
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 no-scrollbar">
+                    {lowStockProducts.map((prod: any) => (
+                      <div key={prod.id} className="flex justify-between items-center bg-zinc-900/40 border border-zinc-700/40 rounded-xl p-3 text-xs">
+                        <div className="space-y-0.5 min-w-0 flex-1 pr-3">
+                          <span className="block font-bold text-white truncate max-w-[280px]" title={prod.title}>
+                            {prod.title}
+                          </span>
+                          <span className="block text-[8px] font-mono text-zinc-500 uppercase tracking-wider">
+                            SKU: {prod.part_number || prod.sku || prod.id.substring(0, 8)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-right shrink-0">
+                          <div>
+                            <span className="block font-black text-amber-500 font-mono">{prod.stock} left</span>
+                            <span className="block text-[8px] font-mono text-zinc-500 uppercase">Restock Required</span>
+                          </div>
+                          <button
+                            onClick={() => setActiveTab && setActiveTab('seller_listings')}
+                            className="bg-amber-500 hover:bg-amber-600 text-zinc-950 text-[9px] font-mono font-bold uppercase tracking-wider px-2.5 py-1.5 rounded transition-all cursor-pointer shadow flex items-center gap-1"
+                          >
+                            Restock
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* ACTIVE RFQS FOR REVIEW */}
             <div className="bg-zinc-800/80 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
@@ -69,7 +112,11 @@ export default function SellerRfqsTab(props: any) {
                   sellerData.openRfqs.map((rfq, idx) => (
                     <div
                       key={rfq.id}
-                      className="snap-center shrink-0 w-[270px] md:w-auto border border-zinc-700/60 rounded-2xl p-4 flex flex-col justify-between hover:border-zinc-600 transition-colors bg-zinc-900/50 shadow-sm space-y-4"
+                      onClick={() => {
+                        setActiveChatRfqId && setActiveChatRfqId(rfq.id);
+                        setActiveTab && setActiveTab('chats');
+                      }}
+                      className="snap-center shrink-0 w-[270px] md:w-auto border border-zinc-700/60 rounded-2xl p-4 flex flex-col justify-between hover:border-[#00D0F5]/50 hover:shadow-lg transition-all bg-zinc-900/50 shadow-sm space-y-4 cursor-pointer"
                     >
                       <div className="space-y-3">
                         <div className="flex justify-between items-center text-[9px] font-black tracking-wider uppercase">
@@ -94,7 +141,11 @@ export default function SellerRfqsTab(props: any) {
                         </div>
                       </div>
                       <button
-                        onClick={() => setActiveTab('chats')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveChatRfqId && setActiveChatRfqId(rfq.id);
+                          setActiveTab && setActiveTab('chats');
+                        }}
                         className="w-full py-2.5 rounded-xl bg-[#00D0F5] hover:bg-[#00e5ff] text-zinc-950 text-[10px] font-black uppercase tracking-wider cursor-pointer transition-colors flex items-center justify-center gap-1.5"
                       >
                         <span>QUOTE NOW</span>
@@ -132,7 +183,17 @@ export default function SellerRfqsTab(props: any) {
                     const isShipped = job.status === 'Shipped';
                     const progress = isShipped ? 80 : 40;
                     return (
-                      <div key={job.id} className="bg-zinc-900/50 border border-zinc-700/60 rounded-2xl p-4 space-y-4 hover:border-zinc-600 transition-colors shadow-sm">
+                      <div 
+                        key={job.id} 
+                        onClick={() => {
+                          const rfqId = job.rfq_id || job.rfq?.id;
+                          if (rfqId) {
+                            setActiveChatRfqId && setActiveChatRfqId(rfqId);
+                            setActiveTab && setActiveTab('chats');
+                          }
+                        }}
+                        className="bg-zinc-900/50 border border-zinc-700/60 rounded-2xl p-4 space-y-4 hover:border-indigo-500/50 hover:shadow-lg transition-all cursor-pointer shadow-sm"
+                      >
                         <div className="flex justify-between items-start gap-4">
                           <div>
                             <span className="block text-[8px] font-black text-slate-500 font-mono">ORDER-{job.id.substring(0, 8).toUpperCase()}</span>
@@ -159,11 +220,15 @@ export default function SellerRfqsTab(props: any) {
                           </div>
                         </div>
 
-                        {job.rfq?.id && (
+                        {(job.rfq_id || job.rfq?.id) && (
                           <button
-                            onClick={() => {
-                              setActiveChatRfqId(job.rfq.id);
-                              setActiveTab('chats');
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const rfqId = job.rfq_id || job.rfq?.id;
+                              if (rfqId) {
+                                setActiveChatRfqId && setActiveChatRfqId(rfqId);
+                                setActiveTab && setActiveTab('chats');
+                              }
                             }}
                             className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-zinc-700/50"
                           >
@@ -269,17 +334,18 @@ export default function SellerRfqsTab(props: any) {
 
                       return (
                         <div key={idx} className="flex flex-col items-center gap-2 group relative">
-                          <span className="opacity-0 group-hover:opacity-100 absolute -top-8 bg-zinc-700 text-white text-[9px] font-bold px-1.5 py-0.5 rounded shadow-md transition-opacity whitespace-nowrap pointer-events-none z-10 border border-zinc-600">
+                          {/* Premium tooltip showing actual value above the bar on hover */}
+                          <span className="opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 absolute -top-8 bg-zinc-950 text-[#00D0F5] text-[9px] font-mono font-black px-1.5 py-0.5 rounded border border-[#00D0F5]/30 shadow-xl transition-all duration-200 whitespace-nowrap pointer-events-none z-20">
                             ₹{Number(bar.amount).toLocaleString('en-IN')}
                           </span>
                           <div
-                            className={`w-7 rounded-t transition-all duration-300 ${isActive
+                            className={`w-7 rounded-t transition-all duration-300 origin-bottom hover:scale-x-105 hover:shadow-md ${isActive
                               ? 'bg-gradient-to-t from-[#00D0F5]/50 to-[#00D0F5] shadow-lg shadow-[#00D0F5]/20 hover:brightness-110'
-                              : 'bg-zinc-800 border border-zinc-700 hover:bg-zinc-700'
+                              : 'bg-zinc-800 border border-zinc-700 hover:bg-[#00D0F5]/20 hover:border-[#00D0F5]/30'
                               }`}
                             style={{ height: `${height}px` }}
                           ></div>
-                          <span className={`text-[8px] font-black uppercase tracking-wider ${isActive ? 'text-[#00D0F5]' : 'text-slate-500'}`}>
+                          <span className={`text-[8px] font-black uppercase tracking-wider transition-colors ${isActive ? 'text-[#00D0F5]' : 'text-slate-500 group-hover:text-slate-300'}`}>
                             {bar.label}
                           </span>
                         </div>
@@ -291,67 +357,79 @@ export default function SellerRfqsTab(props: any) {
                 <div className="border-t border-zinc-800 pt-3.5 flex items-center justify-between text-xs bg-zinc-900/50 -mx-5 -mb-5 p-5 rounded-b-2xl">
                   <span className="font-black text-slate-400 text-[10px] uppercase tracking-wider">Est. Month End</span>
                   <span className="font-black text-white text-sm font-mono">
-                    {sellerData ? `₹${((sellerData.monthlyEarnings * 1.2) / 100000).toFixed(2)}L` : '₹0.00L'}
+                    {sellerData ? `₹${Number(Math.round(sellerData.monthlyEarnings * 1.2)).toLocaleString('en-IN')}` : '₹0'}
                   </span>
                 </div>
               </div>
             </div>
 
             {/* MY ACTIVE QUOTES */}
-            <div className="bg-zinc-800/80 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
-              <div className="pb-3 border-b border-zinc-700/60 flex justify-between items-center">
-                <h4 className="text-xs font-black text-white uppercase tracking-wider">My Active Quotes</h4>
-                <span className="bg-zinc-700/50 text-zinc-300 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
-                  {sellerData ? sellerData.myQuotes.length : '0'} Total
-                </span>
-              </div>
-              
-              <div className="space-y-3 max-h-[350px] overflow-y-auto no-scrollbar pr-1">
-                {loadingSeller ? (
-                  <div className="py-8 text-center animate-pulse">
-                    <RefreshCw className="w-5 h-5 animate-spin mx-auto text-zinc-500" />
+            {(() => {
+              const activeQuotes = (sellerData?.myQuotes || []).filter(
+                (q: any) => q.status !== 'REJECTED' && q.status !== 'ACCEPTED' && q.status !== 'Accepted'
+              );
+
+              return (
+                <div className="bg-zinc-800/80 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
+                  <div className="pb-3 border-b border-zinc-700/60 flex justify-between items-center">
+                    <h4 className="text-xs font-black text-white uppercase tracking-wider">My Active Quotes</h4>
+                    <span className="bg-zinc-700/50 text-zinc-300 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
+                      {activeQuotes.length} Total
+                    </span>
                   </div>
-                ) : !sellerData || sellerData.myQuotes.length === 0 ? (
-                  <div className="text-center py-6 text-xs font-bold text-zinc-500 bg-zinc-900/50 rounded-xl border border-dashed border-zinc-700/60">
-                    You haven't submitted any quotes yet.
-                  </div>
-                ) : (
-                  sellerData.myQuotes.map((quote) => {
-                    const isAccepted = quote.status === 'ACCEPTED';
-                    const isRejected = quote.status === 'REJECTED';
-                    const isPending = quote.status === 'SUBMITTED' || quote.status === 'NEGOTIATING';
-                    
-                    return (
-                      <div key={quote.id} className="bg-zinc-900/50 border border-zinc-700/60 rounded-xl p-3 flex flex-col gap-2 hover:border-zinc-600 transition-colors cursor-pointer" onClick={() => {
-                          if(quote.rfq_id) {
-                            setActiveChatRfqId(quote.rfq_id);
-                            setActiveTab('chats');
-                          }
-                        }}>
-                        <div className="flex justify-between items-start">
-                          <span className="text-[10px] font-black text-white line-clamp-1 flex-1 pr-2">Quote #{quote.id.substring(0, 6).toUpperCase()}</span>
-                          <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0 border ${
-                            isAccepted ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                            isRejected ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 
-                            'bg-sky-500/10 text-sky-400 border-sky-500/20'
-                          }`}>
-                            {quote.status}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-end">
-                          <span className="text-[8px] font-black uppercase tracking-wider text-slate-500">
-                            {new Date(quote.created_at).toLocaleDateString()}
-                          </span>
-                          <span className="text-xs font-black text-white font-mono">
-                            ₹{Number(quote.total_amount).toLocaleString('en-IN')}
-                          </span>
-                        </div>
+                  
+                  <div className="space-y-3 max-h-[350px] overflow-y-auto no-scrollbar pr-1">
+                    {loadingSeller ? (
+                      <div className="py-8 text-center animate-pulse">
+                        <RefreshCw className="w-5 h-5 animate-spin mx-auto text-zinc-500" />
                       </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
+                    ) : activeQuotes.length === 0 ? (
+                      <div className="text-center py-6 text-xs font-bold text-zinc-500 bg-zinc-900/50 rounded-xl border border-dashed border-zinc-700/60">
+                        You haven't submitted any active quotes yet.
+                      </div>
+                    ) : (
+                      activeQuotes.map((quote: any) => {
+                        const isAccepted = quote.status === 'ACCEPTED';
+                        const isRejected = quote.status === 'REJECTED';
+                        const isPending = quote.status === 'SUBMITTED' || quote.status === 'NEGOTIATING';
+                        
+                        return (
+                          <div 
+                            key={quote.id} 
+                            className="bg-zinc-900/50 border border-zinc-700/60 rounded-xl p-3 flex flex-col gap-2 hover:border-zinc-600 transition-colors cursor-pointer" 
+                            onClick={() => {
+                              if(quote.rfq_id) {
+                                setActiveChatRfqId && setActiveChatRfqId(quote.rfq_id);
+                                setActiveTab && setActiveTab('chats');
+                              }
+                            }}
+                          >
+                            <div className="flex justify-between items-start">
+                              <span className="text-[10px] font-black text-white line-clamp-1 flex-1 pr-2">Quote #{quote.id.substring(0, 6).toUpperCase()}</span>
+                              <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0 border ${
+                                isAccepted ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
+                                isRejected ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 
+                                'bg-sky-500/10 text-sky-400 border-sky-500/20'
+                              }`}>
+                                {quote.status}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-end">
+                              <span className="text-[8px] font-black uppercase tracking-wider text-slate-500">
+                                {new Date(quote.created_at).toLocaleDateString()}
+                              </span>
+                              <span className="text-xs font-black text-white font-mono">
+                                ₹{Number(quote.total_amount).toLocaleString('en-IN')}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
 
           </div>
 
