@@ -21,6 +21,44 @@ export default function SellerRfqsTab(props: any) {
       
       <div className="space-y-6 pb-20 md:pb-0">
 
+        {/* Seller Level & Progress Banner */}
+        {sellerData && typeof sellerData.totalUnitsSold === 'number' && (
+          <div className="bg-gradient-to-r from-[#0F172A] to-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-zinc-950/60 border border-zinc-700/60 flex items-center justify-center text-xl shadow-inner shrink-0">
+                {sellerData.sellerTier === 'Apprentice' && '🌱'}
+                {sellerData.sellerTier === 'Pro Craftsman' && '⚡'}
+                {sellerData.sellerTier === 'Master Builder' && '⭐'}
+                {sellerData.sellerTier === 'Apex Manufacturer' && '👑'}
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase text-[#00D0F5] tracking-wider font-mono">Seller level status</span>
+                  <span className={`text-[9px] font-black px-2 py-0.5 rounded border uppercase tracking-wider ${sellerData.badgeColor}`}>
+                    {sellerData.badgeText}
+                  </span>
+                </div>
+                <p className="text-[10px] text-zinc-400 font-semibold font-sans">
+                  Total Products Sold: <span className="text-white font-black font-mono">{sellerData.totalUnitsSold}</span> units
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full md:w-5/12 space-y-1.5">
+              <div className="flex justify-between text-[8px] font-black uppercase tracking-wider text-slate-500 font-mono">
+                <span>Progress to {sellerData.nextTier}</span>
+                <span>{sellerData.sellerTier === 'Apex Manufacturer' ? 'MAX LEVEL' : `${sellerData.totalUnitsSold} / ${sellerData.nextTierGoal} sold`}</span>
+              </div>
+              <div className="w-full bg-zinc-950 border border-zinc-800 h-2 rounded-full overflow-hidden shadow-inner">
+                <div
+                  className="h-full bg-gradient-to-r from-sky-400 to-[#00D0F5] transition-all duration-500 rounded-full"
+                  style={{ width: `${sellerData.tierProgress}%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Top Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[

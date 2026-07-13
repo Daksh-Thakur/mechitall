@@ -1070,6 +1070,48 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     };
   });
 
+  // Calculate total units sold
+  const totalUnitsSold = (orders || [])
+    .filter((o: any) => o.status !== 'Cancelled' && o.status !== 'Rejected')
+    .reduce((sum: number, o: any) => sum + (o.items_count || 1), 0);
+
+  let sellerTier = 'Apprentice';
+  let tierProgress = 0;
+  let nextTierGoal = 10;
+  let nextTier = 'Pro Craftsman';
+  let badgeColor = 'bg-slate-500/10 text-slate-450 border-slate-500/20';
+  let badgeText = '🌱 Apprentice';
+
+  if (totalUnitsSold >= 100) {
+    sellerTier = 'Apex Manufacturer';
+    badgeColor = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+    badgeText = '👑 Apex Manufacturer';
+    tierProgress = 100;
+    nextTierGoal = 100;
+    nextTier = 'Max Level';
+  } else if (totalUnitsSold >= 50) {
+    sellerTier = 'Master Builder';
+    badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+    badgeText = '⭐ Master Builder';
+    tierProgress = Math.round(((totalUnitsSold - 50) / 50) * 100);
+    nextTierGoal = 100;
+    nextTier = 'Apex Manufacturer';
+  } else if (totalUnitsSold >= 10) {
+    sellerTier = 'Pro Craftsman';
+    badgeColor = 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20';
+    badgeText = '⚡ Pro Craftsman';
+    tierProgress = Math.round(((totalUnitsSold - 10) / 40) * 100);
+    nextTierGoal = 50;
+    nextTier = 'Master Builder';
+  } else {
+    sellerTier = 'Apprentice';
+    badgeColor = 'bg-slate-500/10 text-slate-450 border-slate-500/20';
+    badgeText = '🌱 Apprentice';
+    tierProgress = Math.round((totalUnitsSold / 10) * 100);
+    nextTierGoal = 10;
+    nextTier = 'Pro Craftsman';
+  }
+
   return {
     openRfqs: filteredOpenRfqs,
     myQuotes: myQuotes || [],
@@ -1081,7 +1123,14 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     earningsVelocity,
     capabilities: mappedCapabilities,
     products: products || [],
-    services: services || []
+    services: services || [],
+    totalUnitsSold,
+    sellerTier,
+    tierProgress,
+    nextTierGoal,
+    nextTier,
+    badgeColor,
+    badgeText
   };
 }
 
