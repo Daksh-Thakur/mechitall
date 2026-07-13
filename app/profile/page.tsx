@@ -20,7 +20,7 @@ import {
   getProfileOrders, getProfileTransactions, updateProfileName, toggleProfileSellerMode,
   submitSellerKYC, getSellerDashboardData, submitProductListing, getSellerOrders,
   updateSellerOrderStatus, deleteSellerCapability, submitServiceListing, deleteSellerProduct,
-  deleteSellerService, Profile, BoltsTransaction, confirmDeliveryAndClaimBolts, simulateOrderStatus
+  deleteSellerService, Profile, BoltsTransaction, confirmDeliveryAndClaimBolts, simulateOrderStatus, updateProfilePhoto
 } from '@/app/actions/rewards';
 import { initiatePayUExistingOrderPayment, disputeOrder } from '@/app/actions/orders';
 import Navbar from '@/components/Navbar';
@@ -165,6 +165,7 @@ export default function ProfilePage() {
   // Profile Edit fields
   const [editName, setEditName] = useState('');
   const [isUpdatingName, startTransition] = useTransition();
+  const [isUpdatingPhoto, startTransitionPhoto] = useTransition();
   const [togglingSeller, setTogglingSeller] = useState(false);
   const [showKYCModal, setShowKYCModal] = useState(false);
   const [showAddListingModal, setShowAddListingModal] = useState(false);
@@ -537,6 +538,28 @@ export default function ProfilePage() {
     loadRewards();
   }, [profile?.id, activeTab]);
 
+  const handleProfilePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || event.target.files.length === 0 || !profile) return;
+    const file = event.target.files[0];
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64String = reader.result as string;
+
+      startTransitionPhoto(async () => {
+        try {
+          await updateProfilePhoto(profile.id, base64String);
+          showToast('Profile photo updated successfully!', 'success');
+          await fetchProfile();
+        } catch (err: any) {
+          console.error(err);
+          showToast(err.message || 'Failed to update profile photo', 'error');
+        }
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Handle edit details submit
   const handleUpdateNameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -656,7 +679,7 @@ export default function ProfilePage() {
   const isMasterBuilder = profile.loyalty_tier === 'Master Builder';
   const boltsProgressPercent = Math.min(100, (profile.wallet_balance / 500) * 100);
 
-  const tabProps = { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, cadFile, checkUnreadChats, customSpecs, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasTimedOut, imageFileNames, imagePreviews, isGuest, isPending, isUpdatingName, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, openAddListingModal, orders, processFile, profile, publishingListing, router, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, startTransition, startTransitionStatus, supabase, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updatingOrderId, uploadingOrderId, wishlist, boltsProgressPercent, isMasterBuilder };
+  const tabProps = { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, cadFile, checkUnreadChats, customSpecs, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleProfilePhotoUpload, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasTimedOut, imageFileNames, imagePreviews, isGuest, isPending, isUpdatingName, isUpdatingPhoto, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, openAddListingModal, orders, processFile, profile, publishingListing, router, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, startTransition, startTransitionStatus, supabase, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updatingOrderId, uploadingOrderId, wishlist, boltsProgressPercent, isMasterBuilder };
   return (
     <div className="flex flex-col min-h-screen bg-zinc-900 font-sans">
       <Navbar />

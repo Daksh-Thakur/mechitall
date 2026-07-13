@@ -11,6 +11,7 @@ export interface Profile {
   loyalty_tier: 'Tinkerer' | 'Master Builder';
   role: UserRole;
   is_verified_seller?: boolean;
+  avatar_url?: string;
   created_at: string;
   updated_at: string;
 }

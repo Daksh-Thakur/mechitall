@@ -124,6 +124,42 @@ export default function OrdersTab(props: any) {
                                 : 'bg-amber-500 w-1/3'
                               }`}></div>
                           </div>
+
+                          {/* Expanded Info */}
+                          {isSelected && (
+                            <div className="pt-3 mt-3 border-t border-zinc-700/50 space-y-2 animate-in fade-in slide-in-from-top-2">
+                              <div className="flex justify-between">
+                                <span className="text-[10px] text-zinc-400">Product</span>
+                                <span className="font-bold text-white text-[10px] max-w-[120px] text-right truncate" title={ord.rfq_title || 'Mechatronic Components'}>
+                                  {ord.rfq_title || 'Mechatronic Components'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-[10px] text-zinc-400">Quantity</span>
+                                <span className="font-bold text-white text-[10px]">
+                                  {ord.items_count} units
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-[10px] text-zinc-400">Delivery Address</span>
+                                <span className="font-bold text-white text-[10px] max-w-[120px] text-right truncate" title="Nirmal Narayan Aawas, Divyanagar, Airport Road, Totu, Shimla, H.P. 171011">
+                                  Nirmal Narayan Aawas, Divyanagar...
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-[10px] text-zinc-400">Mode of Payment</span>
+                                <span className="font-bold text-white text-[10px]">
+                                  PayU Escrow
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-[10px] text-zinc-400">Date</span>
+                                <span className="font-bold text-white text-[10px]">
+                                  {new Date(ord.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

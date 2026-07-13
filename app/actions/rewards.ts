@@ -20,6 +20,7 @@ export interface Profile {
   machine_count?: number;
   business_address?: string | null;
   primary_capability?: string | null;
+  avatar_url?: string | null;
   created_at: string;
 }
 
@@ -677,6 +678,25 @@ export async function updateProfileName(profileId: string, fullName: string) {
     throw new Error(error.message);
   }
 
+  return data as Profile;
+}
+
+/**
+ * Updates the user's profile photo (avatar_url) as a base64 string
+ */
+export async function updateProfilePhoto(profileId: string, photoUrl: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ avatar_url: photoUrl, updated_at: new Date().toISOString() })
+    .eq('id', profileId)
+    .select()
+    .single();
+    
+  if (error) {
+    throw new Error(error.message);
+  }
   return data as Profile;
 }
 

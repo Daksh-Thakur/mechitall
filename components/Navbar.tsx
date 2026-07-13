@@ -200,10 +200,14 @@ export default function Navbar() {
                     window.location.href = '/login';
                   }
                 }}
-                className="w-9 h-9 rounded-full border border-zinc-700 bg-zinc-850 text-zinc-200 flex items-center justify-center font-bold text-xs hover:bg-zinc-800 hover:border-zinc-650 transition-all cursor-pointer"
+                className="w-9 h-9 rounded-full border border-zinc-700 bg-zinc-850 text-zinc-200 flex items-center justify-center font-bold text-xs hover:bg-zinc-800 hover:border-zinc-650 transition-all cursor-pointer overflow-hidden"
                 aria-label="Open profile menu"
               >
-                {user ? (profile?.full_name ? profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0] : 'U') : 'GU'}
+                {user && profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  user ? (profile?.full_name ? profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0] : 'U') : 'GU'
+                )}
               </button>
 
               {profileOpen && (
