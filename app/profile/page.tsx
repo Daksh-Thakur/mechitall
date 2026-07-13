@@ -2543,7 +2543,7 @@ function QuotationChatsTab({
   return (
     <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm min-h-[600px] flex flex-col md:flex-row gap-4">
       {/* Threads List Sidebar */}
-      <div className={`md:w-6/12 flex flex-col gap-4 border-r border-zinc-700/60/50 pr-0 md:pr-5 ${activeThread ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`md:w-4/12 flex flex-col gap-4 border-r border-zinc-700/60/50 pr-0 md:pr-5 ${activeThread ? 'hidden md:flex' : 'flex'}`}>
         <div className="space-y-1">
           <h2 className="text-base font-black text-white tracking-tight uppercase">Quotation Negotiations</h2>
           <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
