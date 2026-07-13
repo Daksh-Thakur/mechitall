@@ -31,7 +31,7 @@ export default function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2.5 group">
               <img 
-                src="/favicon.ico" 
+                src="/logo.png" 
                 alt="MechItAll Logo" 
                 className="w-9 h-9 object-contain rounded group-hover:scale-105 transition-transform duration-200"
               />

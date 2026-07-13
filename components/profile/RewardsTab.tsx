@@ -61,6 +61,28 @@ export default function RewardsTab(props: any) {
                   <p className="text-xs font-bold text-white">No rewards logs listed.</p>
                 </div>
               )}
+
+              {/* Rewards Explanation */}
+              <div className="bg-zinc-900/50 border border-zinc-700/60 rounded-xl p-5 mt-6">
+                <h3 className="text-sm font-black text-white uppercase tracking-tight mb-3 flex items-center gap-2">
+                  <Gift className="w-4 h-4 text-amber-500" />
+                  How Nuts &amp; Bolts Work
+                </h3>
+                <ul className="space-y-3 text-xs text-zinc-400 font-semibold leading-relaxed">
+                  <li className="flex items-start gap-2">
+                    <span className="text-emerald mt-0.5">•</span>
+                    <span><strong>Earn Bolts:</strong> You earn 1 Bolt for every ₹10 spent on eligible purchases (max 100 Bolts per order). To claim your bolts, you must upload an unboxing photo after delivery.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-500 mt-0.5">•</span>
+                    <span><strong>Redeem Bolts:</strong> 10 Bolts = ₹1.00 store credit value toward your next purchase.</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-coral mt-0.5">•</span>
+                    <span><strong>Expiration:</strong> Earned Bolts expire 45 days after the transaction date if not redeemed. Keep track of your expirations in the ledger above!</span>
+                  </li>
+                </ul>
+              </div>
             </div>
     </>
   );

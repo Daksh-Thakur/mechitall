@@ -210,25 +210,10 @@ export default function OrdersTab(props: any) {
                       </div>
                     ))
                   ) : (
-                    dbProducts.slice(0, 3).map((item) => (
-                      <div key={item.id} className="bg-zinc-800 border border-zinc-700/60 rounded-xl p-4 shadow-sm flex flex-col justify-between h-48 hover:shadow-md transition-shadow">
-                        <div className="space-y-1">
-                          <span className="block text-[8px] uppercase tracking-wider font-extrabold text-zinc-400">{item.category}</span>
-                          <h4 className="text-xs font-black text-white line-clamp-1 leading-tight">{item.title}</h4>
-                          <span className="block text-xs font-extrabold text-coral pt-1">₹{item.price.toFixed(2)}</span>
-                        </div>
-
-                        <button
-                          onClick={() => {
-                            addToCart(item, 1);
-                            showToast(`${item.title} added to cart!`, 'success');
-                          }}
-                          className="btn-cobalt py-2 rounded-lg text-[10px] font-bold w-full text-center cursor-pointer flex items-center justify-center gap-1"
-                        >
-                          <ShoppingCart className="w-3.5 h-3.5" /> Add to Cart
-                        </button>
-                      </div>
-                    ))
+                    <div className="col-span-1 md:col-span-3 bg-zinc-900/10 border border-dashed border-zinc-700/60 rounded-xl p-4 flex flex-col items-center justify-center text-center h-48">
+                      <p className="text-xs font-bold text-zinc-400">No items saved for later.</p>
+                      <p className="text-[10px] text-zinc-500 mt-1">Items you wishlist will appear here.</p>
+                    </div>
                   )}
 
                   <Link href="/products" className="bg-zinc-900/30 border border-dashed border-zinc-700/60 rounded-xl p-4 flex flex-col items-center justify-center text-center hover:bg-zinc-900/50 transition-colors h-48 group">

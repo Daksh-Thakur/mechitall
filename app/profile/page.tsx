@@ -844,8 +844,12 @@ export default function ProfilePage() {
             <div className="space-y-6 hidden md:block">
               {/* Header User Card */}
               <div className="text-center space-y-3 pb-6 border-b border-zinc-700/60">
-                <div className="relative inline-flex items-center justify-center w-16 h-16 rounded bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow font-mono">
-                  {profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0]}
+                <div className="relative inline-flex items-center justify-center w-16 h-16 rounded bg-cobalt/10 border-2 border-cobalt text-cobalt font-black text-xl shadow font-mono overflow-hidden">
+                  {profile.avatar_url ? (
+                    <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0]
+                  )}
                   {profile.is_verified_buyer && (
                     <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded bg-emerald text-white flex items-center justify-center border border-white shadow-sm" title="Verified Buyer">
                       <ShieldCheck className="w-3.5 h-3.5" />
@@ -876,8 +880,8 @@ export default function ProfilePage() {
                     : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
                     }`}
                 >
-                  <ShoppingBag className="w-4 h-4 shrink-0" />
-                  <span>My Orders</span>
+                  <Package className="w-4 h-4 shrink-0" />
+                  <span>Dashboard</span>
                   {hasNewBuyerOrder && (
                     <span className="ml-auto w-2 h-2 rounded-full bg-red-500 animate-pulse shrink-0"></span>
                   )}
