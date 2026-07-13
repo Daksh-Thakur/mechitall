@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -2541,42 +2541,50 @@ function QuotationChatsTab({
   };
 
   return (
-    <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm min-h-[600px] flex flex-col md:flex-row gap-4">
-      {/* Threads List Sidebar */}
-      <div className={`md:w-4/12 flex flex-col gap-4 border-r border-zinc-700/60/50 pr-0 md:pr-5 ${activeThread ? 'hidden md:flex' : 'flex'}`}>
-        <div className="space-y-1">
-          <h2 className="text-base font-black text-white tracking-tight uppercase">Quotation Negotiations</h2>
-          <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
-            Secure chats for open machining quotes and dispute resolution records.
+    <div className="flex flex-col md:flex-row rounded-2xl overflow-hidden border border-zinc-700/60 shadow-2xl min-h-[680px]" style={{ background: 'linear-gradient(135deg, #0B1120 0%, #0F172A 100%)' }}>
+
+      {/* ── LEFT SIDEBAR ── */}
+      <div className={`md:w-[340px] shrink-0 flex flex-col border-r border-zinc-800 ${activeThread ? 'hidden md:flex' : 'flex'}`}>
+
+        {/* Sidebar header */}
+        <div className="px-5 pt-5 pb-4 border-b border-zinc-800/80">
+          <h2 className="text-sm font-black text-white tracking-tight flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-[#00D0F5]" />
+            Negotiation Chats
+          </h2>
+          <p className="text-[10px] text-zinc-500 mt-1 font-medium">
+            {sortedThreads.length} conversation{sortedThreads.length !== 1 ? 's' : ''}
           </p>
         </div>
 
-        {/* Sort / Filter Chats */}
-        <div className="flex items-center justify-between gap-2 bg-zinc-905/30 border border-zinc-700/60 p-2.5 rounded-xl text-xs font-mono font-bold">
-          <span className="text-zinc-500 text-[10px] uppercase">Filter / Sort:</span>
-          <select
-            value={chatSort}
-            onChange={(e) => setChatSort(e.target.value as any)}
-            className="bg-zinc-900 border border-zinc-750 text-white text-[10px] px-2.5 py-1 rounded focus:outline-none cursor-pointer font-sans font-semibold flex-1 ml-2"
-          >
-            <optgroup label="Sort By">
-              <option value="date">Last Message (Newest)</option>
-              <option value="status-priority">Status (Priority)</option>
-              <option value="status-az">Status (A–Z)</option>
-              <option value="status-za">Status (Z–A)</option>
-            </optgroup>
-            <optgroup label="Filter By Status">
-              <option value="filter-accepted">✅ Accepted Only</option>
-              <option value="filter-submitted">🔄 Submitted / Offered</option>
-              <option value="filter-rejected">❌ Rejected Only</option>
-            </optgroup>
-          </select>
+        {/* Filter chips */}
+        <div className="px-4 py-3 border-b border-zinc-800/60 flex flex-wrap gap-1.5">
+          {([
+            ['date', 'All'],
+            ['filter-accepted', '✅ Accepted'],
+            ['filter-submitted', '🔄 Pending'],
+            ['filter-rejected', '❌ Rejected'],
+            ['status-priority', '⚡ Priority'],
+          ] as const).map(([val, label]) => (
+            <button
+              key={val}
+              onClick={() => setChatSort(val as any)}
+              className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border transition-all cursor-pointer ${chatSort === val
+                ? 'bg-[#00D0F5]/15 border-[#00D0F5]/40 text-[#00D0F5]'
+                : 'bg-zinc-800/60 border-zinc-700/40 text-zinc-500 hover:text-zinc-300 hover:border-zinc-600'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto max-h-[500px] space-y-2 mt-2">
+        {/* Thread list */}
+        <div className="flex-1 overflow-y-auto divide-y divide-zinc-800/50">
           {loading ? (
-            <div className="py-20 text-center">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-400/30" />
+            <div className="py-20 flex flex-col items-center justify-center gap-3">
+              <RefreshCw className="w-5 h-5 animate-spin text-[#00D0F5]/50" />
+              <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-wider">Loading chats...</span>
             </div>
           ) : sortedThreads.length > 0 ? (
             sortedThreads.map((t) => {
@@ -2587,91 +2595,126 @@ function QuotationChatsTab({
               const hasNewStatus = !seen || t.status !== seen.status;
               const isUnread = hasNewMsg || hasNewStatus;
               const isAccepted = t.status === 'ACCEPTED' || t.machiningQuote?.status === 'Accepted';
+              const isRejected = t.status === 'REJECTED';
+              const isActive = activeThread?.quoteId === t.quoteId;
+
+              const statusDot = isAccepted
+                ? 'bg-emerald-400'
+                : isRejected
+                ? 'bg-rose-500'
+                : 'bg-amber-400';
+
+              const initials = (t.otherParticipantName || 'UN')
+                .split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase();
 
               return (
                 <div
                   key={t.quoteId}
                   onClick={() => selectThread(t)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 text-left ${isAccepted
-                    ? activeThread?.quoteId === t.quoteId
-                      ? 'border-emerald bg-emerald-500/10 ring-1 ring-emerald/20'
-                      : 'border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10'
-                    : activeThread?.quoteId === t.quoteId
-                      ? 'border-cobalt bg-cobalt/5 ring-1 ring-cobalt/10'
-                      : 'border-zinc-700/60 hover:bg-zinc-900/50'
-                    }`}
+                  className={`flex items-start gap-3 px-4 py-3.5 cursor-pointer transition-all relative group ${
+                    isActive
+                      ? 'bg-[#00D0F5]/8 border-l-2 border-l-[#00D0F5]'
+                      : 'hover:bg-zinc-800/50 border-l-2 border-l-transparent'
+                  }`}
                 >
-                  <div className="flex justify-between items-start gap-2">
-                    <h4 className="text-xs font-black text-white line-clamp-1 flex-1 flex items-center gap-1.5">
-                      {isUnread && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#06B6D4] animate-pulse shrink-0"></span>
-                      )}
-                      {t.rfqTitle}
-                    </h4>
-                    <div className="flex flex-col items-end gap-1 shrink-0">
-                      <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${isAccepted
-                        ? 'bg-emerald-500/10 text-emerald border border-emerald-500/20'
-                        : t.status === 'REJECTED'
-                          ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                          : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                        }`}>
-                        {isAccepted ? 'ACCEPTED' : t.status}
+                  {/* Avatar */}
+                  <div className="relative shrink-0">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-inner ${
+                      isAccepted ? 'bg-emerald-600/50 border border-emerald-500/40'
+                      : isRejected ? 'bg-rose-700/40 border border-rose-500/30'
+                      : 'bg-[#00D0F5]/15 border border-[#00D0F5]/30'
+                    }`}>
+                      {initials}
+                    </div>
+                    <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#0B1120] ${statusDot}`}></span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 space-y-0.5">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className={`text-[11px] font-black line-clamp-1 ${isActive ? 'text-white' : 'text-zinc-200 group-hover:text-white'}`}>
+                        {isUnread && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#00D0F5] mr-1 mb-0.5 align-middle animate-pulse"></span>}
+                        {t.rfqTitle}
                       </span>
-                      {isAccepted && t.machiningQuote?.offer_price && (
-                        <span className="text-[10px] font-black text-coral">
-                          ₹{Number(t.machiningQuote.offer_price).toLocaleString('en-IN')}
+                      {t.lastMessageTime && (
+                        <span className="text-[9px] font-mono text-zinc-600 shrink-0">
+                          {new Date(t.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       )}
                     </div>
-                  </div>
-                  <div className="flex justify-between items-center text-[10px] text-zinc-400">
-                    <div className="flex items-center gap-1.5 font-mono">
-                      <span className="text-[#007084] font-black">#CHAT-{t.quoteId.substring(0, 8).toUpperCase()}</span>
-                      <span className="text-slate-400">|</span>
-                      <span className="font-bold text-zinc-500">With: {t.otherParticipantName}</span>
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[9px] text-zinc-500 font-semibold line-clamp-1 flex-1">
+                        {t.lastMessageText ? `"${t.lastMessageText}"` : `With ${t.otherParticipantName}`}
+                      </span>
+                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
+                        isAccepted ? 'text-emerald-400 bg-emerald-500/10'
+                        : isRejected ? 'text-rose-400 bg-rose-500/10'
+                        : 'text-amber-400 bg-amber-500/10'
+                      }`}>
+                        {isAccepted ? 'Accepted' : t.status}
+                      </span>
                     </div>
-                    {t.lastMessageTime && (
-                      <span className="font-mono text-[9px]">{new Date(t.lastMessageTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    {isAccepted && t.machiningQuote?.offer_price && (
+                      <div className="text-[9px] font-black text-[#00D0F5] font-mono">
+                        ₹{Number(t.machiningQuote.offer_price).toLocaleString('en-IN')}
+                      </div>
                     )}
                   </div>
-                  {t.lastMessageText && (
-                    <p className="text-[11px] text-zinc-400 font-medium line-clamp-1 italic bg-zinc-900/30 px-2 py-1 rounded">
-                      "{t.lastMessageText}"
-                    </p>
-                  )}
                 </div>
               );
             })
           ) : (
-            <div className="py-20 text-center border border-dashed border-zinc-700/60 rounded-xl">
-              <MessageSquare className="w-8 h-8 text-zinc-400/30 mx-auto mb-2" />
-              <p className="text-xs font-bold text-white">No active chats found</p>
-              <p className="text-[10px] text-zinc-400 mt-1 leading-normal px-6">Ongoing negotiations will appear here once quote requests are submitted.</p>
+            <div className="py-20 flex flex-col items-center justify-center gap-3 px-6 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-zinc-800/80 border border-zinc-700/40 flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-zinc-600" />
+              </div>
+              <div>
+                <p className="text-xs font-black text-zinc-400">No chats found</p>
+                <p className="text-[10px] text-zinc-600 mt-1 leading-normal">
+                  {chatSort !== 'date' ? 'Try a different filter above.' : 'Negotiation threads appear here once quotes are submitted.'}
+                </p>
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Message Chat Panel */}
-      <div id="chat-messages-panel" className={`flex-1 flex flex-col min-h-[500px] justify-between ${!activeThread ? 'hidden md:flex items-center justify-center text-center bg-zinc-900/10 rounded-2xl border border-dashed border-zinc-700/60/50 p-6' : 'flex'}`}>
+      {/* ── RIGHT CHAT PANEL ── */}
+      <div id="chat-messages-panel" className={`flex-1 flex flex-col min-h-[680px] ${!activeThread ? 'items-center justify-center' : ''}`}
+        style={{ background: 'linear-gradient(180deg, #0D1526 0%, #0B1120 100%)' }}>
         {activeThread ? (
           <>
-            {/* Thread Header */}
-            <div className="pb-4 border-b border-zinc-700/60 flex items-center justify-between gap-4">
+            {/* Chat header */}
+            <div className="flex items-center justify-between gap-3 px-5 py-3.5 border-b border-zinc-800 bg-[#0F1A2E]/80 backdrop-blur-sm shrink-0">
               <div className="flex items-center gap-3">
-                <button onClick={() => setActiveThread(null)} className="md:hidden p-1 rounded-lg border border-zinc-700/60 hover:bg-zinc-900 cursor-pointer">
-                  <ChevronRight className="w-4 h-4 rotate-180" />
+                <button onClick={() => setActiveThread(null)} className="md:hidden p-1.5 rounded-lg border border-zinc-700/60 hover:bg-zinc-800 cursor-pointer shrink-0">
+                  <ChevronRight className="w-3.5 h-3.5 rotate-180 text-zinc-400" />
                 </button>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black text-white shrink-0 ${
+                  activeThread.status === 'ACCEPTED' || activeThread.machiningQuote?.status === 'Accepted'
+                    ? 'bg-emerald-600/50' : 'bg-[#00D0F5]/15'
+                }`}>
+                  {(activeThread.otherParticipantName || 'UN').split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}
+                </div>
                 <div>
-                  <h3 className="text-sm font-black text-white leading-tight">{activeThread.rfqTitle}</h3>
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-zinc-400 mt-0.5">
-                    <span className="font-mono text-[#007084] font-black">#CHAT-{activeThread.quoteId.substring(0, 8).toUpperCase()}</span>
-                    <span>•</span>
-                    <span>Participant: {activeThread.otherParticipantName}</span>
+                  <h3 className="text-xs font-black text-white leading-tight line-clamp-1">{activeThread.rfqTitle}</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="text-[9px] font-mono text-[#007084]">#CHAT-{activeThread.quoteId.substring(0, 8).toUpperCase()}</span>
+                    <span className="text-zinc-700">•</span>
+                    <span className="text-[9px] text-zinc-500 font-semibold">{activeThread.otherParticipantName}</span>
+                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase ml-1 ${
+                      activeThread.status === 'ACCEPTED' || activeThread.machiningQuote?.status === 'Accepted'
+                        ? 'text-emerald-400 bg-emerald-500/10'
+                        : activeThread.status === 'REJECTED'
+                        ? 'text-rose-400 bg-rose-500/10'
+                        : 'text-amber-400 bg-amber-500/10'
+                    }`}>
+                      {activeThread.status}
+                    </span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 {activeThread.cadFilePath && (
                   <button
                     onClick={async () => {
@@ -2685,25 +2728,23 @@ function QuotationChatsTab({
                         showToast('Failed to open design file.', 'error');
                       }
                     }}
-                    className="flex items-center gap-1 bg-cobalt hover:bg-[#06b6d4] text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
-                    title="See CAD Design"
+                    className="flex items-center gap-1.5 bg-[#00D0F5]/10 hover:bg-[#00D0F5]/20 text-[#00D0F5] border border-[#00D0F5]/20 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all cursor-pointer"
                   >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>See Design</span>
+                    <Eye className="w-3 h-3" />
+                    <span>Design</span>
                   </button>
                 )}
                 {activeThread.status !== 'REJECTED' && (
                   <button
                     onClick={handleCancelQuote}
                     disabled={cancelling}
-                    className="flex items-center gap-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
-                    title="Cancel Quote/Production"
+                    className="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all cursor-pointer"
                   >
                     {cancelling ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <RefreshCw className="w-3 h-3 animate-spin" />
                     ) : (
                       <>
-                        <XCircle className="w-3.5 h-3.5" />
+                        <XCircle className="w-3 h-3" />
                         <span>{activeThread.status === 'ACCEPTED' || activeThread.machiningQuote?.status === 'Accepted' ? 'Cancel Production' : 'Cancel'}</span>
                       </>
                     )}
@@ -2712,376 +2753,201 @@ function QuotationChatsTab({
               </div>
             </div>
 
-            {/* Messages Log */}
-            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 my-4 space-y-3 max-h-[360px] bg-zinc-900/30 rounded-xl border border-zinc-700/60/30">
+            {/* Messages area */}
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
               {loadingMessages ? (
-                <div className="py-20 text-center">
-                  <RefreshCw className="w-5 h-5 animate-spin mx-auto text-zinc-400/30" />
+                <div className="py-20 flex flex-col items-center gap-3">
+                  <RefreshCw className="w-5 h-5 animate-spin text-[#00D0F5]/40" />
+                  <span className="text-[10px] text-zinc-600 font-bold">Loading messages...</span>
                 </div>
               ) : messages.length > 0 ? (
                 messages.map((m) => {
                   const isOwnMessage = m.sender_id === profile.id;
-                  return (
-                    <div key={m.id} className={`flex flex-col max-w-[75%] ${isOwnMessage ? 'self-end ml-auto items-end' : 'self-start mr-auto items-start'}`}>
-                      <span className="text-[9px] font-bold text-zinc-400 mb-0.5 px-1">{m.sender_name}</span>
-                      <div className={`p-3 rounded-xl border text-xs font-semibold leading-relaxed ${isOwnMessage
-                        ? 'bg-cobalt text-white border-cobalt shadow-sm'
-                        : 'bg-zinc-800 text-white border-zinc-700/60 shadow-sm'
-                        }`}>
-                        <p>{m.message_text}</p>
-                        {m.file_attachment_path && (
-                          <div className={`mt-2 p-2 rounded-lg border flex items-center gap-2 ${isOwnMessage ? 'bg-zinc-800/10 border-white/20' : 'bg-zinc-900 border-zinc-700/60'}`}>
-                            <FileText className="w-4 h-4 shrink-0" />
-                            <div className="min-w-0 flex-1">
-                              <span className="block text-[10px] font-black truncate">{m.file_attachment_path.split('/').pop()}</span>
-                              <span className="block text-[8px] opacity-60">Attachment</span>
-                            </div>
-                            <button
-                              onClick={async () => {
-                                const client = createClient();
-                                const bucketName = m.message_text.includes('Shared CAD Design:') ? 'rfq-cad-files' : 'chat-attachments';
-                                const { data } = await client.storage.from(bucketName).createSignedUrl(m.file_attachment_path!, 60);
-                                if (data?.signedUrl) {
-                                  window.open(data.signedUrl, '_blank');
-                                } else {
-                                  showToast('Failed to open attachment link.', 'error');
-                                }
-                              }}
-                              className={`p-1 rounded hover:bg-black/10 text-xs cursor-pointer ${isOwnMessage ? 'text-white' : 'text-zinc-500'}`}
-                              title="Download Attachment"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[8px] text-zinc-400 mt-0.5 px-1 font-mono">
-                        {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  const isSystem = m.message_text?.startsWith('[SYSTEM]');
+                  if (isSystem) return (
+                    <div key={m.id} className="flex justify-center">
+                      <span className="text-[9px] font-bold text-zinc-600 bg-zinc-800/60 border border-zinc-700/30 px-3 py-1 rounded-full">
+                        {m.message_text.replace('[SYSTEM] ', '')}
                       </span>
+                    </div>
+                  );
+                  return (
+                    <div key={m.id} className={`flex gap-2.5 ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-black text-white shrink-0 mt-1 ${
+                        isOwnMessage ? 'bg-[#00D0F5]/20 border border-[#00D0F5]/30' : 'bg-zinc-700 border border-zinc-600'
+                      }`}>
+                        {(m.sender_name || 'U').split(' ').slice(0, 2).map((n: string) => n[0]).join('').toUpperCase()}
+                      </div>
+                      <div className={`flex flex-col max-w-[72%] gap-1 ${isOwnMessage ? 'items-end' : 'items-start'}`}>
+                        <span className="text-[9px] font-bold text-zinc-500 px-1">{m.sender_name}</span>
+                        <div className={`px-4 py-2.5 rounded-2xl text-xs font-semibold leading-relaxed shadow-lg ${
+                          isOwnMessage
+                            ? 'bg-gradient-to-br from-[#00D0F5]/25 to-[#0099bb]/20 border border-[#00D0F5]/20 text-white rounded-tr-sm'
+                            : 'bg-zinc-800/80 border border-zinc-700/60 text-zinc-100 rounded-tl-sm'
+                        }`}>
+                          <p>{m.message_text}</p>
+                          {m.file_attachment_path && (
+                            <div className={`mt-2 p-2 rounded-lg border flex items-center gap-2 ${isOwnMessage ? 'bg-black/20 border-white/10' : 'bg-zinc-900 border-zinc-700'}`}>
+                              <FileText className="w-3.5 h-3.5 shrink-0 opacity-60" />
+                              <div className="min-w-0 flex-1">
+                                <span className="block text-[10px] font-black truncate">{m.file_attachment_path.split('/').pop()}</span>
+                                <span className="block text-[8px] opacity-50">Attachment</span>
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  const client = createClient();
+                                  const bucketName = m.message_text.includes('Shared CAD Design:') ? 'rfq-cad-files' : 'chat-attachments';
+                                  const { data } = await client.storage.from(bucketName).createSignedUrl(m.file_attachment_path!, 60);
+                                  if (data?.signedUrl) {
+                                    window.open(data.signedUrl, '_blank');
+                                  } else {
+                                    showToast('Failed to open attachment link.', 'error');
+                                  }
+                                }}
+                                className="p-1 rounded hover:bg-black/20 cursor-pointer shrink-0"
+                              >
+                                <ExternalLink className="w-3 h-3 opacity-60" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-[8px] text-zinc-700 px-1 font-mono">
+                          {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
                     </div>
                   );
                 })
               ) : (
-                <div className="py-20 text-center">
-                  <p className="text-xs text-zinc-400 font-bold italic">No messages sent yet. Send a message to start negotiation.</p>
+                <div className="py-20 flex flex-col items-center gap-3 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-800/60 border border-zinc-700/30 flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-zinc-600" />
+                  </div>
+                  <p className="text-xs text-zinc-500 font-bold italic">No messages yet — start the negotiation</p>
                 </div>
               )}
             </div>
 
-            {/* Contextual Quoting Workflow Card */}
+            {/* Quote workflow card */}
             {activeThread.machiningQuote &&
               activeThread.status !== 'ACCEPTED' &&
               (activeThread.machiningQuote.status as string) !== 'Accepted' && (
-                <div className="mx-4 mb-4 p-4 rounded-xl border bg-zinc-900/40 border-zinc-700/60/60 space-y-3">
-                  <div className="flex justify-between items-center pb-2 border-b border-zinc-700/60/50">
+                <div className="mx-5 mb-3 p-4 rounded-xl border border-zinc-700/50 bg-zinc-900/60 space-y-3 backdrop-blur-sm">
+                  <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse"></span>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-white">
-                        Quote Request Status: {activeThread.machiningQuote.status}
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#00D0F5] animate-pulse"></span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-zinc-300">
+                        Quote Status: <span className="text-[#00D0F5]">{activeThread.machiningQuote.status}</span>
                       </span>
                     </div>
                     {activeThread.machiningQuote.status === 'Pending' && !profile.is_seller && (
-                      <span className="text-[9px] font-bold text-amber-600 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded animate-pulse">
-                        Awaiting Fabricator Pricing
-                      </span>
+                      <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded animate-pulse">Awaiting Fabricator Pricing</span>
                     )}
                     {activeThread.machiningQuote.status === 'Offered' && profile.is_seller && (
-                      <span className="text-[9px] font-bold text-[#06B6D4] bg-[#06B6D4]/10 border border-[#06B6D4]/20 px-2 py-0.5 rounded">
-                        Awaiting Customer Approval
-                      </span>
-                    )}
-                    {activeThread.machiningQuote.status === 'Accepted' && (
-                      <span className="text-[9px] font-bold text-emerald bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" /> Order Placed
-                      </span>
+                      <span className="text-[9px] font-bold text-[#00D0F5] bg-[#00D0F5]/10 border border-[#00D0F5]/20 px-2 py-0.5 rounded">Awaiting Customer Approval</span>
                     )}
                   </div>
 
                   {activeThread.machiningQuote.status === 'Pending' && profile.is_seller && (
-                    /* Seller: Submit Offer Form */
                     <form onSubmit={handleOfferSubmit} className="space-y-3 text-xs font-bold">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div className="space-y-1">
-                          <label className="block text-[8px] text-zinc-500 uppercase">Material</label>
-                          <select
-                            value={offerMaterial}
-                            onChange={(e) => setOfferMaterial(e.target.value)}
-                            className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
-                          >
-                            {(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m) => (
-                              <option key={m} value={m}>{m}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="block text-[8px] text-zinc-500 uppercase">Finish</label>
-                          <select
-                            value={offerFinish}
-                            onChange={(e) => setOfferFinish(e.target.value)}
-                            className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
-                          >
-                            {(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f) => (
-                              <option key={f} value={f}>{f}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="block text-[8px] text-zinc-500 uppercase">Qty (Units)</label>
-                          <input
-                            type="number"
-                            required
-                            min={1}
-                            value={offerQuantity}
-                            onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
-                            className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
-                          />
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="block text-[8px] text-zinc-500 uppercase">Total Price (₹)</label>
-                          <input
-                            type="number"
-                            required
-                            min={1}
-                            value={offerPrice || ''}
-                            placeholder="0"
-                            onChange={(e) => setOfferPrice(Number(e.target.value))}
-                            className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
-                          />
-                        </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        {[
+                          { label: 'Material', node: <select value={offerMaterial} onChange={(e) => setOfferMaterial(e.target.value)} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800/80 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50">{(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m: string) => <option key={m} value={m}>{m}</option>)}</select> },
+                          { label: 'Finish', node: <select value={offerFinish} onChange={(e) => setOfferFinish(e.target.value)} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800/80 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50">{(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f: string) => <option key={f} value={f}>{f}</option>)}</select> },
+                          { label: 'Qty', node: <input type="number" required min={1} value={offerQuantity} onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800/80 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50" /> },
+                          { label: 'Price (₹)', node: <input type="number" required min={1} value={offerPrice || ''} placeholder="0" onChange={(e) => setOfferPrice(Number(e.target.value))} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800/80 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50" /> },
+                        ].map(({ label, node }) => (
+                          <div key={label} className="space-y-1">
+                            <label className="block text-[8px] text-zinc-500 uppercase tracking-wider">{label}</label>
+                            {node}
+                          </div>
+                        ))}
                       </div>
-
-                      <div className="space-y-1">
-                        <label className="block text-[8px] text-zinc-500 uppercase">Notes / Inspection Feedback</label>
-                        <input
-                          type="text"
-                          placeholder="Detail tolerancing check, recommended tooling modifications, etc..."
-                          value={sellerNotes}
-                          onChange={(e) => setSellerNotes(e.target.value)}
-                          className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={submittingOffer}
-                        className="w-full py-2 bg-cobalt hover:bg-[#06b6d4] text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                      >
-                        {submittingOffer ? (
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <>
-                            <CircleDollarSign className="w-3.5 h-3.5" />
-                            <span>Submit Price Offer to Buyer</span>
-                          </>
-                        )}
+                      <input type="text" placeholder="Notes / inspection feedback..." value={sellerNotes} onChange={(e) => setSellerNotes(e.target.value)} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800/80 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50" />
+                      <button type="submit" disabled={submittingOffer} className="w-full py-2 bg-gradient-to-r from-[#00D0F5] to-[#0099bb] text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 hover:opacity-90 shadow">
+                        {submittingOffer ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <><CircleDollarSign className="w-3.5 h-3.5" /><span>Submit Price Offer to Buyer</span></>}
                       </button>
                     </form>
                   )}
 
                   {activeThread.machiningQuote.status === 'Offered' && (
-                    /* Offer / Counter-Offer Negotiation Details */
-                    <div className="space-y-4">
-                      {/* Offer Details Card */}
-                      <div className="bg-zinc-800 border border-zinc-700/60/60 p-4 rounded-xl space-y-3">
-                        <div className="flex justify-between items-center pb-2 border-b border-zinc-700/60/40">
-                          <div className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                            <span className="text-[10px] font-black text-white uppercase tracking-wider">
-                              Latest Proposal (By {activeThread.machiningQuote.last_offered_by === 'BUYER' ? 'Buyer' : 'Seller'})
-                            </span>
-                          </div>
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${activeThread.machiningQuote.last_offered_by === 'BUYER'
-                            ? profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
-                            : !profile.is_seller ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-slate-100 text-slate-500 border-slate-200'
-                            }`}>
-                            {activeThread.machiningQuote.last_offered_by === 'BUYER'
-                              ? profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Seller Response'
-                              : !profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Buyer Response'}
+                    <div className="space-y-3">
+                      <div className="bg-zinc-800/60 border border-zinc-700/50 p-3 rounded-xl space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[9px] font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                            Latest Proposal — By {activeThread.machiningQuote.last_offered_by === 'BUYER' ? 'Buyer' : 'Seller'}
+                          </span>
+                          <span className={`text-[8px] font-black px-2 py-0.5 rounded border ${activeThread.machiningQuote.last_offered_by === 'BUYER' ? (profile.is_seller ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : 'text-zinc-400 bg-zinc-800 border-zinc-700') : (!profile.is_seller ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' : 'text-zinc-400 bg-zinc-800 border-zinc-700')}`}>
+                            {activeThread.machiningQuote.last_offered_by === 'BUYER' ? (profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Seller') : (!profile.is_seller ? 'Awaiting Your Response' : 'Awaiting Buyer')}
                           </span>
                         </div>
-
-                        <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
-                          <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-[10px] text-zinc-500 font-bold font-mono">
-                            <div>Material: <span className="text-white font-black">{activeThread.machiningQuote.selected_material}</span></div>
-                            <div>Finish: <span className="text-white font-black">{activeThread.machiningQuote.selected_finish}</span></div>
-                            <div>Quantity: <span className="text-white font-black">{activeThread.machiningQuote.quantity} Units</span></div>
-                          </div>
-                          <div className="flex items-baseline gap-1 self-start md:self-auto">
-                            <span className="text-[9px] text-zinc-400 uppercase">Proposed Price:</span>
-                            <span className="text-sm font-black text-coral">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span>
-                          </div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono font-bold text-zinc-500">
+                          <span>Mat: <span className="text-white">{activeThread.machiningQuote.selected_material}</span></span>
+                          <span>Finish: <span className="text-white">{activeThread.machiningQuote.selected_finish}</span></span>
+                          <span>Qty: <span className="text-white">{activeThread.machiningQuote.quantity} units</span></span>
+                          <span className="ml-auto text-[#00D0F5] font-black text-sm">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span>
                         </div>
-
                         {activeThread.machiningQuote.seller_notes && (
-                          <p className="text-[10px] text-zinc-400 italic border-t border-zinc-700/60/40 pt-1.5 mt-1">
-                            Notes: "{activeThread.machiningQuote.seller_notes}"
-                          </p>
+                          <p className="text-[9px] text-zinc-500 italic border-t border-zinc-700/40 pt-1.5">"{activeThread.machiningQuote.seller_notes}"</p>
                         )}
 
-                        {/* Action Buttons when form is hidden */}
                         {!showCounterForm && (
-                          <div className="flex gap-3 pt-2">
-                            {/* 1. If buyer receives seller's offer: can Accept or Counter */}
+                          <div className="flex gap-2 pt-1">
                             {!profile.is_seller && activeThread.machiningQuote.last_offered_by !== 'BUYER' && (
                               <>
-                                <button
-                                  onClick={handleAcceptOffer}
-                                  className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow"
-                                >
-                                  <CheckCircle2 className="w-4 h-4" />
-                                  <span>Accept Offer & Place Order</span>
+                                <button onClick={handleAcceptOffer} className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow transition-all">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />Accept & Place Order
                                 </button>
-                                <button
-                                  onClick={() => setShowCounterForm(true)}
-                                  className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 rounded-lg transition-colors cursor-pointer"
-                                >
-                                  Counter-Offer
-                                </button>
+                                <button onClick={() => setShowCounterForm(true)} className="px-4 py-2 border border-zinc-700 hover:bg-zinc-800 text-xs font-bold text-zinc-400 rounded-lg cursor-pointer transition-all">Counter</button>
                               </>
                             )}
-
-                            {/* 2. If seller receives buyer's counter: can Accept or Counter */}
                             {profile.is_seller && activeThread.machiningQuote.last_offered_by === 'BUYER' && (
                               <>
-                                <button
-                                  onClick={handleAcceptOfferBySeller}
-                                  className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow"
-                                >
-                                  <CheckCircle2 className="w-4 h-4" />
-                                  <span>Accept Counter-Offer</span>
+                                <button onClick={handleAcceptOfferBySeller} className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow transition-all">
+                                  <CheckCircle2 className="w-3.5 h-3.5" />Accept Counter-Offer
                                 </button>
-                                <button
-                                  onClick={() => setShowCounterForm(true)}
-                                  className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 rounded-lg transition-colors cursor-pointer"
-                                >
-                                  Counter-Offer
-                                </button>
+                                <button onClick={() => setShowCounterForm(true)} className="px-4 py-2 border border-zinc-700 hover:bg-zinc-800 text-xs font-bold text-zinc-400 rounded-lg cursor-pointer transition-all">Counter</button>
                               </>
                             )}
-
-                            {/* 3. If buyer is waiting for seller: can modify their counter */}
                             {!profile.is_seller && activeThread.machiningQuote.last_offered_by === 'BUYER' && (
-                              <button
-                                onClick={() => setShowCounterForm(true)}
-                                className="w-full py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                              >
-                                <CircleDollarSign className="w-3.5 h-3.5" />
-                                Modify My Counter-Offer
+                              <button onClick={() => setShowCounterForm(true)} className="w-full py-2 border border-zinc-700 hover:bg-zinc-800 text-xs font-bold text-zinc-400 rounded-lg cursor-pointer flex items-center justify-center gap-1.5 transition-all">
+                                <CircleDollarSign className="w-3.5 h-3.5" />Modify Counter-Offer
                               </button>
                             )}
-
-                            {/* 4. If seller is waiting for buyer: can modify their offer */}
                             {profile.is_seller && activeThread.machiningQuote.last_offered_by !== 'BUYER' && (
-                              <button
-                                onClick={() => setShowCounterForm(true)}
-                                className="w-full py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 rounded-lg transition-colors cursor-pointer flex items-center justify-center gap-1.5"
-                              >
-                                <CircleDollarSign className="w-3.5 h-3.5" />
-                                Modify My Offer
+                              <button onClick={() => setShowCounterForm(true)} className="w-full py-2 border border-zinc-700 hover:bg-zinc-800 text-xs font-bold text-zinc-400 rounded-lg cursor-pointer flex items-center justify-center gap-1.5 transition-all">
+                                <CircleDollarSign className="w-3.5 h-3.5" />Modify Offer
                               </button>
                             )}
                           </div>
                         )}
                       </div>
 
-                      {/* Counter / Modification Form */}
                       {showCounterForm && (
-                        <form onSubmit={profile.is_seller ? handleOfferSubmit : handleCounterOfferSubmit} className="bg-zinc-900/30 border border-zinc-700/60/50 rounded-xl p-4 space-y-3 text-xs font-bold animate-slide-in">
-                          <div className="flex justify-between items-center pb-1 border-b border-zinc-700/60/30">
-                            <span className="text-[10px] text-white uppercase tracking-wider">
-                              {profile.is_seller ? 'Modify Offer to Buyer' : 'Submit Counter-Offer to Fabricator'}
-                            </span>
+                        <form onSubmit={profile.is_seller ? handleOfferSubmit : handleCounterOfferSubmit} className="bg-zinc-900/40 border border-zinc-700/50 rounded-xl p-4 space-y-3 text-xs font-bold">
+                          <div className="flex justify-between items-center pb-1 border-b border-zinc-800">
+                            <span className="text-[10px] text-white uppercase tracking-wider">{profile.is_seller ? 'Modify Offer' : 'Submit Counter-Offer'}</span>
                           </div>
-
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-mono">
-                            <div className="space-y-1 font-sans">
-                              <label className="block text-[8px] text-zinc-500 uppercase font-sans">Material</label>
-                              <select
-                                value={offerMaterial}
-                                onChange={(e) => setOfferMaterial(e.target.value)}
-                                className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
-                              >
-                                {(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m) => (
-                                  <option key={m} value={m}>{m}</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="space-y-1 font-sans">
-                              <label className="block text-[8px] text-zinc-500 uppercase font-sans">Finish</label>
-                              <select
-                                value={offerFinish}
-                                onChange={(e) => setOfferFinish(e.target.value)}
-                                className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none"
-                              >
-                                {(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f) => (
-                                  <option key={f} value={f}>{f}</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="block text-[8px] text-zinc-500 uppercase font-sans">Qty (Units)</label>
-                              <input
-                                type="number"
-                                required
-                                min={1}
-                                value={offerQuantity}
-                                onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))}
-                                className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none font-bold"
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <label className="block text-[8px] text-zinc-500 uppercase font-sans">Price (₹)</label>
-                              <input
-                                type="number"
-                                required
-                                min={1}
-                                value={offerPrice || ''}
-                                placeholder="0"
-                                onChange={(e) => setOfferPrice(Number(e.target.value))}
-                                className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none font-bold"
-                              />
-                            </div>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                            {[
+                              { label: 'Material', node: <select value={offerMaterial} onChange={(e) => setOfferMaterial(e.target.value)} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50">{(activeThread.machiningQuote.material_capabilities || ['Aluminium 6061']).map((m: string) => <option key={m} value={m}>{m}</option>)}</select> },
+                              { label: 'Finish', node: <select value={offerFinish} onChange={(e) => setOfferFinish(e.target.value)} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50">{(activeThread.machiningQuote.finish_options || ['As-Machined']).map((f: string) => <option key={f} value={f}>{f}</option>)}</select> },
+                              { label: 'Qty', node: <input type="number" required min={1} value={offerQuantity} onChange={(e) => setOfferQuantity(Math.max(1, Number(e.target.value)))} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50" /> },
+                              { label: 'Price (₹)', node: <input type="number" required min={1} value={offerPrice || ''} placeholder="0" onChange={(e) => setOfferPrice(Number(e.target.value))} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50" /> },
+                            ].map(({ label, node }) => (
+                              <div key={label} className="space-y-1">
+                                <label className="block text-[8px] text-zinc-500 uppercase tracking-wider">{label}</label>
+                                {node}
+                              </div>
+                            ))}
                           </div>
-
-                          <div className="space-y-1">
-                            <label className="block text-[8px] text-zinc-500 uppercase font-sans">Proposal Notes</label>
-                            <input
-                              type="text"
-                              placeholder="Add explanation for counter-offer..."
-                              value={sellerNotes}
-                              onChange={(e) => setSellerNotes(e.target.value)}
-                              className="w-full p-2 border border-zinc-700/60 rounded-lg bg-zinc-800 text-white focus:outline-none font-semibold font-sans"
-                            />
-                          </div>
-
-                          <div className="flex gap-3 pt-1">
-                            <button
-                              type="submit"
-                              disabled={submittingOffer}
-                              className="flex-1 py-2 bg-cobalt hover:bg-[#06b6d4] text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                            >
-                              {submittingOffer ? (
-                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <>
-                                  <Send className="w-3.5 h-3.5" />
-                                  <span>Send Proposal</span>
-                                </>
-                              )}
+                          <input type="text" placeholder="Proposal notes..." value={sellerNotes} onChange={(e) => setSellerNotes(e.target.value)} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50" />
+                          <div className="flex gap-2">
+                            <button type="submit" disabled={submittingOffer} className="flex-1 py-2 bg-gradient-to-r from-[#00D0F5] to-[#0099bb] text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 transition-all">
+                              {submittingOffer ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <><Send className="w-3.5 h-3.5" />Send Proposal</>}
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => setShowCounterForm(false)}
-                              className="px-4 py-2 border border-zinc-700/60 hover:bg-zinc-900 text-xs font-bold text-zinc-500 rounded-lg transition-colors cursor-pointer"
-                            >
-                              Cancel
-                            </button>
+                            <button type="button" onClick={() => setShowCounterForm(false)} className="px-4 py-2 border border-zinc-700 hover:bg-zinc-800 text-xs font-bold text-zinc-400 rounded-lg cursor-pointer transition-all">Cancel</button>
                           </div>
                         </form>
                       )}
@@ -3089,55 +2955,65 @@ function QuotationChatsTab({
                   )}
 
                   {activeThread.machiningQuote.status === 'Accepted' && (
-                    /* Accepted Offer Summary */
-                    <div className="bg-emerald-500/5 border border-emerald-500/10 p-3 rounded-lg text-[10px] font-bold text-zinc-500 space-y-1">
-                      <p className="text-emerald font-black">Contract Terms Finalized & Accepted</p>
-                      <div className="grid grid-cols-2 md:flex md:items-center gap-x-4 gap-y-1 text-zinc-500">
-                        <div>Material: <span className="text-white font-black">{activeThread.machiningQuote.selected_material}</span></div>
-                        <div>Finish: <span className="text-white font-black">{activeThread.machiningQuote.selected_finish}</span></div>
-                        <div>Quantity: <span className="text-white font-black">{activeThread.machiningQuote.quantity} Units</span></div>
-                        <div className="ml-auto">Price: <span className="text-coral font-black">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span></div>
+                    <div className="bg-emerald-500/5 border border-emerald-500/15 p-3 rounded-lg text-[10px] font-bold space-y-1">
+                      <p className="text-emerald-400 font-black flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Contract Terms Finalized & Accepted</p>
+                      <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-zinc-500 font-mono">
+                        <span>Material: <span className="text-white">{activeThread.machiningQuote.selected_material}</span></span>
+                        <span>Finish: <span className="text-white">{activeThread.machiningQuote.selected_finish}</span></span>
+                        <span>Qty: <span className="text-white">{activeThread.machiningQuote.quantity} units</span></span>
+                        <span>Price: <span className="text-[#00D0F5] font-black">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span></span>
                       </div>
                     </div>
                   )}
                 </div>
               )}
 
-            {/* Input message bar */}
-            <form onSubmit={handleSendMessage} className="border-t border-zinc-700/60/50 pt-4 flex gap-2">
-              <label className="btn-secondary p-3 rounded-lg border border-zinc-700/60 cursor-pointer flex items-center justify-center shrink-0 hover:bg-zinc-900 transition-colors" title="Attach file">
-                <Paperclip className={`w-4 h-4 ${uploading ? 'animate-pulse text-cobalt' : 'text-zinc-500'}`} />
+            {/* Message input bar */}
+            <form onSubmit={handleSendMessage} className="px-5 py-4 border-t border-zinc-800 bg-[#0F1A2E]/60 shrink-0 flex gap-3 items-center">
+              <label className="p-2.5 rounded-xl border border-zinc-700/60 bg-zinc-800/60 cursor-pointer hover:bg-zinc-700/60 transition-colors shrink-0" title="Attach file">
+                <Paperclip className={`w-4 h-4 ${uploading ? 'animate-pulse text-[#00D0F5]' : 'text-zinc-500'}`} />
                 <input type="file" onChange={handleFileUpload} disabled={uploading || sending} className="hidden" />
               </label>
               <input
                 type="text"
-                placeholder="Type your message or negotiate terms..."
+                placeholder="Type a message or negotiate terms..."
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 disabled={sending || uploading}
-                className="flex-1 text-xs font-semibold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-cobalt transition-colors"
+                className="flex-1 text-xs font-semibold px-4 py-2.5 rounded-xl border border-zinc-700/60 bg-zinc-900/60 text-white placeholder-zinc-600 focus:outline-none focus:border-[#00D0F5]/40 focus:bg-zinc-900 transition-all"
               />
               <button
                 type="submit"
                 disabled={sending || uploading || !newMessage.trim()}
-                className="btn-cobalt p-3 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-50 cursor-pointer"
+                className="p-2.5 rounded-xl bg-gradient-to-br from-[#00D0F5] to-[#0099bb] text-white flex items-center justify-center shrink-0 disabled:opacity-40 cursor-pointer hover:opacity-90 transition-all shadow-lg"
               >
                 <Send className="w-4 h-4" />
               </button>
             </form>
           </>
         ) : (
-          <div className="space-y-3">
-            <MessageSquare className="w-12 h-12 text-zinc-400/30 mx-auto" />
+          <div className="flex flex-col items-center justify-center gap-4 text-center p-10">
+            <div className="w-16 h-16 rounded-2xl bg-zinc-800/60 border border-zinc-700/30 flex items-center justify-center shadow-inner">
+              <MessageSquare className="w-7 h-7 text-zinc-600" />
+            </div>
             <div>
-              <p className="text-xs font-black text-white uppercase tracking-tight">Select a conversation</p>
-              <p className="text-[10px] text-zinc-400 mt-1 max-w-xs leading-normal">
-                Choose a negotiation thread from the left menu to view secure messages, share CAD revisions, or review contract terms.
+              <p className="text-sm font-black text-zinc-300">Select a conversation</p>
+              <p className="text-[11px] text-zinc-600 mt-1.5 max-w-xs leading-relaxed">
+                Choose a negotiation thread to view messages, share CAD files, and finalize contract terms.
               </p>
             </div>
           </div>
         )}
       </div>
+
+
+
+
+
+
+
+
+
 
       {showRejectForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
