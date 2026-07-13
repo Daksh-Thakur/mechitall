@@ -335,7 +335,14 @@ export default function SellerRfqsTab(props: any) {
           <div className="lg:w-4/12 space-y-6">
 
             {/* EARNINGS VELOCITY */}
-            <div className="bg-[#0B1528] border border-zinc-800 rounded-2xl p-5 shadow-sm space-y-5">
+            <div
+              onClick={() => {
+                if (setActiveTab) {
+                  setActiveTab('seller_earnings');
+                }
+              }}
+              className="bg-[#0B1528] border border-zinc-800 rounded-2xl p-5 shadow-sm space-y-5 cursor-pointer hover:border-[#00D0F5]/50 hover:shadow-[#00D0F5]/5 transition-all"
+            >
               <div className="pb-3 border-b border-zinc-800 flex justify-between items-center">
                 <h4 className="text-xs font-black text-slate-300 uppercase tracking-wider">Earnings Velocity</h4>
                 <IndianRupee className="w-4 h-4 text-[#00D0F5]" />
