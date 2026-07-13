@@ -20,7 +20,7 @@ export default function RefundPolicyPage() {
             </p>
             <h2 className="text-xl font-semibold text-white">3. Eligibility for Return</h2>
             <p>
-              Only standard, off-the-shelf items are eligible for returns. Custom machined parts (RFQ orders) are non-returnable unless they fail to meet the provided CAD specifications or agreed tolerances. 
+              Only standard, off-the-shelf items are eligible for returns. Custom machined parts (RFQ orders) are non-returnable unless they fail to meet the provided CAD specifications or agreed tolerances.
             </p>
           </div>
         </div>

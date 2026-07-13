@@ -125,41 +125,7 @@ export default function OrdersTab(props: any) {
                               }`}></div>
                           </div>
 
-                          {/* Expanded Info */}
-                          {isSelected && (
-                            <div className="pt-3 mt-3 border-t border-zinc-700/50 space-y-2 animate-in fade-in slide-in-from-top-2">
-                              <div className="flex justify-between">
-                                <span className="text-[10px] text-zinc-400">Product</span>
-                                <span className="font-bold text-white text-[10px] max-w-[120px] text-right truncate" title={ord.rfq_title || 'Mechatronic Components'}>
-                                  {ord.rfq_title || 'Mechatronic Components'}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-[10px] text-zinc-400">Quantity</span>
-                                <span className="font-bold text-white text-[10px]">
-                                  {ord.items_count} units
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-[10px] text-zinc-400">Delivery Address</span>
-                                <span className="font-bold text-white text-[10px] max-w-[120px] text-right truncate" title="Nirmal Narayan Aawas, Divyanagar, Airport Road, Totu, Shimla, H.P. 171011">
-                                  Nirmal Narayan Aawas, Divyanagar...
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-[10px] text-zinc-400">Mode of Payment</span>
-                                <span className="font-bold text-white text-[10px]">
-                                  PayU Escrow
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-[10px] text-zinc-400">Date</span>
-                                <span className="font-bold text-white text-[10px]">
-                                  {new Date(ord.created_at).toLocaleDateString()}
-                                </span>
-                              </div>
-                            </div>
-                          )}
+                          {/* Removed Inline Expanded Info */}
                         </div>
                       );
                     })}
@@ -224,261 +190,319 @@ export default function OrdersTab(props: any) {
                 </div>
               </div>
 
-              {/* Shipment Tracking details progress timeline */}
+              {/* Complete Order Details Popup Modal Card */}
               {selectedOrder && (
-                <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm space-y-5">
-                  <div className="flex justify-between items-center pb-3 border-b border-zinc-700/60/50">
-                    <span className="text-xs font-black text-white uppercase tracking-tight flex items-center gap-1.5">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-cobalt">
-                        <rect x="1" y="3" width="15" height="13" />
-                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
-                        <circle cx="5.5" cy="18.5" r="2.5" />
-                        <circle cx="18.5" cy="18.5" r="2.5" />
-                      </svg>
-                      Shipment Tracking: <span className="font-mono">{selectedOrder.id}</span>
-                    </span>
-                    {selectedOrder.disputed ? (
-                      <span className={`px-2.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-rose-500/10 text-rose-500 border border-rose-500/20`}>
-                        DISPUTED (FROZEN)
-                      </span>
-                    ) : (
-                      <span className={`px-2.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest ${
-                        selectedOrder.status === 'Pending Payment'
-                          ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
-                          : 'bg-blue-500/10 text-cobalt border border-blue-500/20'
-                      }`}>
-                        {selectedOrder.status === 'Completed' ? 'DELIVERED' : selectedOrder.status === 'Delivered' ? 'OUT FOR DELIVERY' : selectedOrder.status === 'Pending Payment' ? 'PENDING PAYMENT' : 'IN PROCESSING'}
-                      </span>
-                    )}
-                  </div>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/80 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedOrder(null)}>
+                  <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto space-y-6 relative animate-zoom-in" onClick={(e) => e.stopPropagation()}>
+                    
+                    {/* Close button */}
+                    <button 
+                      onClick={() => setSelectedOrder(null)} 
+                      className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-700/50 transition-colors cursor-pointer"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
 
-                  {/* Horizontal visual progress meter */}
-                  <div className="relative pt-6 pb-2">
-                    <div className="absolute top-1/2 left-0 right-0 h-1 bg-zinc-900 -translate-y-1/2 rounded-full overflow-hidden border border-zinc-700/60/50">
-                      <div className={`h-full rounded-full bg-cobalt transition-all duration-500 ${selectedOrder.status === 'Completed'
-                        ? 'w-full'
-                        : selectedOrder.status === 'Delivered'
-                          ? 'w-3/4'
-                          : selectedOrder.status === 'Shipped'
-                            ? 'w-1/2'
-                            : 'w-1/4'
-                        }`}></div>
-                    </div>
-
-                    <div className="relative flex justify-between text-center text-[10px] font-bold text-zinc-500 z-10">
-                      <div className="space-y-1">
-                        <div className="w-6 h-6 rounded-full bg-cobalt text-white flex items-center justify-center mx-auto border-2 border-white shadow-md">✓</div>
-                        <span className="block font-bold">Order Placed</span>
-                        <span className="block text-[8px] text-zinc-400">Oct 24, 09:00</span>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status !== 'Processing' && selectedOrder.status !== 'idle'
-                          ? 'bg-cobalt text-white'
-                          : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
-                          }`}>
-                          {selectedOrder.status === 'Processing' ? '●' : '✓'}
-                        </div>
-                        <span className="block font-bold">Processing</span>
-                        <span className="block text-[8px] text-zinc-400">Oct 24, 14:30</span>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Shipped' || selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
-                          ? 'bg-cobalt text-white'
-                          : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
-                          }`}>
-                          {selectedOrder.status === 'Shipped' ? '●' : selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed' ? '✓' : '3'}
-                        </div>
-                        <span className="block font-bold">Shipped</span>
-                        <span className="block text-[8px] text-zinc-400">Oct 25, 08:00</span>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
-                          ? 'bg-cobalt text-white'
-                          : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
-                          }`}>
-                          {selectedOrder.status === 'Delivered' ? '●' : selectedOrder.status === 'Completed' ? '✓' : '4'}
-                        </div>
-                        <span className="block font-bold">Out for Delivery</span>
-                        <span className="block text-[8px] text-zinc-400">At 11:35 AM</span>
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Completed'
-                          ? 'bg-emerald text-white'
-                          : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
-                          }`}>
-                          {selectedOrder.status === 'Completed' ? '✓' : '5'}
-                        </div>
-                        <span className="block font-bold">Delivered</span>
-                        <span className="block text-[8px] text-zinc-400">Pending</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Section for Delivery Simulation and Escrow / Bolts Release */}
-                  <div className="pt-4 border-t border-zinc-700/60/50 flex flex-wrap items-center justify-between gap-4">
+                    {/* Header */}
                     <div>
-                      <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono">Sandbox Actions</span>
-                      <p className="text-[10px] text-zinc-400 mt-0.5">Manage order sandbox simulation and claim rewards proof.</p>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Order Details</span>
+                      <div className="flex flex-wrap items-center justify-between gap-3 mt-1 pr-8">
+                        <h2 className="text-base font-black text-white tracking-tight uppercase font-mono">ID: {selectedOrder.id}</h2>
+                        
+                        {selectedOrder.disputed ? (
+                          <span className="px-2.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                            DISPUTED (FROZEN)
+                          </span>
+                        ) : (
+                          <span className={`px-2.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest ${
+                            selectedOrder.status === 'Pending Payment'
+                              ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+                              : 'bg-blue-500/10 text-cobalt border border-blue-500/20'
+                          }`}>
+                            {selectedOrder.status === 'Completed' ? 'DELIVERED' : selectedOrder.status === 'Delivered' ? 'OUT FOR DELIVERY' : selectedOrder.status === 'Pending Payment' ? 'PENDING PAYMENT' : 'IN PROCESSING'}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      {selectedOrder.rfq_id && (
-                        <button
-                          onClick={() => {
-                            setActiveChatRfqId(selectedOrder.rfq_id);
-                            setActiveTab('chats');
-                          }}
-                          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg cursor-pointer transition-all shadow"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          <span>Open Quote Chat</span>
-                        </button>
-                      )}
-
-                      {/* Pay Now Button for Pending Payment orders */}
-                      {selectedOrder.status === 'Pending Payment' && (
-                        <button
-                          onClick={async () => {
-                            try {
-                              const res = await initiatePayUExistingOrderPayment(selectedOrder.id);
-                              if (res.success && res.payuParams) {
-                                const { payuParams, payuUrl } = res;
-                                if (payuUrl.startsWith('/')) {
-                                  const searchParams = new URLSearchParams(payuParams as any);
-                                  window.location.href = `${payuUrl}?${searchParams.toString()}`;
-                                } else {
-                                  const form = document.createElement('form');
-                                  form.method = 'POST';
-                                  form.action = payuUrl;
-                                  Object.entries(payuParams).forEach(([k, v]) => {
-                                    const input = document.createElement('input');
-                                    input.type = 'hidden';
-                                    input.name = k;
-                                    input.value = String(v);
-                                    form.appendChild(input);
-                                  });
-                                  document.body.appendChild(form);
-                                  form.submit();
-                                }
-                              } else {
-                                showToast(res.error || 'Failed to initiate payment', 'error');
-                              }
-                            } catch (e: any) {
-                              showToast(e.message || 'Payment initiation error', 'error');
-                            }
-                          }}
-                          className="bg-[#A3E635] hover:bg-[#bef264] text-zinc-950 font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase tracking-wider cursor-pointer transition-all shadow"
-                        >
-                          Pay Now (PayU)
-                        </button>
-                      )}
-
-                      {/* Dispute / Report Issue Button */}
-                      {!selectedOrder.disputed && selectedOrder.status !== 'Completed' && selectedOrder.status !== 'Pending Payment' && (
-                        <button
-                          onClick={async () => {
-                            const reason = window.prompt('Please enter the reason for reporting an issue / disputing this order:');
-                            if (!reason) return;
-                            try {
-                              const res = await disputeOrder(selectedOrder.id, reason);
-                              if (res.success) {
-                                showToast('Issue reported successfully. Escrow funds have been frozen.', 'success');
-                                await fetchOrders();
-                              } else {
-                                showToast(res.error || 'Failed to file dispute', 'error');
-                              }
-                            } catch (e: any) {
-                              showToast(e.message || 'Dispute submission failed', 'error');
-                            }
-                          }}
-                          className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase tracking-wider border border-rose-500/20 cursor-pointer transition-all"
-                        >
-                          Report an Issue
-                        </button>
-                      )}
-
-                      {selectedOrder.disputed && (
-                        <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider bg-rose-500/5 px-3 py-1.5 rounded border border-rose-500/10">
-                          Mediation Active: Funds Locked (72h)
-                        </span>
-                      )}
-
-                      {!selectedOrder.disputed && selectedOrder.status === 'Processing' && (
-                        <button
-                          onClick={() => handleSimulateStatus(selectedOrder.id, 'Shipped')}
-                          disabled={isPending}
-                          className="btn-cobalt py-1.5 px-3 rounded-lg text-[10px] font-bold cursor-pointer"
-                        >
-                          {isPending ? 'Processing...' : 'Simulate Ship'}
-                        </button>
-                      )}
-                      {!selectedOrder.disputed && selectedOrder.status === 'Shipped' && (
-                        <button
-                          onClick={() => handleSimulateStatus(selectedOrder.id, 'Delivered')}
-                          disabled={isPending}
-                          className="btn-cobalt py-1.5 px-3 rounded-lg text-[10px] font-bold cursor-pointer"
-                        >
-                          {isPending ? 'Processing...' : 'Simulate Delivery'}
-                        </button>
-                      )}
-
-                      {/* Delivered -> Prominent Unboxing Claim Button */}
-                      {selectedOrder.status === 'Delivered' && (
-                        <div className="relative">
-                          <label
-                            htmlFor={`file-upload-${selectedOrder.id}`}
-                            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500 hover:bg-amber-600 text-zinc-950 px-3 py-2 rounded-lg cursor-pointer transition-all shadow"
-                          >
-                            {uploadingOrderId === selectedOrder.id || isPending ? (
-                              <>
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                Crediting...
-                              </>
-                            ) : (
-                              <>
-                                <Camera className="w-3.5 h-3.5" />
-                                Claim Bolts &amp; Release Escrow
-                              </>
-                            )}
-                          </label>
-                          <input
-                            id={`file-upload-${selectedOrder.id}`}
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => handlePhotoUploadAndClaim(selectedOrder.id, e)}
-                            disabled={uploadingOrderId !== null || isPending}
-                          />
+                    {/* Details Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-900/50 border border-zinc-700/40 rounded-xl p-4 text-xs font-semibold text-zinc-400">
+                      <div className="space-y-2">
+                        <div className="flex justify-between border-b border-zinc-800/50 pb-1.5">
+                          <span>Product</span>
+                          <span className="text-white font-bold max-w-[180px] truncate text-right" title={selectedOrder.rfq_title || 'Mechatronic Components'}>
+                            {selectedOrder.rfq_title || 'Mechatronic Components'}
+                          </span>
                         </div>
-                      )}
+                        <div className="flex justify-between border-b border-zinc-800/50 pb-1.5">
+                          <span>Quantity</span>
+                          <span className="text-white font-bold">{selectedOrder.items_count} units</span>
+                        </div>
+                        <div className="flex justify-between pb-1.5">
+                          <span>Order Total</span>
+                          <span className="text-coral font-extrabold">₹{Number(selectedOrder.total_amount).toFixed(2)}</span>
+                        </div>
+                      </div>
 
-                      {/* Completed state */}
-                      {(selectedOrder.status === 'Completed' || selectedOrder.status === 'completed') && (
-                        <div className="flex items-center gap-4">
-                          {selectedOrder.unboxing_photo_url && (
-                            <div className="relative w-10 h-10 rounded border border-zinc-700/60 overflow-hidden bg-zinc-900 shadow-sm">
-                              <img
-                                src={selectedOrder.unboxing_photo_url}
-                                alt="Unboxing proof"
-                                className="w-full h-full object-cover"
-                              />
+                      <div className="space-y-2">
+                        <div className="flex justify-between border-b border-zinc-800/50 pb-1.5">
+                          <span>Payment Mode</span>
+                          <span className="text-white font-bold">PayU Escrow</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-800/50 pb-1.5">
+                          <span>Date Placed</span>
+                          <span className="text-white font-bold font-mono">{new Date(selectedOrder.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex justify-between pb-1.5 items-start">
+                          <span>Delivery Address</span>
+                          <span className="text-white font-bold text-right max-w-[180px] break-words" title="Nirmal Narayan Aawas, Divyanagar, Airport Road, Totu, Shimla, H.P. 171011">
+                            Nirmal Narayan Aawas, Divyanagar, Airport Road, Totu, Shimla, H.P. 171011
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Shipment Tracking details progress timeline */}
+                    <div className="space-y-3">
+                      <span className="block text-[10px] uppercase font-bold text-zinc-400 tracking-wider font-mono">Tracking & Payout Progress</span>
+                      
+                      {/* Horizontal visual progress meter */}
+                      <div className="relative pt-6 pb-2">
+                        <div className="absolute top-1/2 left-0 right-0 h-1 bg-zinc-900 -translate-y-1/2 rounded-full overflow-hidden border border-zinc-700/60/50">
+                          <div className={`h-full rounded-full bg-cobalt transition-all duration-500 ${selectedOrder.status === 'Completed'
+                            ? 'w-full'
+                            : selectedOrder.status === 'Delivered'
+                              ? 'w-3/4'
+                              : selectedOrder.status === 'Shipped'
+                                ? 'w-1/2'
+                                : 'w-1/4'
+                            }`}></div>
+                        </div>
+
+                        <div className="relative flex justify-between text-center text-[10px] font-bold text-zinc-500 z-10">
+                          <div className="space-y-1">
+                            <div className="w-6 h-6 rounded-full bg-cobalt text-white flex items-center justify-center mx-auto border-2 border-white shadow-md">✓</div>
+                            <span className="block font-bold">Order Placed</span>
+                            <span className="block text-[8px] text-zinc-400">Oct 24, 09:00</span>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status !== 'Processing' && selectedOrder.status !== 'idle'
+                              ? 'bg-cobalt text-white'
+                              : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
+                              }`}>
+                              {selectedOrder.status === 'Processing' ? '●' : '✓'}
                             </div>
-                          )}
-                          <div className="text-right">
-                            <span className="text-[10px] font-black text-emerald flex items-center gap-1 justify-end uppercase tracking-wider">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              Escrow Released (PayU)
-                            </span>
-                            <span className="text-[8px] font-mono text-zinc-400 block uppercase tracking-wider">
-                              Nodal Payout Confirmed
-                            </span>
+                            <span className="block font-bold">Processing</span>
+                            <span className="block text-[8px] text-zinc-400">Oct 24, 14:30</span>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Shipped' || selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
+                              ? 'bg-cobalt text-white'
+                              : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
+                              }`}>
+                              {selectedOrder.status === 'Shipped' ? '●' : selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed' ? '✓' : '3'}
+                            </div>
+                            <span className="block font-bold">Shipped</span>
+                            <span className="block text-[8px] text-zinc-400">Oct 25, 08:00</span>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Delivered' || selectedOrder.status === 'Completed'
+                              ? 'bg-cobalt text-white'
+                              : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
+                              }`}>
+                              {selectedOrder.status === 'Delivered' ? '●' : selectedOrder.status === 'Completed' ? '✓' : '4'}
+                            </div>
+                            <span className="block font-bold">Out for Delivery</span>
+                            <span className="block text-[8px] text-zinc-400">At 11:35 AM</span>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center mx-auto border-2 border-white shadow-md ${selectedOrder.status === 'Completed'
+                              ? 'bg-emerald text-white'
+                              : 'bg-zinc-800 text-zinc-400 border-zinc-700/60'
+                              }`}>
+                              {selectedOrder.status === 'Completed' ? '✓' : '5'}
+                            </div>
+                            <span className="block font-bold">Delivered</span>
+                            <span className="block text-[8px] text-zinc-400">Pending</span>
                           </div>
                         </div>
-                      )}
+                      </div>
+                    </div>
+
+                    {/* Action Section for Delivery Simulation and Escrow / Bolts Release */}
+                    <div className="pt-4 border-t border-zinc-700/60/50 flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono">Sandbox Actions</span>
+                        <p className="text-[10px] text-zinc-400 mt-0.5">Manage order sandbox simulation and claim rewards proof.</p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        {selectedOrder.rfq_id && (
+                          <button
+                            onClick={() => {
+                              setActiveChatRfqId(selectedOrder.rfq_id);
+                              setActiveTab('chats');
+                              setSelectedOrder(null);
+                            }}
+                            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-slate-800 hover:bg-slate-900 text-white px-3 py-2 rounded-lg cursor-pointer transition-all shadow"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>Open Quote Chat</span>
+                          </button>
+                        )}
+
+                        {/* Pay Now Button for Pending Payment orders */}
+                        {selectedOrder.status === 'Pending Payment' && (
+                          <button
+                            onClick={async () => {
+                              try {
+                                const res = await initiatePayUExistingOrderPayment(selectedOrder.id);
+                                if (res.success && res.payuParams) {
+                                  const { payuParams, payuUrl } = res;
+                                  if (payuUrl.startsWith('/')) {
+                                    const searchParams = new URLSearchParams(payuParams as any);
+                                    window.location.href = `${payuUrl}?${searchParams.toString()}`;
+                                  } else {
+                                    const form = document.createElement('form');
+                                    form.method = 'POST';
+                                    form.action = payuUrl;
+                                    Object.entries(payuParams).forEach(([k, v]) => {
+                                      const input = document.createElement('input');
+                                      input.type = 'hidden';
+                                      input.name = k;
+                                      input.value = String(v);
+                                      form.appendChild(input);
+                                    });
+                                    document.body.appendChild(form);
+                                    form.submit();
+                                  }
+                                } else {
+                                  showToast(res.error || 'Failed to initiate payment', 'error');
+                                }
+                              } catch (e: any) {
+                                showToast(e.message || 'Payment initiation error', 'error');
+                              }
+                            }}
+                            className="bg-[#A3E635] hover:bg-[#bef264] text-zinc-950 font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase tracking-wider cursor-pointer transition-all shadow"
+                          >
+                            Pay Now (PayU)
+                          </button>
+                        )}
+
+                        {/* Dispute / Report Issue Button */}
+                        {!selectedOrder.disputed && selectedOrder.status !== 'Completed' && selectedOrder.status !== 'Pending Payment' && (
+                          <button
+                            onClick={async () => {
+                              const reason = window.prompt('Please enter the reason for reporting an issue / disputing this order:');
+                              if (!reason) return;
+                              try {
+                                const res = await disputeOrder(selectedOrder.id, reason);
+                                if (res.success) {
+                                  showToast('Issue reported successfully. Escrow funds have been frozen.', 'success');
+                                  await fetchOrders();
+                                  setSelectedOrder({ ...selectedOrder, disputed: true });
+                                } else {
+                                  showToast(res.error || 'Failed to file dispute', 'error');
+                                }
+                              } catch (e: any) {
+                                showToast(e.message || 'Dispute submission failed', 'error');
+                              }
+                            }}
+                            className="bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase tracking-wider border border-rose-500/20 cursor-pointer transition-all"
+                          >
+                            Report an Issue
+                          </button>
+                        )}
+
+                        {selectedOrder.disputed && (
+                          <span className="text-[10px] text-rose-500 font-bold uppercase tracking-wider bg-rose-500/5 px-3 py-1.5 rounded border border-rose-500/10">
+                            Mediation Active: Funds Locked (72h)
+                          </span>
+                        )}
+
+                        {!selectedOrder.disputed && selectedOrder.status === 'Processing' && (
+                          <button
+                            onClick={async () => {
+                              await handleSimulateStatus(selectedOrder.id, 'Shipped');
+                              setSelectedOrder({ ...selectedOrder, status: 'Shipped' });
+                            }}
+                            disabled={isPending}
+                            className="btn-cobalt py-1.5 px-3 rounded-lg text-[10px] font-bold cursor-pointer"
+                          >
+                            {isPending ? 'Processing...' : 'Simulate Ship'}
+                          </button>
+                        )}
+                        {!selectedOrder.disputed && selectedOrder.status === 'Shipped' && (
+                          <button
+                            onClick={async () => {
+                              await handleSimulateStatus(selectedOrder.id, 'Delivered');
+                              setSelectedOrder({ ...selectedOrder, status: 'Delivered' });
+                            }}
+                            disabled={isPending}
+                            className="btn-cobalt py-1.5 px-3 rounded-lg text-[10px] font-bold cursor-pointer"
+                          >
+                            {isPending ? 'Processing...' : 'Simulate Delivery'}
+                          </button>
+                        )}
+
+                        {/* Delivered -> Prominent Unboxing Claim Button */}
+                        {selectedOrder.status === 'Delivered' && (
+                          <div className="relative">
+                            <label
+                              htmlFor={`modal-file-upload-${selectedOrder.id}`}
+                              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500 hover:bg-amber-600 text-zinc-950 px-3 py-2 rounded-lg cursor-pointer transition-all shadow"
+                            >
+                              {uploadingOrderId === selectedOrder.id || isPending ? (
+                                <>
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  Crediting...
+                                </>
+                              ) : (
+                                <>
+                                  <Camera className="w-3.5 h-3.5" />
+                                  Claim Bolts &amp; Release Escrow
+                                </>
+                              )}
+                            </label>
+                            <input
+                              id={`modal-file-upload-${selectedOrder.id}`}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => handlePhotoUploadAndClaim(selectedOrder.id, e)}
+                              disabled={uploadingOrderId !== null || isPending}
+                            />
+                          </div>
+                        )}
+
+                        {/* Completed state */}
+                        {(selectedOrder.status === 'Completed' || selectedOrder.status === 'completed') && (
+                          <div className="flex items-center gap-4">
+                            {selectedOrder.unboxing_photo_url && (
+                              <div className="relative w-10 h-10 rounded border border-zinc-700/60 overflow-hidden bg-zinc-900 shadow-sm">
+                                <img
+                                  src={selectedOrder.unboxing_photo_url}
+                                  alt="Unboxing proof"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="text-right">
+                              <span className="text-[10px] font-black text-emerald flex items-center gap-1 justify-end uppercase tracking-wider">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Escrow Released (PayU)
+                              </span>
+                              <span className="text-[8px] font-mono text-zinc-400 block uppercase tracking-wider">
+                                Nodal Payout Confirmed
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
