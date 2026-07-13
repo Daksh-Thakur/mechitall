@@ -1914,7 +1914,7 @@ function QuotationChatsTab({
 }) {
   const supabase = createClient();
   const [threads, setThreads] = useState<ChatThread[]>([]);
-  const [chatSort, setChatSort] = useState<'date' | 'status-az' | 'status-za' | 'status-priority'>('date');
+  const [chatSort, setChatSort] = useState<'date' | 'status-az' | 'status-za' | 'status-priority' | 'filter-accepted' | 'filter-rejected' | 'filter-submitted'>('date');
 
   const sortedThreads = React.useMemo(() => {
     let result = [...threads];
@@ -1924,6 +1924,12 @@ function QuotationChatsTab({
         const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
         return timeB - timeA;
       });
+    } else if (chatSort === 'filter-accepted') {
+      result = result.filter(t => t.status === 'ACCEPTED' || t.machiningQuote?.status === 'Accepted');
+    } else if (chatSort === 'filter-rejected') {
+      result = result.filter(t => t.status === 'REJECTED' || t.machiningQuote?.status === 'Rejected');
+    } else if (chatSort === 'filter-submitted') {
+      result = result.filter(t => t.status === 'SUBMITTED' || (t.machiningQuote?.status as any) === 'Offered' || (t.machiningQuote?.status as any) === 'Submitted');
     } else if (chatSort === 'status-az') {
       result.sort((a, b) => (a.status || '').localeCompare(b.status || ''));
     } else if (chatSort === 'status-za') {
@@ -2535,9 +2541,9 @@ function QuotationChatsTab({
   };
 
   return (
-    <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm min-h-[600px] flex flex-col md:flex-row gap-6">
+    <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 shadow-sm min-h-[600px] flex flex-col md:flex-row gap-4">
       {/* Threads List Sidebar */}
-      <div className={`md:w-5/12 flex flex-col gap-4 border-r border-zinc-700/60/50 pr-0 md:pr-6 ${activeThread ? 'hidden md:flex' : 'flex'}`}>
+      <div className={`md:w-6/12 flex flex-col gap-4 border-r border-zinc-700/60/50 pr-0 md:pr-5 ${activeThread ? 'hidden md:flex' : 'flex'}`}>
         <div className="space-y-1">
           <h2 className="text-base font-black text-white tracking-tight uppercase">Quotation Negotiations</h2>
           <p className="text-xs text-zinc-400 leading-relaxed font-semibold">
@@ -2545,18 +2551,25 @@ function QuotationChatsTab({
           </p>
         </div>
 
-        {/* Sort Chats */}
+        {/* Sort / Filter Chats */}
         <div className="flex items-center justify-between gap-2 bg-zinc-905/30 border border-zinc-700/60 p-2.5 rounded-xl text-xs font-mono font-bold">
-          <span className="text-zinc-500 text-[10px] uppercase">Sort Chats:</span>
+          <span className="text-zinc-500 text-[10px] uppercase">Filter / Sort:</span>
           <select
             value={chatSort}
             onChange={(e) => setChatSort(e.target.value as any)}
-            className="bg-zinc-900 border border-zinc-750 text-white text-[10px] px-2.5 py-1 rounded focus:outline-none cursor-pointer font-sans font-semibold"
+            className="bg-zinc-900 border border-zinc-750 text-white text-[10px] px-2.5 py-1 rounded focus:outline-none cursor-pointer font-sans font-semibold flex-1 ml-2"
           >
-            <option value="date">Last Message (Newest)</option>
-            <option value="status-priority">Status (Priority)</option>
-            <option value="status-az">Status (A-Z)</option>
-            <option value="status-za">Status (Z-A)</option>
+            <optgroup label="Sort By">
+              <option value="date">Last Message (Newest)</option>
+              <option value="status-priority">Status (Priority)</option>
+              <option value="status-az">Status (A–Z)</option>
+              <option value="status-za">Status (Z–A)</option>
+            </optgroup>
+            <optgroup label="Filter By Status">
+              <option value="filter-accepted">✅ Accepted Only</option>
+              <option value="filter-submitted">🔄 Submitted / Offered</option>
+              <option value="filter-rejected">❌ Rejected Only</option>
+            </optgroup>
           </select>
         </div>
 

@@ -33,7 +33,6 @@ export default function SellerRfqsTab(props: any) {
               </div>
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase text-[#00D0F5] tracking-wider font-mono">Seller level status</span>
                   <span className={`text-[9px] font-black px-2 py-0.5 rounded border uppercase tracking-wider ${sellerData.badgeColor}`}>
                     {sellerData.badgeText}
                   </span>
@@ -404,10 +403,10 @@ export default function SellerRfqsTab(props: any) {
                       const isActive = idx === 4;
 
                       return (
-                        <div key={idx} className="flex flex-col items-center gap-2 group relative">
-                          {/* Premium tooltip showing actual value above the bar on hover */}
-                          <span className="opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 absolute -top-8 bg-zinc-950 text-[#00D0F5] text-[9px] font-mono font-black px-1.5 py-0.5 rounded border border-[#00D0F5]/30 shadow-xl transition-all duration-200 whitespace-nowrap pointer-events-none z-20">
-                            ₹{Number(bar.amount).toLocaleString('en-IN')}
+                        <div key={idx} className="flex flex-col items-center gap-1 group relative">
+                          {/* Always-visible value above bar */}
+                          <span className={`text-[8px] font-mono font-black whitespace-nowrap ${bar.amount > 0 ? (isActive ? 'text-[#00D0F5]' : 'text-zinc-400') : 'text-zinc-700'}`}>
+                            {bar.amount > 0 ? `₹${Number(bar.amount).toLocaleString('en-IN')}` : '—'}
                           </span>
                           <div
                             className={`w-7 rounded-t transition-all duration-300 origin-bottom hover:scale-x-105 hover:shadow-md ${isActive
