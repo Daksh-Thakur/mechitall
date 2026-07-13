@@ -1914,6 +1914,33 @@ function QuotationChatsTab({
 }) {
   const supabase = createClient();
   const [threads, setThreads] = useState<ChatThread[]>([]);
+  const [chatSort, setChatSort] = useState<'date' | 'status-az' | 'status-za' | 'status-priority'>('date');
+
+  const sortedThreads = React.useMemo(() => {
+    let result = [...threads];
+    if (chatSort === 'date') {
+      result.sort((a, b) => {
+        const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+        const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+        return timeB - timeA;
+      });
+    } else if (chatSort === 'status-az') {
+      result.sort((a, b) => (a.status || '').localeCompare(b.status || ''));
+    } else if (chatSort === 'status-za') {
+      result.sort((a, b) => (b.status || '').localeCompare(a.status || ''));
+    } else if (chatSort === 'status-priority') {
+      const getPriority = (status: string) => {
+        const s = status ? status.toUpperCase() : '';
+        if (s === 'ACCEPTED') return 1;
+        if (s === 'NEGOTIATING' || s === 'OFFERED' || s === 'SUBMITTED') return 2;
+        if (s === 'REJECTED' || s === 'CANCELLED') return 3;
+        return 4;
+      };
+      result.sort((a, b) => getPriority(a.status) - getPriority(b.status));
+    }
+    return result;
+  }, [threads, chatSort]);
+
   const [loading, setLoading] = useState(true);
   const [activeThread, setActiveThread] = useState<ChatThread | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -2518,13 +2545,28 @@ function QuotationChatsTab({
           </p>
         </div>
 
+        {/* Sort Chats */}
+        <div className="flex items-center justify-between gap-2 bg-zinc-905/30 border border-zinc-700/60 p-2.5 rounded-xl text-xs font-mono font-bold">
+          <span className="text-zinc-500 text-[10px] uppercase">Sort Chats:</span>
+          <select
+            value={chatSort}
+            onChange={(e) => setChatSort(e.target.value as any)}
+            className="bg-zinc-900 border border-zinc-750 text-white text-[10px] px-2.5 py-1 rounded focus:outline-none cursor-pointer font-sans font-semibold"
+          >
+            <option value="date">Last Message (Newest)</option>
+            <option value="status-priority">Status (Priority)</option>
+            <option value="status-az">Status (A-Z)</option>
+            <option value="status-za">Status (Z-A)</option>
+          </select>
+        </div>
+
         <div className="flex-1 overflow-y-auto max-h-[500px] space-y-2 mt-2">
           {loading ? (
             <div className="py-20 text-center">
               <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-400/30" />
             </div>
-          ) : threads.length > 0 ? (
-            threads.map((t) => {
+          ) : sortedThreads.length > 0 ? (
+            sortedThreads.map((t) => {
               const seenChatsStr = localStorage.getItem('mechitall_seen_chats');
               const seenChats = seenChatsStr ? JSON.parse(seenChatsStr) : {};
               const seen = seenChats[t.quoteId];
