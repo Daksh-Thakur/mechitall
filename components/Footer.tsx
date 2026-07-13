@@ -163,7 +163,7 @@ export default function Footer() {
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-coral shrink-0 mt-0.5" />
                 <span className="leading-relaxed font-sans">
-                  MechItAll Corporate Office, Sector 62, Noida, UP, India
+                  Nirmal Narayan Aawas, Divyanagar, Airport Road,<br/>Totu, Shimla, H.P. 171011
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -197,15 +197,18 @@ export default function Footer() {
 
         </div>
 
-        {/* Footer Bottom copyright banner */}
         <div className="border-t border-white/10 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] text-zinc-500 font-mono uppercase tracking-wider">
           <span>
-            © 2026 MechItAll Private Limited. All rights reserved.
+            © 2026 Daksh Thakur. All rights reserved.
           </span>
-          <div className="flex items-center gap-4">
-            <Link href="/products" className="hover:text-white transition-colors">Catalog Specifications</Link>
-            <span>•</span>
-            <Link href="/machining" className="hover:text-white transition-colors">Digital Escrow Terms</Link>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link href="/policies/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <span className="hidden md:inline">•</span>
+            <Link href="/policies/refund" className="hover:text-white transition-colors">Refund Policy</Link>
+            <span className="hidden md:inline">•</span>
+            <Link href="/policies/cancellation" className="hover:text-white transition-colors">Cancellation Policy</Link>
+            <span className="hidden md:inline">•</span>
+            <Link href="/policies/shipping" className="hover:text-white transition-colors">Shipping Policy</Link>
           </div>
         </div>
 

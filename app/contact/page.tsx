@@ -44,7 +44,7 @@ export default function ContactPage() {
                 Get in Touch
               </h1>
               <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-                Have questions about mechatronic parts specifications, our digital RFQ custom machining pipelines, or escrow payments? Our engineering team is ready to assist.
+                This website is operated by <strong className="text-white">Daksh Thakur</strong>. Have questions about mechatronic parts specifications, our digital RFQ custom machining pipelines, or escrow payments? Our engineering team is ready to assist.
               </p>
             </div>
 
@@ -65,7 +65,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <span className="block text-[10px] font-bold text-white uppercase font-mono">Phone Support</span>
-                  <span className="text-xs text-zinc-400 font-mono">+91 (120) 490-8800</span>
+                  <span className="text-xs text-zinc-400 font-mono">8278860886</span>
                 </div>
               </div>
 
@@ -74,8 +74,11 @@ export default function ContactPage() {
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <span className="block text-[10px] font-bold text-white uppercase font-mono">Corporate HQ</span>
-                  <span className="text-xs text-zinc-400 leading-relaxed font-sans">Sector 62, Noida, Uttar Pradesh, 201301, India</span>
+                  <span className="block text-[10px] font-bold text-white uppercase font-mono">Registered Address</span>
+                  <span className="text-xs text-zinc-400 leading-relaxed font-sans">
+                    Nirmal Narayan Aawas, Divyanagar, Airport Road,<br />
+                    Totu, Shimla, H.P. <span className="font-mono">171011</span>
+                  </span>
                 </div>
               </div>
             </div>

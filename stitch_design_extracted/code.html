@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>MechItAll Vendor Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary": "#000000",
+                    "surface-container": "#f0edef",
+                    "background": "#fcf8fa",
+                    "surface": "#fcf8fa",
+                    "slate-surface": "#F8FAFC",
+                    "inverse-primary": "#bec6e0",
+                    "on-error": "#ffffff",
+                    "outline-variant": "#c6c6cd",
+                    "data-green": "#10B981",
+                    "tertiary-fixed": "#fcdeb5",
+                    "on-primary-fixed-variant": "#3f465c",
+                    "surface-dim": "#dcd9db",
+                    "secondary": "#00687a",
+                    "on-secondary-container": "#006172",
+                    "surface-container-high": "#eae7e9",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-container-low": "#f6f3f5",
+                    "tertiary-container": "#271901",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-container": "#7c839b",
+                    "primary-container": "#131b2e",
+                    "engineering-navy": "#0F172A",
+                    "primary-fixed-dim": "#bec6e0",
+                    "inverse-surface": "#303032",
+                    "inverse-on-surface": "#f3f0f2",
+                    "zinc-border": "#E4E4E7",
+                    "secondary-container": "#57dffe",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed-variant": "#004e5c",
+                    "on-primary-fixed": "#131b2e",
+                    "surface-variant": "#e4e2e4",
+                    "error-container": "#ffdad6",
+                    "outline": "#76777d",
+                    "electric-cyan": "#06B6D4",
+                    "tertiary-fixed-dim": "#dec29a",
+                    "surface-bright": "#fcf8fa",
+                    "on-surface": "#1b1b1d",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#574425",
+                    "secondary-fixed-dim": "#4cd7f6",
+                    "on-surface-variant": "#45464d",
+                    "on-tertiary-container": "#98805d",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#565e74",
+                    "secondary-fixed": "#acedff",
+                    "primary": "#000000",
+                    "surface-container-highest": "#e4e2e4",
+                    "on-secondary-fixed": "#001f26",
+                    "on-background": "#1b1b1d",
+                    "primary-fixed": "#dae2fd",
+                    "on-tertiary-fixed": "#271901"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "container-max": "1280px",
+                    "margin": "32px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Space Grotesk"],
+                    "caption": ["Inter"],
+                    "headline-sm": ["Space Grotesk"],
+                    "data-value": ["JetBrains Mono"],
+                    "body-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg": ["Space Grotesk"],
+                    "data-label": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-md-mobile": ["20px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "caption": ["12px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "headline-sm-mobile": ["16px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "data-value": ["14px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "headline-lg-mobile": ["26px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "data-label": ["12px", {"lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: contain;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .gradient-mesh {
+            background-color: #fcf8fa;
+            background-image: radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.05) 0px, transparent 50%),
+                              radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.03) 0px, transparent 50%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background font-body-md text-on-background selection:bg-electric-cyan selection:text-white pb-20">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 bg-background dark:bg-engineering-navy border-b border-zinc-border dark:border-outline-variant flex justify-between items-center px-4 h-16 w-full">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-engineering-navy flex items-center justify-center overflow-hidden border border-zinc-border">
+<img class="w-full h-full object-cover" data-alt="A professional close-up studio portrait of a senior engineering manager, wearing a minimalist dark polo shirt. The lighting is crisp and industrial with a soft cool-toned rim light. The background is a clean, blurred high-tech office environment with subtle hints of precision machinery. The overall mood is authoritative, reliable, and focused on corporate excellence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjU69wQJznFMNtDVHIMTvvueFv0wKZV2zIDvLQo4TridOQtA5ccbiBvqvzlEEUexkPRxSea0NOuahhRcfPbTzozSu3gM6t1gUBz5J2kAANIvXdK4g7tshQmSnGZn7N38n1y_dfxz57_ARARK6atVkmwVZN39EmvQCJaaEcmlTLiGnAPH2VRWoAOVbkOXLUtfro7q9yDfkf_lbe1FEZyPieFvw_uOdzLuzn-__wwRi-pHZVTA2U6dS8HSTXWWU6-3qACFrtnVEfiNY"/>
+</div>
+<h1 class="font-headline-sm text-headline-sm-mobile font-bold text-on-surface dark:text-inverse-on-surface">Vendor Portal</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center hover:bg-surface-container-high transition-colors active:scale-95 duration-150 rounded-full">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+</button>
+</header>
+<main class="mt-20 px-4 space-y-8 max-w-md mx-auto">
+<!-- Welcome Section -->
+<section class="space-y-1">
+<p class="font-data-label text-data-label text-on-surface-variant uppercase">Operational Overview</p>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-engineering-navy">Precision Dashboard</h2>
+</section>
+<!-- Quick Stats Bento -->
+<section class="grid grid-cols-2 gap-3">
+<div class="bg-white border border-zinc-border p-4 flex flex-col justify-between h-32 hover:border-electric-cyan transition-colors">
+<span class="material-symbols-outlined text-engineering-navy">request_quote</span>
+<div>
+<p class="font-data-label text-data-label text-on-surface-variant">Active RFQs</p>
+<p class="font-headline-md-mobile text-headline-md-mobile text-engineering-navy">05</p>
+</div>
+</div>
+<div class="bg-white border border-zinc-border p-4 flex flex-col justify-between h-32 hover:border-electric-cyan transition-colors">
+<span class="material-symbols-outlined text-engineering-navy">pending_actions</span>
+<div>
+<p class="font-data-label text-data-label text-on-surface-variant">Pending Quotes</p>
+<p class="font-headline-md-mobile text-headline-md-mobile text-engineering-navy">12</p>
+</div>
+</div>
+<div class="bg-white border border-zinc-border p-4 flex flex-col justify-between h-32 hover:border-electric-cyan transition-colors">
+<span class="material-symbols-outlined text-engineering-navy">settings_suggest</span>
+<div>
+<p class="font-data-label text-data-label text-on-surface-variant">Production Queue</p>
+<p class="font-headline-md-mobile text-headline-md-mobile text-engineering-navy">08</p>
+</div>
+</div>
+<div class="bg-engineering-navy border border-engineering-navy p-4 flex flex-col justify-between h-32 shadow-sm">
+<span class="material-symbols-outlined text-electric-cyan">payments</span>
+<div>
+<p class="font-data-label text-data-label text-on-primary-container">Monthly Earnings</p>
+<p class="font-headline-md-mobile text-headline-md-mobile text-white">₹4.5L</p>
+</div>
+</div>
+</section>
+<!-- Active RFQs for Review -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<h3 class="font-headline-sm text-headline-sm-mobile text-engineering-navy">Review RFQs</h3>
+<a class="font-data-label text-data-label text-electric-cyan border-b border-electric-cyan pb-0.5" href="#">VIEW ALL</a>
+</div>
+<div class="flex overflow-x-auto hide-scrollbar gap-4 -mx-4 px-4 pb-2">
+<!-- Card 1 -->
+<div class="min-w-[280px] bg-white border border-zinc-border flex flex-col">
+<div class="bg-slate-surface p-4 border-b border-zinc-border">
+<div class="flex justify-between items-start mb-2">
+<span class="font-data-label text-data-label bg-engineering-navy text-white px-2 py-0.5">HIGH PRIORITY</span>
+<span class="font-data-value text-data-value text-on-surface-variant">#RFQ-8821</span>
+</div>
+<h4 class="font-headline-sm-mobile text-headline-sm-mobile text-engineering-navy truncate">Titanium Heat Shield</h4>
+</div>
+<div class="p-4 space-y-3">
+<div class="grid grid-cols-2 gap-2">
+<div>
+<p class="font-caption text-caption text-on-surface-variant">Material</p>
+<p class="font-data-value text-data-value text-engineering-navy">Ti-6Al-4V</p>
+</div>
+<div>
+<p class="font-caption text-caption text-on-surface-variant">Quantity</p>
+<p class="font-data-value text-data-value text-engineering-navy">450 Units</p>
+</div>
+</div>
+<button class="w-full bg-engineering-navy text-white py-3 font-data-label text-data-label flex items-center justify-center gap-2 hover:bg-electric-cyan transition-colors active:scale-95">
+                            SUBMIT QUOTE <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="min-w-[280px] bg-white border border-zinc-border flex flex-col">
+<div class="bg-slate-surface p-4 border-b border-zinc-border">
+<div class="flex justify-between items-start mb-2">
+<span class="font-data-label text-data-label bg-zinc-border text-on-surface-variant px-2 py-0.5">STANDARD</span>
+<span class="font-data-value text-data-value text-on-surface-variant">#RFQ-8825</span>
+</div>
+<h4 class="font-headline-sm-mobile text-headline-sm-mobile text-engineering-navy truncate">Precision Coupler A2</h4>
+</div>
+<div class="p-4 space-y-3">
+<div class="grid grid-cols-2 gap-2">
+<div>
+<p class="font-caption text-caption text-on-surface-variant">Material</p>
+<p class="font-data-value text-data-value text-engineering-navy">Al 6061-T6</p>
+</div>
+<div>
+<p class="font-caption text-caption text-on-surface-variant">Quantity</p>
+<p class="font-data-value text-data-value text-engineering-navy">1,200 Units</p>
+</div>
+</div>
+<button class="w-full bg-engineering-navy text-white py-3 font-data-label text-data-label flex items-center justify-center gap-2 hover:bg-electric-cyan transition-colors active:scale-95">
+                            SUBMIT QUOTE <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Production Pipeline -->
+<section class="space-y-4">
+<h3 class="font-headline-sm text-headline-sm-mobile text-engineering-navy">Production Pipeline</h3>
+<div class="space-y-3">
+<!-- Project 1 -->
+<div class="bg-white border border-zinc-border p-4 relative overflow-hidden group">
+<div class="flex justify-between items-center mb-3">
+<div>
+<p class="font-data-label text-data-label text-on-surface-variant mb-1">PROJ-7721</p>
+<h4 class="font-body-md font-bold text-engineering-navy">Aerospace Grade Fasteners</h4>
+</div>
+<span class="bg-secondary-container text-on-secondary-fixed-variant font-data-label text-[10px] px-2 py-1 rounded-sm uppercase">In Machining</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[11px] font-data-label text-on-surface-variant">
+<span>PROGRESS</span>
+<span>65%</span>
+</div>
+<div class="h-1.5 w-full bg-zinc-border rounded-full overflow-hidden">
+<div class="h-full bg-electric-cyan" style="width: 65%;"></div>
+</div>
+</div>
+</div>
+<!-- Project 2 -->
+<div class="bg-white border border-zinc-border p-4 relative overflow-hidden group">
+<div class="flex justify-between items-center mb-3">
+<div>
+<p class="font-data-label text-data-label text-on-surface-variant mb-1">PROJ-7744</p>
+<h4 class="font-body-md font-bold text-engineering-navy">Hydraulic Pump Housings</h4>
+</div>
+<span class="bg-data-green bg-opacity-10 text-data-green font-data-label text-[10px] px-2 py-1 rounded-sm uppercase border border-data-green">Quality Check</span>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-[11px] font-data-label text-on-surface-variant">
+<span>PROGRESS</span>
+<span>92%</span>
+</div>
+<div class="h-1.5 w-full bg-zinc-border rounded-full overflow-hidden">
+<div class="h-full bg-data-green" style="width: 92%;"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Dispatched Orders -->
+<section class="space-y-4">
+<h3 class="font-headline-sm text-headline-sm-mobile text-engineering-navy">Recently Dispatched</h3>
+<div class="bg-white border border-zinc-border overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead class="bg-slate-surface border-b border-zinc-border">
+<tr>
+<th class="p-3 font-data-label text-[10px] text-on-surface-variant uppercase">Order ID</th>
+<th class="p-3 font-data-label text-[10px] text-on-surface-variant uppercase">Carrier</th>
+<th class="p-3 font-data-label text-[10px] text-on-surface-variant uppercase">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-zinc-border">
+<tr>
+<td class="p-3 font-data-value text-data-value text-engineering-navy">#ORD-091</td>
+<td class="p-3 font-body-sm text-body-sm text-on-surface-variant">BlueDart</td>
+<td class="p-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-electric-cyan animate-pulse"></span>
+<span class="font-data-label text-[11px] text-electric-cyan">IN TRANSIT</span>
+</div>
+</td>
+</tr>
+<tr>
+<td class="p-3 font-data-value text-data-value text-engineering-navy">#ORD-088</td>
+<td class="p-3 font-body-sm text-body-sm text-on-surface-variant">FedEx</td>
+<td class="p-3">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="font-data-label text-[11px]">DELIVERED</span>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Analytics Visual Placeholder -->
+<section class="bg-engineering-navy p-6 rounded-xl overflow-hidden relative">
+<div class="absolute inset-0 opacity-20">
+
+</div>
+<div class="relative z-10 space-y-4">
+<h4 class="font-headline-sm text-white">Efficiency Index</h4>
+<p class="font-body-sm text-primary-fixed-dim max-w-[200px]">Your workshop's precision rating is up 12% this week.</p>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-headline-lg text-electric-cyan">98.4</span>
+<span class="font-data-label text-data-green">▲ 0.4%</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-surface dark:bg-primary-container border-t border-zinc-border dark:border-outline-variant shadow-sm flex justify-around items-center h-16 w-full pb-safe">
+<a class="flex flex-col items-center justify-center text-electric-cyan font-bold active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-body-sm text-body-sm">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-electric-cyan active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">package_2</span>
+<span class="font-body-sm text-body-sm">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-electric-cyan active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">request_quote</span>
+<span class="font-body-sm text-body-sm">RFQs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:text-electric-cyan active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-sm text-body-sm">Earnings</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction: Active state for bottom nav (simulated)
+        const navItems = document.querySelectorAll('nav a');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                navItems.forEach(i => {
+                    i.classList.remove('text-electric-cyan', 'font-bold');
+                    i.classList.add('text-on-surface-variant');
+                    const icon = i.querySelector('.material-symbols-outlined');
+                    if (icon) icon.style.fontVariationSettings = "'FILL' 0";
+                });
+                item.classList.add('text-electric-cyan', 'font-bold');
+                item.classList.remove('text-on-surface-variant');
+                const activeIcon = item.querySelector('.material-symbols-outlined');
+                if (activeIcon) activeIcon.style.fontVariationSettings = "'FILL' 1";
+            });
+        });
+
+        // Add subtle parallax to sections on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const scroll = window.scrollY;
+            sections.forEach((sec, idx) => {
+                const speed = 0.05 * (idx % 2 === 0 ? 1 : -1);
+                const rect = sec.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    sec.style.transform = `translateY(${scroll * speed * 0.1}px)`;
+                }
+            });
+        });
+    </script>
+</body></html>

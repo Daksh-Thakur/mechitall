@@ -20,7 +20,7 @@ export default function AboutPage() {
             Solving Sourcing Fragmentation in Mechatronics
           </h1>
           <p className="text-sm text-zinc-400 max-w-2xl mx-auto font-medium">
-            MechItAll is the ultimate hub for off-the-shelf robotics hardware and on-demand CAD custom machining. We empower engineers, DIY makers, and businesses.
+            MechItAll is the ultimate hub for off-the-shelf robotics hardware and on-demand CAD custom machining. We connect DIY hobbyists with manufacturing professionals to <strong className="text-white font-mono tracking-wider">BUILD. UPGRADE. CREATE.</strong>
           </p>
         </section>
 
