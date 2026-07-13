@@ -50,6 +50,8 @@ export async function listMachiningService(
     leadTime: string;
     materials: string[];
     finishes: string[];
+    imageData?: string;
+    imagesData?: string[];
   }
 ) {
   const cookieStore = await cookies();
@@ -76,6 +78,23 @@ export async function listMachiningService(
     console.error('Error creating service listing:', error.message);
     throw new Error(`Failed to list service: ${error.message}`);
   }
+
+  // Create matching general service record for mapping images/descriptions
+  await supabase
+    .from('services')
+    .insert([
+      {
+        seller_profile_id: sellerProfileId,
+        title: data.title,
+        category: data.processType,
+        description: data.description,
+        base_price: data.basePrice,
+        lead_time: `${data.leadTime} Lead`,
+        features: data.materials,
+        image_data: data.imageData,
+        images_data: data.imagesData || [],
+      }
+    ]);
 
   return service as MachiningService;
 }

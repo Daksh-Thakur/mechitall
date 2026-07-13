@@ -1183,6 +1183,8 @@ export async function updateSellerCapability(
     leadTime: string;
     materials: string[];
     finishes: string[];
+    imageData?: string;
+    imagesData?: string[];
   }
 ) {
   const cookieStore = await cookies();
@@ -1201,6 +1203,15 @@ export async function updateSellerCapability(
 
   if (!sellerProfile) throw new Error('Seller profile not found.');
   if (!sellerProfile.is_seller) throw new Error('You must be a verified seller.');
+
+  // Fetch original service title before update
+  const { data: originalService } = await supabase
+    .from('machining_services')
+    .select('title')
+    .eq('id', serviceId)
+    .single();
+
+  const originalTitle = originalService?.title || data.title;
 
   const { data: updatedService, error } = await supabase
     .from('machining_services')
@@ -1221,6 +1232,37 @@ export async function updateSellerCapability(
   if (error) {
     console.error('Capability update failed:', error.message);
     throw new Error(`Failed to update capability: ${error.message}`);
+  }
+
+  // Update or insert matching general service record
+  const { data: existingService } = await supabase
+    .from('services')
+    .select('id')
+    .eq('title', originalTitle)
+    .eq('seller_profile_id', sellerProfile.id)
+    .maybeSingle();
+
+  const servicePayload = {
+    title: data.title,
+    category: data.processType,
+    description: data.description,
+    base_price: data.basePrice,
+    lead_time: `${data.leadTime} Lead`,
+    features: data.materials,
+    image_data: data.imageData,
+    images_data: data.imagesData || [],
+    seller_profile_id: sellerProfile.id
+  };
+
+  if (existingService) {
+    await supabase
+      .from('services')
+      .update(servicePayload)
+      .eq('id', existingService.id);
+  } else {
+    await supabase
+      .from('services')
+      .insert([servicePayload]);
   }
 
   return updatedService;

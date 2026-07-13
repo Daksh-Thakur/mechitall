@@ -107,6 +107,7 @@ export default function MachiningMarketplacePage() {
   const [newMaterials, setNewMaterials] = useState('');
   const [newFinishes, setNewFinishes] = useState('');
   const [listingService, setListingService] = useState(false);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 
 
 
@@ -299,6 +300,8 @@ export default function MachiningMarketplacePage() {
         leadTime: newLeadTime,
         materials: materialList.length > 0 ? materialList : ['Aluminium 6061', 'Stainless Steel 304'],
         finishes: finishList.length > 0 ? finishList : ['As-Machined', 'Anodized'],
+        imageData: imagePreviews[0] || undefined,
+        imagesData: imagePreviews || [],
       });
 
       showToast('Service listed successfully!', 'success');
@@ -308,6 +311,7 @@ export default function MachiningMarketplacePage() {
       setNewMaterials('');
       setNewFinishes('');
       setNewBasePrice(100);
+      setImagePreviews([]);
 
       // Refresh
       setMyServices(prev => [newService, ...prev]);
@@ -973,6 +977,44 @@ export default function MachiningMarketplacePage() {
                   onChange={(e) => setNewDescription(e.target.value)}
                   className="w-full p-3 border border-zinc-700 rounded-xl bg-zinc-900 text-white resize-none focus:outline-none focus:border-blue-500/50 font-sans font-medium text-xs"
                 />
+              </div>
+
+              {/* Service Images Uploader */}
+              <div className="space-y-1">
+                <label className="block text-[10px] text-zinc-400 uppercase font-bold">Service Images</label>
+                <input
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.svg"
+                  multiple
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      Array.from(e.target.files).forEach((file) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setImagePreviews((prev) => [...prev, reader.result as string]);
+                        };
+                        reader.readAsDataURL(file);
+                      });
+                    }
+                  }}
+                  className="w-full p-2.5 border border-zinc-700 rounded-xl bg-zinc-900 text-xs font-mono text-zinc-450 focus:outline-none focus:border-blue-500/50"
+                />
+                {imagePreviews.length > 0 && (
+                  <div className="flex gap-2 flex-wrap pt-2">
+                    {imagePreviews.map((src, index) => (
+                      <div key={index} className="relative w-12 h-12 border border-zinc-700 rounded-lg overflow-hidden bg-zinc-900">
+                        <img src={src} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setImagePreviews((prev) => prev.filter((_, i) => i !== index))}
+                          className="absolute top-0.5 right-0.5 bg-red-500 hover:bg-red-700 text-white rounded-full w-4 h-4 flex items-center justify-center text-[8px] font-black cursor-pointer"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <button

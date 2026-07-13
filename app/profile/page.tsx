@@ -1200,6 +1200,8 @@ export default function ProfilePage() {
                         leadTime: leadTime,
                         materials: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
                         finishes: finishes.split(',').map((s: string) => s.trim()).filter(Boolean),
+                        imageData: imagePreviews[0] || undefined,
+                        imagesData: imagePreviews || [],
                       });
                       showToast(`Technical Service "${title}" (${processType}) updated successfully!`, 'success');
                       await fetchSellerData();
@@ -1251,6 +1253,8 @@ export default function ProfilePage() {
                         leadTime: leadTime,
                         materials: materials.split(',').map((s: string) => s.trim()).filter(Boolean),
                         finishes: finishes.split(',').map((s: string) => s.trim()).filter(Boolean),
+                        imageData: imagePreviews[0] || undefined,
+                        imagesData: imagePreviews || [],
                       });
                       // Refresh seller registry
                       await fetchSellerData();

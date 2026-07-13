@@ -6,6 +6,15 @@ import { createClient } from '@/utils/supabase/client';
 
 export default function SellerRfqsTab(props: any) {
     const { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, base64String, boltsProgressPercent, cadFile, channel, checkUnreadChats, customSpecs, data, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, file, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasNewMsg, hasNewStatus, hasTimedOut, imageFileNames, imagePreviews, isActive, isGuest, isMasterBuilder, isPending, isUpdatingName, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, mapped, msg, nextState, openAddListingModal, orderId, orders, params, paymentStatus, processFile, profile, publishingListing, reader, reason, res, response, router, sOrders, seen, seenChats, seenChatsStr, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, sizeStr, startTransition, startTransitionStatus, storedProds, storedServs, supabase, tabParam, timer, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updated, updatingOrderId, uploadingOrderId, wishlist } = props;
+
+    const [activePendingOrder, setActivePendingOrder] = React.useState<any | null>(null);
+
+    const pendingOrders = React.useMemo(() => {
+      return (sellerOrders || []).filter(
+        (o: any) => o.status !== 'Completed' && o.status !== 'Delivered' && o.status !== 'Cancelled' && o.status !== 'Rejected'
+      );
+    }, [sellerOrders]);
+
   return (
     <>
       {/* Replace props with actual destructured props below */}
@@ -17,14 +26,22 @@ export default function SellerRfqsTab(props: any) {
           {[
             { label: 'ACTIVE RFQS', value: sellerData ? String(sellerData.openRfqs.length) : '0', icon: FileText, color: 'text-[#00D0F5] bg-[#00D0F5]/10 border-[#00D0F5]/20' },
             { label: 'ACTIVE JOBS', value: sellerData ? String(sellerData.activeJobs.length) : '0', icon: Cpu, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
-            { label: 'ESCROW BALANCE', value: sellerData ? `₹${(sellerData.escrowBalance / 1000).toFixed(1)}k` : '₹0', icon: ShieldCheck, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
+            { label: 'ESCROW BALANCE', value: sellerData ? `₹${Number(sellerData.escrowBalance).toLocaleString('en-IN')}` : '₹0', icon: ShieldCheck, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
             { label: 'CLEARED EARNINGS', value: sellerData ? `₹${Number(sellerData.clearedEarnings).toLocaleString('en-IN')}` : '₹0', icon: IndianRupee, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
           ].map((stat, idx) => {
             const StatIcon = stat.icon;
+            const isClickable = stat.label === 'ESCROW BALANCE' || stat.label === 'CLEARED EARNINGS';
             return (
               <div
                 key={idx}
-                className="bg-[#0B1528] border border-zinc-800 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md hover:border-zinc-700/80 transition-all text-white"
+                onClick={() => {
+                  if (isClickable && setActiveTab) {
+                    setActiveTab('seller_earnings');
+                  }
+                }}
+                className={`bg-[#0B1528] border border-zinc-800 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md hover:border-zinc-700/80 transition-all text-white ${
+                  isClickable ? 'cursor-pointer hover:border-[#00D0F5]/50 hover:shadow-[#00D0F5]/5' : ''
+                }`}
               >
                 <div className="space-y-1">
                   <span className="block text-[8px] font-black uppercase tracking-wider text-slate-400">{stat.label}</span>
@@ -243,54 +260,63 @@ export default function SellerRfqsTab(props: any) {
               </div>
             </div>
 
-            {/* DISPATCHED ORDERS */}
+            {/* PENDING ORDERS */}
             <div className="bg-zinc-800/80 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-zinc-700/60">
                 <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-4 h-4 text-emerald-400" />
-                  <h4 className="text-sm font-black text-white uppercase tracking-tight">Completed Orders</h4>
+                  <ShoppingBag className="w-4 h-4 text-[#00D0F5]" />
+                  <h4 className="text-sm font-black text-white uppercase tracking-tight">Pending Orders</h4>
                 </div>
-                <button onClick={() => setActiveTab('seller_orders')} className="text-[10px] font-black uppercase tracking-wider text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer">
-                  View All Orders
-                </button>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-[#00D0F5]/10 text-[#00D0F5] rounded border border-[#00D0F5]/20">
+                    {pendingOrders.length} Orders
+                  </span>
+                  <button onClick={() => setActiveTab('seller_orders')} className="text-[10px] font-black uppercase tracking-wider text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer">
+                    Manage
+                  </button>
+                </div>
               </div>
 
-              <div className="overflow-x-auto no-scrollbar">
+              <div className="max-h-[220px] overflow-y-auto no-scrollbar pr-1 bg-zinc-900/10 rounded-xl border border-zinc-700/30">
                 <table className="w-full border-collapse text-left">
                   <thead>
-                    <tr className="border-b border-zinc-700/60 text-[8px] uppercase tracking-wider font-black text-slate-500">
-                      <th className="pb-2.5">Order ID</th>
-                      <th className="pb-2.5 px-3">Amount</th>
-                      <th className="pb-2.5 text-right">Status</th>
+                    <tr className="border-b border-zinc-700/60 text-[8px] uppercase tracking-wider font-black text-slate-500 bg-zinc-900/40 sticky top-0 z-10">
+                      <th className="pb-2.5 pt-2 px-3">Order ID</th>
+                      <th className="pb-2.5 pt-2 px-3">Amount</th>
+                      <th className="pb-2.5 pt-2 text-right pr-3">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-800">
-                    {loadingSeller ? (
+                  <tbody className="divide-y divide-zinc-850">
+                    {loadingSellerOrders ? (
                       <tr>
                         <td colSpan={3} className="py-8 text-center animate-pulse">
                           <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-500" />
                         </td>
                       </tr>
-                    ) : !sellerData || sellerData.completedJobs.length === 0 ? (
+                    ) : pendingOrders.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="py-8 text-center text-xs font-bold text-zinc-500 bg-zinc-900/50 rounded-xl border border-dashed border-zinc-700/60 block mt-2">
-                          No recently completed orders.
+                        <td colSpan={3} className="py-8 text-center text-xs font-bold text-zinc-500 bg-zinc-900/30 rounded border border-dashed border-zinc-700/40 block mt-2 mx-2">
+                          No pending orders.
                         </td>
                       </tr>
                     ) : (
-                      sellerData.completedJobs.slice(0, 5).map((job) => {
-                        const isDelivered = job.status === 'Delivered';
+                      pendingOrders.map((job: any) => {
                         return (
-                          <tr key={job.id} className="text-xs group hover:bg-zinc-800/50 transition-colors">
-                            <td className="py-3 font-mono font-black text-white">
+                          <tr
+                            key={job.id}
+                            onClick={() => {
+                              setActivePendingOrder(job);
+                            }}
+                            className="text-xs group hover:bg-[#00D0F5]/5 transition-colors cursor-pointer"
+                          >
+                            <td className="py-3 px-3 font-mono font-black text-white group-hover:text-[#00D0F5]">
                               #{job.id.substring(0, 8).toUpperCase()}
                             </td>
                             <td className="py-3 px-3 font-bold text-zinc-300 font-mono">
                               ₹{Number(job.total_amount).toLocaleString('en-IN')}
                             </td>
-                            <td className="py-3 text-right">
-                              <span className={`inline-flex items-center gap-1.5 text-[8px] font-black uppercase px-2 py-0.5 rounded border ${isDelivered ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-sky-500/10 text-sky-400 border-sky-500/20'
-                                }`}>
+                            <td className="py-3 text-right pr-3">
+                              <span className="inline-flex items-center gap-1.5 text-[8px] font-black uppercase px-2 py-0.5 rounded border bg-amber-500/10 text-amber-500 border-amber-500/20">
                                 {job.status}
                               </span>
                             </td>
@@ -436,6 +462,81 @@ export default function SellerRfqsTab(props: any) {
         </div>
 
       </div>
+
+      {/* Pending Order Status Editor Modal */}
+      {activePendingOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-[#0F172A]/60 backdrop-blur-sm transition-opacity" onClick={() => setActivePendingOrder(null)} />
+          <div className="bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl relative z-10 animate-zoom-in space-y-6 font-mono text-left">
+            <div className="flex justify-between items-start pb-3 border-b border-zinc-700/60">
+              <div>
+                <span className="text-[10px] font-bold text-[#00D0F5] uppercase tracking-wider">Update Order Status</span>
+                <h3 className="text-sm font-black text-white mt-1">#{activePendingOrder.id.substring(0, 8).toUpperCase()}</h3>
+              </div>
+              <button onClick={() => setActivePendingOrder(null)} className="p-1 rounded hover:bg-zinc-950 border border-zinc-700/60 text-zinc-400 cursor-pointer">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div className="flex justify-between border-b border-zinc-850 pb-2">
+                <span className="text-zinc-500">Current Status:</span>
+                <span className="text-amber-500 font-bold uppercase">{activePendingOrder.status}</span>
+              </div>
+              <div className="flex justify-between border-b border-zinc-850 pb-2">
+                <span className="text-zinc-500">Order Amount:</span>
+                <span className="text-white font-bold font-mono">₹{Number(activePendingOrder.total_amount).toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between border-b border-zinc-850 pb-2">
+                <span className="text-zinc-500">Total Units:</span>
+                <span className="text-white font-bold">{activePendingOrder.quantity || 1} units</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              {(() => {
+                const nextStatusMap = {
+                  'Pending Payment': 'Processing',
+                  'Processing': 'Shipped',
+                  'Shipped': 'Delivered',
+                  'Delivered': 'Completed',
+                  'Completed': null
+                };
+                const nextStatus = nextStatusMap[activePendingOrder.status as keyof typeof nextStatusMap];
+                const isUpdating = updatingOrderId === activePendingOrder.id;
+
+                if (!nextStatus) return null;
+                return (
+                  <button
+                    onClick={async () => {
+                      try {
+                        await handleUpdateOrderStatus(activePendingOrder.id, nextStatus as any);
+                        // Update local status representation so modal reflects immediately
+                        setActivePendingOrder((prev: any) => prev ? { ...prev, status: nextStatus } : null);
+                      } catch (err) {}
+                    }}
+                    disabled={isUpdating}
+                    className="bg-[#00D0F5] hover:bg-[#00e5ff] text-zinc-950 text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-xl transition-all shadow flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {isUpdating ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
+                    <span>Mark as {nextStatus}</span>
+                  </button>
+                );
+              })()}
+              <button
+                onClick={() => setActivePendingOrder(null)}
+                className="border border-zinc-700/60 hover:bg-zinc-900 text-zinc-400 hover:text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
