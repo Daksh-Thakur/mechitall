@@ -2637,21 +2637,11 @@ function QuotationChatsTab({
                     <span>See Design</span>
                   </button>
                 )}
-                {activeThread.status !== 'REJECTED' && activeThread.status !== 'ACCEPTED' && (
-                  <button
-                    onClick={() => setShowRejectForm(true)}
-                    className="flex items-center gap-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
-                    title="Reject Quotation"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                    <span>Reject</span>
-                  </button>
-                )}
                 {activeThread.status !== 'REJECTED' && (
                   <button
                     onClick={handleCancelQuote}
                     disabled={cancelling}
-                    className="flex items-center gap-1 bg-slate-600 hover:bg-slate-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
+                    className="flex items-center gap-1 bg-rose-600 hover:bg-rose-700 text-white text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded transition-all shadow cursor-pointer shrink-0"
                     title="Cancel Quote/Production"
                   >
                     {cancelling ? (
