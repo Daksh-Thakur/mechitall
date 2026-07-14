@@ -31,6 +31,16 @@ export interface Discussion {
   is_verified_buyer?: boolean;
 }
 
+export interface DiscussionReply {
+  id: string;
+  discussion_id: string;
+  profile_id: string;
+  body: string;
+  created_at: string;
+  author_name?: string;
+  is_verified_buyer?: boolean;
+}
+
 /**
  * Submit a product review
  */
@@ -149,7 +159,7 @@ export async function getDiscussions() {
 
   const { data, error } = await supabase
     .from('discussions')
-    .select(`*, profiles:profile_id(full_name, is_verified_buyer)`)
+    .select(`*, profiles:profile_id(full_name, is_verified_buyer), discussion_replies(id)`)
     .order('created_at', { ascending: false })
     .limit(50);
 
@@ -159,6 +169,7 @@ export async function getDiscussions() {
     ...d,
     author_name: d.profiles?.full_name || 'Anonymous',
     is_verified_buyer: d.profiles?.is_verified_buyer || false,
+    reply_count: Array.isArray(d.discussion_replies) ? d.discussion_replies.length : 0,
   })) as Discussion[];
 }
 
@@ -205,4 +216,56 @@ export async function getPurchasedProducts(profileId: string) {
   }
 
   return products || [];
+}
+
+/**
+ * Get replies for a discussion thread
+ */
+export async function getReplies(discussionId: string): Promise<DiscussionReply[]> {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data, error } = await supabase
+    .from('discussion_replies')
+    .select(`*, profiles:profile_id(full_name, is_verified_buyer)`)
+    .eq('discussion_id', discussionId)
+    .order('created_at', { ascending: true });
+
+  if (error) return [];
+
+  return (data || []).map((r: any) => ({
+    ...r,
+    author_name: r.profiles?.full_name || 'Anonymous',
+    is_verified_buyer: r.profiles?.is_verified_buyer || false,
+  })) as DiscussionReply[];
+}
+
+/**
+ * Submit a reply to a discussion thread
+ */
+export async function submitReply(data: {
+  discussionId: string;
+  profileId: string;
+  body: string;
+}): Promise<DiscussionReply> {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data: reply, error } = await supabase
+    .from('discussion_replies')
+    .insert([{
+      discussion_id: data.discussionId,
+      profile_id: data.profileId,
+      body: data.body,
+    }])
+    .select(`*, profiles:profile_id(full_name, is_verified_buyer)`)
+    .single();
+
+  if (error) throw new Error(`Failed to submit reply: ${error.message}`);
+
+  return {
+    ...reply,
+    author_name: (reply as any).profiles?.full_name || 'Anonymous',
+    is_verified_buyer: (reply as any).profiles?.is_verified_buyer || false,
+  } as DiscussionReply;
 }

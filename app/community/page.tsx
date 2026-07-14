@@ -6,12 +6,14 @@ import Footer from '../../components/Footer';
 import { useCart } from '../../components/CartProvider';
 import {
   submitReview, submitDiscussion, getAllReviews, getDiscussions,
-  getPurchasedProducts, Review, Discussion
+  getPurchasedProducts, Review, Discussion, DiscussionReply,
+  getReplies, submitReply
 } from '../actions/community';
 import {
   Star, Megaphone, Newspaper, MessageSquare, ThumbsUp, CheckCircle2,
   Zap, Pin, Clock, ArrowRight, Users, Cpu, Package, Plus, RotateCcw,
-  Send, X, ShieldCheck, Eye, SlidersHorizontal, SlidersVertical, Search
+  Send, X, ShieldCheck, Eye, SlidersHorizontal, SlidersVertical, Search,
+  ChevronDown, ChevronUp, Reply, Hash
 } from 'lucide-react';
 
 const ANNOUNCEMENTS: any[] = [];
@@ -87,6 +89,14 @@ export default function CommunityPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // Thread reply state
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [replies, setReplies] = useState<Record<string, DiscussionReply[]>>({});
+  const [loadingReplies, setLoadingReplies] = useState<Record<string, boolean>>({});
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyBody, setReplyBody] = useState('');
+  const [submittingReply, setSubmittingReply] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'Reviews') {
@@ -199,11 +209,50 @@ export default function CommunityPage() {
       showToast('Discussion posted!', 'success');
       setShowDiscussionCompose(false);
       setDiscussionTitle(''); setDiscussionBody(''); setDiscussionCategory('General');
-      setDiscussions(prev => [{ ...newPost, author_name: profile.full_name || 'You', is_verified_buyer: profile.is_verified_buyer }, ...prev]);
+      setDiscussions(prev => [{ ...newPost, author_name: profile.full_name || 'You', is_verified_buyer: profile.is_verified_buyer, reply_count: 0 }, ...prev]);
     } catch (err: any) {
       showToast(err.message || 'Failed to post discussion.', 'error');
     } finally {
       setSubmittingDiscussion(false);
+    }
+  };
+
+  const toggleThread = async (id: string) => {
+    if (expandedId === id) {
+      setExpandedId(null);
+      setReplyingTo(null);
+      setReplyBody('');
+      return;
+    }
+    setExpandedId(id);
+    setReplyingTo(null);
+    setReplyBody('');
+    if (!replies[id]) {
+      setLoadingReplies(prev => ({ ...prev, [id]: true }));
+      try {
+        const fetched = await getReplies(id);
+        setReplies(prev => ({ ...prev, [id]: fetched }));
+      } finally {
+        setLoadingReplies(prev => ({ ...prev, [id]: false }));
+      }
+    }
+  };
+
+  const handleReplySubmit = async (discussionId: string) => {
+    if (!profile) { showToast('Please sign in to reply.', 'error'); return; }
+    if (!replyBody.trim()) return;
+    setSubmittingReply(true);
+    try {
+      const newReply = await submitReply({ discussionId, profileId: profile.id, body: replyBody });
+      setReplies(prev => ({ ...prev, [discussionId]: [...(prev[discussionId] || []), newReply] }));
+      setDiscussions(prev => prev.map(d => d.id === discussionId ? { ...d, reply_count: (d.reply_count || 0) + 1 } : d));
+      setReplyBody('');
+      setReplyingTo(null);
+      showToast('Reply posted!', 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to post reply.', 'error');
+    } finally {
+      setSubmittingReply(false);
     }
   };
 
@@ -562,49 +611,187 @@ export default function CommunityPage() {
             <div className="space-y-4">
               {loadingDiscussions ? (
                 <div className="space-y-4 animate-pulse">
-                  {[1, 2, 3].map(n => <div key={n} className="h-32 bg-zinc-800 border border-zinc-700/60 rounded-xl" />)}
+                  {[1, 2, 3].map(n => <div key={n} className="h-40 bg-zinc-800 border border-zinc-700/60 rounded-2xl" />)}
                 </div>
               ) : filteredDiscussions.length === 0 ? (
-                <div className="text-center py-20 border border-dashed border-zinc-855 bg-zinc-900/40 rounded-2xl space-y-4">
+                <div className="text-center py-20 border border-dashed border-zinc-800 bg-zinc-900/40 rounded-2xl space-y-4">
                   <MessageSquare className="w-12 h-12 text-zinc-500/20 mx-auto" />
                   <p className="text-sm font-bold text-white">No discussions found</p>
                   <p className="text-xs text-zinc-400">Be the first to start a discussion by clicking the compose button!</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4">
-                  {filteredDiscussions.map(disc => (
-                    <div
-                      key={disc.id}
-                      className="bg-zinc-800 border border-zinc-700/60 p-6 hover:border-emerald-400/25 hover:-translate-y-0.5 transition-all duration-200 rounded-xl"
-                      style={{ boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)' }}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded bg-zinc-900 border border-zinc-750 text-white flex items-center justify-center font-bold text-sm shrink-0">
-                          {(disc.author_name || 'AN').substring(0, 2).toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 mb-2">
-                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border font-mono ${CATEGORY_COLORS[disc.category] || 'bg-cobalt/8 text-cobalt border-cobalt/15'}`}>
-                              {disc.category}
-                            </span>
-                            <span className="text-[10px] text-zinc-550 font-bold flex items-center gap-1 font-mono">
-                              <Clock className="w-3 h-3 text-zinc-500" /> {new Date(disc.created_at).toLocaleDateString('en-IN')}
-                            </span>
+                <div className="space-y-4">
+                  {filteredDiscussions.map(disc => {
+                    const isExpanded = expandedId === disc.id;
+                    const threadReplies = replies[disc.id] || [];
+                    const isLoadingThread = loadingReplies[disc.id];
+                    const initials = (disc.author_name || 'AN').substring(0, 2).toUpperCase();
+                    const catBorder: Record<string, string> = {
+                      General: 'border-l-blue-500',
+                      'Build Log': 'border-l-emerald-500',
+                      Question: 'border-l-amber-500',
+                      Showcase: 'border-l-violet-500',
+                    };
+                    return (
+                      <div
+                        key={disc.id}
+                        className={`bg-zinc-800/80 border border-zinc-700/60 border-l-4 ${catBorder[disc.category] || 'border-l-zinc-600'} rounded-2xl overflow-hidden transition-all duration-300 hover:border-zinc-600/80 shadow-sm`}
+                      >
+                        {/* Main post */}
+                        <div className="p-5">
+                          <div className="flex items-start gap-4">
+                            {/* Avatar */}
+                            <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-700 text-white flex items-center justify-center font-black text-sm shrink-0 select-none">
+                              {initials}
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              {/* Meta row */}
+                              <div className="flex flex-wrap items-center gap-2 mb-2">
+                                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border font-mono ${CATEGORY_COLORS[disc.category] || 'bg-zinc-700/40 text-zinc-400 border-zinc-700'}`}>
+                                  {disc.category}
+                                </span>
+                                <span className="text-[10px] font-bold text-zinc-400 font-mono">{disc.author_name}</span>
+                                {disc.is_verified_buyer && (
+                                  <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-400/20 px-1.5 py-0.5 rounded" title="Verified Buyer">
+                                    <ShieldCheck className="w-2.5 h-2.5" /> Verified
+                                  </span>
+                                )}
+                                <span className="text-[9px] text-zinc-500 font-mono flex items-center gap-1 ml-auto">
+                                  <Clock className="w-3 h-3" /> {new Date(disc.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </span>
+                              </div>
+
+                              {/* Title */}
+                              <h3 className="font-['Space_Grotesk'] text-base font-bold text-white leading-snug mb-2">{disc.title}</h3>
+
+                              {/* Body */}
+                              <p className={`text-xs text-zinc-400 leading-relaxed font-medium ${!isExpanded ? 'line-clamp-3' : ''}`}>{disc.body}</p>
+                            </div>
                           </div>
-                          <h3 className="font-['Space_Grotesk'] text-base font-semibold text-white leading-tight">{disc.title}</h3>
-                          <p className="text-[11px] text-zinc-400 font-semibold mt-1 flex items-center gap-1.5">
-                            <span>by {disc.author_name}</span>
-                            {disc.is_verified_buyer && (
-                              <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-400/20 px-1.5 py-0.5 rounded scale-90" title="Verified Buyer">
-                                <ShieldCheck className="w-2.5 h-2.5" /> Verified Buyer
-                              </span>
-                            )}
-                          </p>
-                          <p className="text-xs text-zinc-400 leading-relaxed mt-3 line-clamp-3 font-sans font-medium">{disc.body}</p>
+
+                          {/* Action bar */}
+                          <div className="flex items-center gap-3 mt-4 pt-3 border-t border-zinc-700/50">
+                            <button
+                              onClick={() => toggleThread(disc.id)}
+                              className={`flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer ${
+                                isExpanded
+                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                  : 'text-zinc-400 border-zinc-700/60 hover:border-emerald-500/30 hover:text-emerald-400'
+                              }`}
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              {disc.reply_count || 0} {(disc.reply_count || 0) === 1 ? 'Reply' : 'Replies'}
+                              {isExpanded ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                if (!isExpanded) toggleThread(disc.id);
+                                setReplyingTo(disc.id);
+                              }}
+                              className="flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1.5 rounded-lg border text-zinc-400 border-zinc-700/60 hover:border-[#00D0F5]/30 hover:text-[#00D0F5] transition-all cursor-pointer"
+                            >
+                              <Reply className="w-3.5 h-3.5" /> Reply
+                            </button>
+                          </div>
                         </div>
+
+                        {/* Expanded thread panel */}
+                        {isExpanded && (
+                          <div className="border-t border-zinc-700/50 bg-zinc-900/40">
+                            {/* Replies list */}
+                            {isLoadingThread ? (
+                              <div className="flex items-center gap-2 px-5 py-4 text-xs text-zinc-500 animate-pulse">
+                                <div className="w-4 h-4 rounded-full border-2 border-zinc-600 border-t-emerald-400 animate-spin" />
+                                Loading replies...
+                              </div>
+                            ) : threadReplies.length === 0 && replyingTo !== disc.id ? (
+                              <div className="px-5 py-5 text-center">
+                                <p className="text-xs text-zinc-500 font-medium">No replies yet. Be the first to respond!</p>
+                              </div>
+                            ) : (
+                              <div className="divide-y divide-zinc-800/60">
+                                {threadReplies.map((reply, idx) => (
+                                  <div key={reply.id} className="flex gap-3 px-5 py-4 group hover:bg-zinc-800/30 transition-colors">
+                                    {/* Thread line + avatar */}
+                                    <div className="flex flex-col items-center gap-1 shrink-0">
+                                      <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center font-black text-[10px]">
+                                        {(reply.author_name || 'AN').substring(0, 2).toUpperCase()}
+                                      </div>
+                                      {idx < threadReplies.length - 1 && (
+                                        <div className="w-px flex-1 bg-zinc-700/40 min-h-[12px]" />
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                        <span className="text-[10px] font-black text-zinc-300">{reply.author_name}</span>
+                                        {reply.is_verified_buyer && (
+                                          <span className="inline-flex items-center gap-0.5 text-[8px] uppercase font-black bg-emerald-500/10 text-emerald-400 border border-emerald-400/20 px-1 py-0.5 rounded">
+                                            <ShieldCheck className="w-2 h-2" /> Verified
+                                          </span>
+                                        )}
+                                        <span className="text-[9px] text-zinc-600 font-mono ml-auto">
+                                          {new Date(reply.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                        </span>
+                                      </div>
+                                      <p className="text-xs text-zinc-400 leading-relaxed">{reply.body}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Reply compose */}
+                            {replyingTo === disc.id ? (
+                              <div className="px-5 py-4 border-t border-zinc-800/60 bg-zinc-900/60">
+                                <div className="flex gap-3">
+                                  <div className="w-7 h-7 rounded-lg bg-zinc-700 border border-zinc-600 text-white flex items-center justify-center font-black text-[10px] shrink-0">
+                                    {profile ? (profile.full_name || 'You').substring(0, 2).toUpperCase() : 'YO'}
+                                  </div>
+                                  <div className="flex-1">
+                                    <textarea
+                                      autoFocus
+                                      placeholder="Write your reply..."
+                                      value={replyBody}
+                                      onChange={e => setReplyBody(e.target.value)}
+                                      rows={3}
+                                      className="w-full bg-zinc-800 border border-zinc-700/60 focus:border-[#00D0F5]/40 focus:ring-1 focus:ring-[#00D0F5]/20 outline-none rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-zinc-500 resize-none transition-all"
+                                    />
+                                    <div className="flex items-center gap-2 mt-2 justify-end">
+                                      <button
+                                        onClick={() => { setReplyingTo(null); setReplyBody(''); }}
+                                        className="px-3 py-1.5 text-[10px] font-black text-zinc-400 hover:text-white border border-zinc-700 rounded-lg transition-colors cursor-pointer"
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={() => handleReplySubmit(disc.id)}
+                                        disabled={submittingReply || !replyBody.trim()}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black bg-[#00D0F5] hover:bg-[#00e5ff] disabled:opacity-50 disabled:cursor-not-allowed text-zinc-950 rounded-lg transition-colors cursor-pointer"
+                                      >
+                                        <Send className="w-3 h-3" />
+                                        {submittingReply ? 'Posting...' : 'Post Reply'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="px-5 py-3 border-t border-zinc-800/60">
+                                <button
+                                  onClick={() => setReplyingTo(disc.id)}
+                                  className="text-[10px] font-black text-zinc-500 hover:text-[#00D0F5] flex items-center gap-1.5 transition-colors cursor-pointer"
+                                >
+                                  <Reply className="w-3 h-3" /> Write a reply...
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
