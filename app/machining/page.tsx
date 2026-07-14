@@ -49,6 +49,13 @@ export default function MachiningMarketplacePage() {
   const [sortBy, setSortBy] = useState<string>('featured');
   const [showFilterDrawer, setShowFilterDrawer] = useState(false);
   const [hasSetInitialView, setHasSetInitialView] = useState(false);
+  const [maxPrice, setMaxPrice] = useState<number>(100000);
+
+  // Dynamically calculate the maximum price among all loaded services
+  const maxAllowedPrice = useMemo(() => {
+    if (services.length === 0) return 100000;
+    return Math.ceil(Math.max(...services.map(s => Number(s.base_price || 0))));
+  }, [services]);
 
   // Auto-open Get Quote modal if a service ID is passed in url query parameters
   useEffect(() => {
@@ -111,7 +118,7 @@ export default function MachiningMarketplacePage() {
 
 
 
-  // Filtered and sorted services (buyer search + process filter + sort by base price)
+  // Filtered and sorted services (buyer search + process filter + price filter + sort by base price)
   const filteredServices = useMemo(() => {
     let result = [...services];
     if (searchQuery.trim()) {
@@ -127,13 +134,14 @@ export default function MachiningMarketplacePage() {
     if (selectedProcess !== 'All') {
       result = result.filter(s => s.process_type === selectedProcess);
     }
+    result = result.filter(s => Number(s.base_price || 0) <= maxPrice);
     if (sortBy === 'price-asc') {
       result.sort((a, b) => a.base_price - b.base_price);
     } else if (sortBy === 'price-desc') {
       result.sort((a, b) => b.base_price - a.base_price);
     }
     return result;
-  }, [services, searchQuery, selectedProcess, sortBy]);
+  }, [services, searchQuery, selectedProcess, sortBy, maxPrice]);
 
   // Load services
   useEffect(() => {
@@ -143,6 +151,7 @@ export default function MachiningMarketplacePage() {
         const activeServices = await getMachiningServices();
         if (activeServices && activeServices.length > 0) {
           setServices(activeServices);
+          setMaxPrice(Math.ceil(Math.max(...activeServices.map(s => Number(s.base_price || 0)))));
         } else {
           setServices(MOCK_DEMO_SERVICES);
         }
@@ -441,9 +450,30 @@ export default function MachiningMarketplacePage() {
             </select>
           </div>
 
+          {/* Price Range Slider */}
+          <div className="pt-4 border-t border-zinc-800 flex flex-col gap-3">
+            <div className="flex justify-between items-center">
+              <label className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-wider text-zinc-500">Max Setup Fee</label>
+              <span className="font-mono text-xs text-blue-400 font-bold">₹{Math.min(maxPrice, maxAllowedPrice).toLocaleString('en-IN')}</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max={maxAllowedPrice}
+              step="1"
+              value={Math.min(maxPrice, maxAllowedPrice)}
+              onChange={e => setMaxPrice(Number(e.target.value))}
+              className="accent-blue-500 w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] text-zinc-500 font-mono">
+              <span>₹0</span>
+              <span>₹{maxAllowedPrice.toLocaleString('en-IN')}</span>
+            </div>
+          </div>
+
           {/* Reset Filters */}
           <button
-            onClick={() => { setSelectedProcess('All'); setSearchQuery(''); setSortBy('featured'); }}
+            onClick={() => { setSelectedProcess('All'); setSearchQuery(''); setSortBy('featured'); setMaxPrice(maxAllowedPrice); }}
             className="mt-auto py-2 px-4 border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer font-mono text-xs uppercase font-bold"
           >
             Reset Filters
@@ -741,6 +771,27 @@ export default function MachiningMarketplacePage() {
                   {proc}
                 </button>
               ))}
+            </div>
+          </section>
+
+          {/* Price Range Slider */}
+          <section>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-['JetBrains_Mono'] text-[10px] uppercase tracking-widest text-zinc-500">Max Setup Fee</h3>
+              <span className="font-mono text-xs text-blue-400 font-bold">₹{Math.min(maxPrice, maxAllowedPrice).toLocaleString('en-IN')}</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max={maxAllowedPrice}
+              step="1"
+              value={Math.min(maxPrice, maxAllowedPrice)}
+              onChange={e => setMaxPrice(Number(e.target.value))}
+              className="accent-blue-500 w-full h-1 bg-zinc-700 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="flex justify-between text-[9px] text-zinc-500 font-mono mt-2">
+              <span>₹0</span>
+              <span>₹{maxAllowedPrice.toLocaleString('en-IN')}</span>
             </div>
           </section>
 
