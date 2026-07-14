@@ -266,11 +266,11 @@ export default function OrdersTab(props: any) {
                           <span className="text-white font-bold font-mono">{new Date(selectedOrder.created_at).toLocaleDateString()}</span>
                         </div>
                         <div className="flex justify-between pb-1.5 items-start">
-                          <span>Delivery Address</span>
-                          <span className="text-white font-bold text-right max-w-[180px] break-words" title="Nirmal Narayan Aawas, Divyanagar, Airport Road, Totu, Shimla, H.P. 171011">
-                            Nirmal Narayan Aawas, Divyanagar, Airport Road, Totu, Shimla, H.P. 171011
-                          </span>
-                        </div>
+                           <span>Delivery Address</span>
+                           <span className="text-white font-bold text-right max-w-[180px] break-words">
+                             {selectedOrder.buyer_address || profile?.business_address || '—'}
+                           </span>
+                         </div>
                       </div>
                     </div>
 

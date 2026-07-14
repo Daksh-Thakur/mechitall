@@ -399,7 +399,7 @@ export async function getProfileOrders(profileId: string) {
 
   const { data: orders } = await supabase
     .from('orders')
-    .select('*')
+    .select('*, profiles:profile_id(full_name, email, business_address)')
     .eq('profile_id', profileId)
     .order('created_at', { ascending: false });
 
@@ -453,6 +453,7 @@ export async function getProfileOrders(profileId: string) {
       ...o,
       rfq_id: rfqId,
       rfq_title: rfqTitle,
+      buyer_address: o.profiles?.business_address || null,
     };
   });
 
@@ -1490,5 +1491,36 @@ export async function updatePayoutPreferences(bankAccountNumber: string, ifscCod
   return updatedProfile;
 }
 
+/**
+ * Updates the buyer's delivery-related profile fields (name, email, shipping address)
+ * at checkout time. Because getSellerOrders joins profiles for buyer details,
+ * this propagates the delivery address everywhere orders are displayed.
+ */
+export async function updateDeliveryProfile(
+  profileId: string,
+  details: {
+    full_name: string;
+    email: string;
+    business_address: string;
+  }
+): Promise<{ success: boolean; error?: string }> {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
 
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      full_name: details.full_name.trim(),
+      email: details.email.trim(),
+      business_address: details.business_address.trim(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', profileId);
 
+  if (error) {
+    console.error('Failed to update delivery profile:', error.message);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+}

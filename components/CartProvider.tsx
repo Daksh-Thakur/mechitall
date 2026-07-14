@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
 import { Part } from './mockData';
-import { Profile, getAuthenticatedProfile, createDbOrder } from '@/app/actions/rewards';
+import { Profile, getAuthenticatedProfile, createDbOrder, updateDeliveryProfile } from '@/app/actions/rewards';
 
 export interface CartItem {
   id: string;
@@ -56,6 +56,9 @@ interface CartContextValue {
   updateCartQuantity: (id: string, newQty: number) => void;
   removeFromCart: (id: string) => void;
   handleCheckout: () => void;
+  handleDeliveryConfirm: (details: { name: string; email: string; phone: string; address: string }) => Promise<void>;
+  showDeliveryModal: boolean;
+  setShowDeliveryModal: (v: boolean) => void;
   getPartPriceForQuantity: (part: Part, qty: number) => number;
   profile: Profile | null;
   fetchProfile: () => Promise<void>;
@@ -91,6 +94,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [submittedOrders, setSubmittedOrders] = useState<SubmittedOrder[]>([]);
   const [checkoutStatus, setCheckoutStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
   const [lastPlacedOrder, setLastPlacedOrder] = useState<SubmittedOrder | null>(null);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   
   // Rewards profile state
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -237,9 +241,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const boltsCashValue = walletBalance / 10;
     const boltsDiscount = isBoltsDiscountApplied ? Math.min(subtotal - discount, boltsCashValue) : 0;
 
-    // If discount is applied, remove GST tax (set to 0), otherwise 18% of subtotal-discount
-    const tax = isBoltsDiscountApplied ? 0 : (subtotal - discount) * 0.18;
-    const total = subtotal - discount - boltsDiscount + shipping + tax;
+    // GST removed — no tax
+    const tax = 0;
+    const total = subtotal - discount - boltsDiscount + shipping;
 
     return {
       subtotal: Math.round(subtotal * 100) / 100,
@@ -254,8 +258,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     };
   }, [cart, isBoltsDiscountApplied, profile]);
 
+  // Step 1 of checkout: validate cart and open delivery confirmation modal
   const handleCheckout = useCallback(async () => {
     if (cart.length === 0) return;
+    setShowDeliveryModal(true);
+  }, [cart]);
+
+  // Step 2 of checkout: save delivery details to profile, then initiate PayU payment
+  const handleDeliveryConfirm = useCallback(async (details: { name: string; email: string; phone: string; address: string }) => {
+    setShowDeliveryModal(false);
     setCheckoutStatus('submitting');
     try {
       // 1. Get active profile (must be authenticated to checkout)
@@ -273,8 +284,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      // 2. Create the order in the database linked to this profile
-      // Build cart items list for stock decrement (only real product items, not custom quotes)
+      // 2. Save delivery details to profile so they appear everywhere
+      await updateDeliveryProfile(activeProfile.id, {
+        full_name: details.name,
+        email: details.email,
+        business_address: details.address,
+      });
+      // Refresh local profile so UI reflects the updated details
+      await fetchProfile();
+
+      // 3. Build stock items for order creation
       const stockItems = cart
         .filter(item => !item.isCustomQuote && item.part?.id)
         .map(item => ({
@@ -283,12 +302,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           unit_price: item.pricePerUnit,
         }));
 
-      // 2. Initiate PayU payment with split settlements
+      // 4. Initiate PayU payment
       const payuResponse = await fetch('/api/payu/initiate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           profileId: activeProfile.id,
           totalAmount: cartSummary.total,
@@ -296,6 +313,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           boltsSpent: isBoltsDiscountApplied ? cartSummary.boltsToDeduct : 0,
           cartItems: stockItems,
           orderType: 'shop',
+          buyerPhone: details.phone,
         }),
       });
 
@@ -307,22 +325,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const paymentData = await payuResponse.json();
       const { payuParams, payuUrl } = paymentData;
 
-      // Reset cart and checkout states
       setCart([]);
       setIsBoltsDiscountApplied(false);
       setCheckoutStatus('idle');
 
-      // 3. Redirect to payment gateway or simulator
       if (payuUrl.startsWith('/')) {
-        // Local simulation: redirect using GET query params to avoid Next.js Page POST errors
         const searchParams = new URLSearchParams(payuParams as any);
         window.location.href = `${payuUrl}?${searchParams.toString()}`;
       } else {
-        // Real PayU payment gateway: redirect via hidden form POST
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = payuUrl;
-
         Object.entries(payuParams).forEach(([k, v]) => {
           const input = document.createElement('input');
           input.type = 'hidden';
@@ -330,7 +343,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           input.value = String(v);
           form.appendChild(input);
         });
-
         document.body.appendChild(form);
         form.submit();
       }
@@ -340,7 +352,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setCheckoutStatus('idle');
       showToast('Checkout failed. Please try again.', 'error');
     }
-  }, [cart, cartSummary.total, cartSummary.boltsToDeduct, profile, fetchProfile, showToast]);
+  }, [cart, cartSummary.total, cartSummary.boltsToDeduct, profile, fetchProfile, isBoltsDiscountApplied, showToast]);
 
   return (
     <CartContext.Provider value={{
@@ -357,6 +369,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       updateCartQuantity,
       removeFromCart,
       handleCheckout,
+      handleDeliveryConfirm,
+      showDeliveryModal,
+      setShowDeliveryModal,
       getPartPriceForQuantity,
       profile,
       fetchProfile,

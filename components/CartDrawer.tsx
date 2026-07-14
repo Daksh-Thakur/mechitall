@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { ShoppingCart, X, Minus, Plus, Trash2, ShieldCheck, Activity, CheckCircle2, History } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShoppingCart, X, Minus, Plus, Trash2, ShieldCheck, Activity, CheckCircle2, History, MapPin, User, Mail, Phone, Edit3 } from 'lucide-react';
 import { useCart } from './CartProvider';
 
 export default function CartDrawer() {
@@ -13,6 +13,9 @@ export default function CartDrawer() {
     updateCartQuantity,
     removeFromCart,
     handleCheckout,
+    handleDeliveryConfirm,
+    showDeliveryModal,
+    setShowDeliveryModal,
     checkoutStatus,
     setCheckoutStatus,
     lastPlacedOrder,
@@ -21,7 +24,36 @@ export default function CartDrawer() {
     setIsBoltsDiscountApplied,
   } = useCart();
 
-  if (!isCartOpen && checkoutStatus !== 'success') return null;
+  // Local delivery form state – pre-filled from profile
+  const [deliveryName, setDeliveryName] = useState('');
+  const [deliveryEmail, setDeliveryEmail] = useState('');
+  const [deliveryPhone, setDeliveryPhone] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliverySubmitting, setDeliverySubmitting] = useState(false);
+
+  // Pre-fill form whenever the modal opens or profile changes
+  useEffect(() => {
+    if (showDeliveryModal) {
+      setDeliveryName(profile?.full_name || '');
+      setDeliveryEmail(profile?.email || '');
+      setDeliveryPhone('');
+      setDeliveryAddress(profile?.business_address || '');
+    }
+  }, [showDeliveryModal, profile]);
+
+  const handleDeliverySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDeliverySubmitting(true);
+    await handleDeliveryConfirm({
+      name: deliveryName,
+      email: deliveryEmail,
+      phone: deliveryPhone,
+      address: deliveryAddress,
+    });
+    setDeliverySubmitting(false);
+  };
+
+  if (!isCartOpen && checkoutStatus !== 'success' && !showDeliveryModal) return null;
 
   return (
     <>
@@ -62,6 +94,128 @@ export default function CartDrawer() {
                 Back to Store
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELIVERY DETAILS MODAL */}
+      {showDeliveryModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm" onClick={() => setShowDeliveryModal(false)}></div>
+          <div className="bg-white border border-[#E4E4E7] rounded-xl w-full max-w-lg p-6 shadow-2xl relative z-10 space-y-5 animate-slide-in">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-cobalt" />
+                  <h3 className="text-sm font-bold text-[#0F172A] uppercase font-['Space_Grotesk'] tracking-wider">Confirm Delivery Details</h3>
+                </div>
+                <p className="text-[10px] text-[#76777d] font-mono pl-6">Review and edit your shipping information before payment</p>
+              </div>
+              <button
+                onClick={() => setShowDeliveryModal(false)}
+                className="p-1.5 rounded hover:bg-[#F8FAFC] border border-[#E4E4E7] text-[#76777d] cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Order summary strip */}
+            <div className="p-3 bg-[#F8FAFC] border border-[#E4E4E7] rounded-lg flex items-center justify-between text-xs font-mono">
+              <span className="text-[#76777d] font-bold uppercase tracking-wider text-[9px]">{cartSummary.itemCount} item{cartSummary.itemCount !== 1 ? 's' : ''}</span>
+              <span className="text-[#0F172A] font-bold text-sm">₹{cartSummary.total.toFixed(2)}</span>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleDeliverySubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Name */}
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-1.5 text-[9px] font-bold text-[#45464d] uppercase tracking-wider font-mono">
+                    <User className="w-3 h-3" /> Recipient Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={deliveryName}
+                    onChange={e => setDeliveryName(e.target.value)}
+                    placeholder="Full name"
+                    className="w-full px-3 py-2 text-xs border border-[#E4E4E7] rounded-lg bg-white text-[#0F172A] placeholder-[#76777d] focus:outline-none focus:border-cobalt/50 focus:ring-1 focus:ring-cobalt/20 font-mono"
+                  />
+                </div>
+                {/* Phone */}
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-1.5 text-[9px] font-bold text-[#45464d] uppercase tracking-wider font-mono">
+                    <Phone className="w-3 h-3" /> Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={deliveryPhone}
+                    onChange={e => setDeliveryPhone(e.target.value)}
+                    placeholder="10-digit mobile"
+                    className="w-full px-3 py-2 text-xs border border-[#E4E4E7] rounded-lg bg-white text-[#0F172A] placeholder-[#76777d] focus:outline-none focus:border-cobalt/50 focus:ring-1 focus:ring-cobalt/20 font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-1.5 text-[9px] font-bold text-[#45464d] uppercase tracking-wider font-mono">
+                  <Mail className="w-3 h-3" /> Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={deliveryEmail}
+                  onChange={e => setDeliveryEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full px-3 py-2 text-xs border border-[#E4E4E7] rounded-lg bg-white text-[#0F172A] placeholder-[#76777d] focus:outline-none focus:border-cobalt/50 focus:ring-1 focus:ring-cobalt/20 font-mono"
+                />
+              </div>
+
+              {/* Address */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-1.5 text-[9px] font-bold text-[#45464d] uppercase tracking-wider font-mono">
+                  <MapPin className="w-3 h-3" /> Shipping Address *
+                </label>
+                <textarea
+                  required
+                  value={deliveryAddress}
+                  onChange={e => setDeliveryAddress(e.target.value)}
+                  placeholder="House/Flat no., Street, Area, City, State, PIN"
+                  rows={3}
+                  className="w-full px-3 py-2 text-xs border border-[#E4E4E7] rounded-lg bg-white text-[#0F172A] placeholder-[#76777d] focus:outline-none focus:border-cobalt/50 focus:ring-1 focus:ring-cobalt/20 font-mono resize-none"
+                />
+              </div>
+
+              <p className="text-[9px] text-[#76777d] font-mono leading-relaxed flex items-start gap-1.5">
+                <Edit3 className="w-3 h-3 shrink-0 mt-0.5 text-cobalt" />
+                These details will be saved to your profile and shared with the seller for delivery coordination.
+              </p>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowDeliveryModal(false)}
+                  className="px-4 py-2.5 border border-[#E4E4E7] text-[#45464d] rounded-lg text-xs font-mono font-bold hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={deliverySubmitting}
+                  className="flex-1 bg-[#0f172a] hover:bg-[#06b6d4] text-white py-2.5 rounded-lg text-xs font-mono font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deliverySubmitting ? (
+                    <><Activity className="w-3.5 h-3.5 animate-spin" /> Saving & Proceeding...</>
+                  ) : (
+                    <><ShieldCheck className="w-3.5 h-3.5" /> Confirm &amp; Proceed to Payment</>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -177,7 +331,7 @@ export default function CartDrawer() {
                       Apply Bolts (₹{(profile.wallet_balance / 10).toFixed(2)})
                     </span>
                     <span className="block text-[9px] text-amber-700/80 leading-normal font-semibold">
-                      Spend {Math.min(profile.wallet_balance, cartSummary.boltsToDeduct || 0)} Bolts to get ₹{cartSummary.boltsDiscount.toFixed(2)} off &amp; remove 18% GST!
+                      Spend {Math.min(profile.wallet_balance, cartSummary.boltsToDeduct || 0)} Bolts to get ₹{cartSummary.boltsDiscount.toFixed(2)} off!
                     </span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer select-none shrink-0">
@@ -211,18 +365,6 @@ export default function CartDrawer() {
                   <span>Shipping</span>
                   <span className="font-sans font-bold">{cartSummary.shipping === 0 ? 'FREE' : `₹${cartSummary.shipping.toFixed(2)}`}</span>
                 </div>
-                <div className="flex justify-between text-[#45464d]">
-                  <span>GST (18%)</span>
-                  <span className={isBoltsDiscountApplied ? "line-through text-[#76777d] animate-pulse font-sans font-bold" : "font-sans font-bold"}>
-                    ₹{isBoltsDiscountApplied ? ((cartSummary.subtotal - cartSummary.discount) * 0.18).toFixed(2) : cartSummary.tax.toFixed(2)}
-                  </span>
-                </div>
-                {isBoltsDiscountApplied && (
-                  <div className="flex justify-between text-emerald">
-                    <span>GST Waived (18%)</span>
-                    <span className="font-sans font-bold">-₹{((cartSummary.subtotal - cartSummary.discount) * 0.18).toFixed(2)}</span>
-                  </div>
-                )}
                 {isBoltsDiscountApplied && cartSummary.boltsDiscount > 0 && (
                   <div className="flex justify-between text-amber-600">
                     <span>Bolts Reward Discount</span>
