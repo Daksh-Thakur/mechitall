@@ -394,7 +394,7 @@ export async function submitQuoteOffer(
       await supabase
         .from('quotes')
         .update({
-          total_cost: data.price,
+          total_cost: data.price * data.quantity,
           seller_notes: data.notes,
           status: 'SUBMITTED', // active offer
         })
@@ -480,7 +480,7 @@ export async function acceptQuoteOffer(quoteId: string) {
       {
         id: orderId,
         profile_id: quote.buyer_profile_id,
-        total_amount: quote.offer_price,
+        total_amount: quote.offer_price * quote.quantity,
         items_count: quote.quantity,
         status: 'Processing',
         rewards_claimed: false,
@@ -534,7 +534,7 @@ export async function submitBuyerCounterOffer(
       await supabase
         .from('quotes')
         .update({
-          total_cost: data.price,
+          total_cost: data.price * data.quantity,
           seller_notes: data.notes,
           status: 'SUBMITTED', // active offer
         })
@@ -623,7 +623,7 @@ export async function acceptQuoteOfferBySeller(quoteId: string) {
       {
         id: orderId,
         profile_id: quote.buyer_profile_id,
-        total_amount: quote.offer_price,
+        total_amount: quote.offer_price * quote.quantity,
         items_count: quote.quantity,
         status: 'Pending Payment',
         rewards_claimed: false,

@@ -2454,7 +2454,7 @@ function QuotationChatsTab({
         },
         body: JSON.stringify({
           profileId: profile.id,
-          totalAmount: activeThread.machiningQuote.offer_price,
+          totalAmount: (Number(activeThread.machiningQuote.offer_price) || 0) * (activeThread.machiningQuote.quantity || 1),
           itemsCount: activeThread.machiningQuote.quantity,
           orderType: 'quote',
           quoteId: activeThread.machiningQuote.id,
@@ -2951,6 +2951,13 @@ function QuotationChatsTab({
                           </div>
                         ))}
                       </div>
+                      {/* Live total calculation */}
+                      {offerPrice > 0 && offerQuantity > 0 && (
+                        <div className="flex items-center justify-between px-3 py-2 bg-[#00D0F5]/5 border border-[#00D0F5]/20 rounded-lg">
+                          <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-bold">Total Amount</span>
+                          <span className="text-sm font-black text-[#00D0F5]">₹{(offerPrice * offerQuantity).toLocaleString('en-IN')}</span>
+                        </div>
+                      )}
                       <input type="text" placeholder="Notes / inspection feedback..." value={sellerNotes} onChange={(e) => setSellerNotes(e.target.value)} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800/80 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50" />
                       <button type="submit" disabled={submittingOffer} className="w-full py-2 bg-gradient-to-r from-[#00D0F5] to-[#0099bb] text-white rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 hover:opacity-90 shadow">
                         {submittingOffer ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <><CircleDollarSign className="w-3.5 h-3.5" /><span>Submit Price Offer to Buyer</span></>}
@@ -2974,7 +2981,8 @@ function QuotationChatsTab({
                           <span>Mat: <span className="text-white">{activeThread.machiningQuote.selected_material}</span></span>
                           <span>Finish: <span className="text-white">{activeThread.machiningQuote.selected_finish}</span></span>
                           <span>Qty: <span className="text-white">{activeThread.machiningQuote.quantity} units</span></span>
-                          <span className="ml-auto text-[#00D0F5] font-black text-sm">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span>
+                          <span>Unit: <span className="text-white font-black">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span></span>
+                          <span className="ml-auto text-[#00D0F5] font-black text-sm">Total: ₹{(Number(activeThread.machiningQuote.offer_price) * Number(activeThread.machiningQuote.quantity)).toLocaleString('en-IN')}</span>
                         </div>
                         {activeThread.machiningQuote.seller_notes && (
                           <p className="text-[9px] text-zinc-500 italic border-t border-zinc-700/40 pt-1.5">"{activeThread.machiningQuote.seller_notes}"</p>
@@ -3030,6 +3038,13 @@ function QuotationChatsTab({
                               </div>
                             ))}
                           </div>
+                           {/* Live total calculation */}
+                          {offerPrice > 0 && offerQuantity > 0 && (
+                            <div className="flex items-center justify-between px-3 py-2 bg-[#00D0F5]/5 border border-[#00D0F5]/20 rounded-lg">
+                              <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-bold">Total Amount</span>
+                              <span className="text-sm font-black text-[#00D0F5]">₹{(offerPrice * offerQuantity).toLocaleString('en-IN')}</span>
+                            </div>
+                          )}
                           <input type="text" placeholder="Proposal notes..." value={sellerNotes} onChange={(e) => setSellerNotes(e.target.value)} className="w-full p-2 border border-zinc-700 rounded-lg bg-zinc-800 text-white text-[11px] focus:outline-none focus:border-[#00D0F5]/50" />
                           <div className="flex gap-2">
                             <button type="submit" disabled={submittingOffer} className="flex-1 py-2 bg-gradient-to-r from-[#00D0F5] to-[#0099bb] text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer hover:opacity-90 transition-all">
@@ -3049,7 +3064,8 @@ function QuotationChatsTab({
                         <span>Material: <span className="text-white">{activeThread.machiningQuote.selected_material}</span></span>
                         <span>Finish: <span className="text-white">{activeThread.machiningQuote.selected_finish}</span></span>
                         <span>Qty: <span className="text-white">{activeThread.machiningQuote.quantity} units</span></span>
-                        <span>Price: <span className="text-[#00D0F5] font-black">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span></span>
+                        <span>Unit Price: <span className="text-zinc-300 font-black">₹{Number(activeThread.machiningQuote.offer_price).toLocaleString('en-IN')}</span></span>
+                        <span>Total: <span className="text-[#00D0F5] font-black">₹{(Number(activeThread.machiningQuote.offer_price) * Number(activeThread.machiningQuote.quantity)).toLocaleString('en-IN')}</span></span>
                       </div>
                     </div>
                   )}
