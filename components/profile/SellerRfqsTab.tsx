@@ -209,18 +209,24 @@ export default function SellerRfqsTab(props: any) {
                   ))
                 )}
               </div>
-            </div>
-
-            {/* PRODUCTION PIPELINE */}
+                {/* PRODUCTION PIPELINE */}
             <div className="bg-zinc-800/80 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-zinc-700/60">
                 <div className="flex items-center gap-2">
                   <Cpu className="w-4 h-4 text-indigo-400" />
                   <h4 className="text-sm font-black text-white uppercase tracking-tight">Production Pipeline</h4>
                 </div>
-                <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 rounded border border-indigo-500/20">
-                  {sellerData ? sellerData.activeJobs.length : '0'} Active Jobs
-                </span>
+                {(() => {
+                  const acceptedRfqs = (sellerData?.myQuotes || []).filter(
+                    (q: any) => q.status === 'ACCEPTED' || (q.machiningQuote?.status === 'Accepted') || q.status === 'Accepted'
+                  );
+                  const totalPipeline = (sellerData?.activeJobs.length || 0) + acceptedRfqs.length;
+                  return (
+                    <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 rounded border border-indigo-500/20">
+                      {totalPipeline} Active Jobs
+                    </span>
+                  );
+                })()}
               </div>
 
               <div className="space-y-3">
@@ -228,74 +234,144 @@ export default function SellerRfqsTab(props: any) {
                   <div className="py-8 text-center animate-pulse">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-500" />
                   </div>
-                ) : !sellerData || sellerData.activeJobs.length === 0 ? (
-                  <div className="text-center py-8 text-xs font-bold text-zinc-500 bg-zinc-900/50 rounded-xl border border-dashed border-zinc-700/60">
-                    No active production jobs in the pipeline.
-                  </div>
-                ) : (
-                  sellerData.activeJobs.map((job) => {
-                    const isShipped = job.status === 'Shipped';
-                    const progress = isShipped ? 80 : 40;
+                ) : (() => {
+                  const acceptedRfqs = (sellerData?.myQuotes || []).filter(
+                    (q: any) => q.status === 'ACCEPTED' || (q.machiningQuote?.status === 'Accepted') || q.status === 'Accepted'
+                  );
+                  const totalPipeline = (sellerData?.activeJobs.length || 0) + acceptedRfqs.length;
+
+                  if (!sellerData || totalPipeline === 0) {
                     return (
-                      <div 
-                        key={job.id} 
-                        onClick={() => {
-                          const rfqId = job.rfq_id || job.rfq?.id;
-                          if (rfqId) {
-                            setActiveChatRfqId && setActiveChatRfqId(rfqId);
-                            setActiveTab && setActiveTab('chats');
-                          }
-                        }}
-                        className="bg-zinc-900/50 border border-zinc-700/60 rounded-2xl p-4 space-y-4 hover:border-indigo-500/50 hover:shadow-lg transition-all cursor-pointer shadow-sm"
-                      >
-                        <div className="flex justify-between items-start gap-4">
-                          <div>
-                            <span className="block text-[8px] font-black text-slate-500 font-mono">ORDER-{job.id.substring(0, 8).toUpperCase()}</span>
-                            <h5 className="text-xs font-black text-white mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</h5>
-                          </div>
-                          <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${isShipped
-                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                            : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
-                            }`}>
-                            {isShipped ? 'SHIPPED' : 'PROCESSING'}
-                          </span>
-                        </div>
+                      <div className="text-center py-8 text-xs font-bold text-zinc-500 bg-zinc-900/50 rounded-xl border border-dashed border-zinc-700/60">
+                        No active production jobs in the pipeline.
+                      </div>
+                    );
+                  }
 
-                        <div className="space-y-1.5">
-                          <div className="flex justify-between text-[8px] font-black uppercase text-slate-500 tracking-wider">
-                            <span>Progress</span>
-                            <span className="font-mono font-black text-[9px] text-zinc-300">{progress}%</span>
+                  return (
+                    <>
+                      {/* Accepted RFQ quotes — awaiting production start */}
+                      {acceptedRfqs.map((quote: any) => (
+                        <div
+                          key={quote.id}
+                          onClick={() => {
+                            const rfqId = quote.rfq_id || quote.rfqId;
+                            if (rfqId) {
+                              setActiveChatRfqId && setActiveChatRfqId(rfqId);
+                              setActiveTab && setActiveTab('chats');
+                            }
+                          }}
+                          className="bg-emerald-950/30 border border-emerald-500/20 rounded-2xl p-4 space-y-3 hover:border-emerald-500/40 hover:shadow-lg transition-all cursor-pointer shadow-sm"
+                        >
+                          <div className="flex justify-between items-start gap-4">
+                            <div>
+                              <span className="block text-[8px] font-black text-emerald-600 font-mono">RFQ-{(quote.rfq_id || quote.id || '').substring(0, 8).toUpperCase()}</span>
+                              <h5 className="text-xs font-black text-white mt-0.5">{quote.rfqTitle || quote.rfq?.title || 'Accepted Machining Quote'}</h5>
+                              {quote.machiningQuote?.offer_price && (
+                                <span className="text-[10px] text-[#00D0F5] font-black font-mono">
+                                  ₹{Number(quote.machiningQuote.offer_price).toLocaleString('en-IN')}
+                                </span>
+                              )}
+                            </div>
+                            <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shrink-0">
+                              ACCEPTED
+                            </span>
                           </div>
-                          <div className="w-full bg-zinc-800 border border-zinc-700/50 h-2 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${isShipped ? 'bg-amber-400' : 'bg-indigo-400'}`}
-                              style={{ width: `${progress}%` }}
-                            ></div>
-                          </div>
-                        </div>
 
-                        {(job.rfq_id || job.rfq?.id) && (
+                          <div className="space-y-1.5">
+                            <div className="flex justify-between text-[8px] font-black uppercase text-slate-500 tracking-wider">
+                              <span>Awaiting Production Start</span>
+                              <span className="font-mono font-black text-[9px] text-emerald-500">0%</span>
+                            </div>
+                            <div className="w-full bg-zinc-800 border border-zinc-700/50 h-2 rounded-full overflow-hidden">
+                              <div className="h-full rounded-full bg-emerald-500/30 w-0"></div>
+                            </div>
+                          </div>
+
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              const rfqId = quote.rfq_id || quote.rfqId;
+                              if (rfqId) {
+                                setActiveChatRfqId && setActiveChatRfqId(rfqId);
+                                setActiveTab && setActiveTab('chats');
+                              }
+                            }}
+                            className="w-full py-2 bg-emerald-900/30 hover:bg-emerald-900/50 text-emerald-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-500/20"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            <span>Open Negotiation Chat</span>
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* Regular activeJobs — Processing / Shipped */}
+                      {sellerData.activeJobs.map((job: any) => {
+                        const isShipped = job.status === 'Shipped';
+                        const progress = isShipped ? 80 : 40;
+                        return (
+                          <div
+                            key={job.id}
+                            onClick={() => {
                               const rfqId = job.rfq_id || job.rfq?.id;
                               if (rfqId) {
                                 setActiveChatRfqId && setActiveChatRfqId(rfqId);
                                 setActiveTab && setActiveTab('chats');
                               }
                             }}
-                            className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-zinc-700/50"
+                            className="bg-zinc-900/50 border border-zinc-700/60 rounded-2xl p-4 space-y-4 hover:border-indigo-500/50 hover:shadow-lg transition-all cursor-pointer shadow-sm"
                           >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                            <span>Open Quote Chat</span>
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
+                            <div className="flex justify-between items-start gap-4">
+                              <div>
+                                <span className="block text-[8px] font-black text-slate-500 font-mono">ORDER-{job.id.substring(0, 8).toUpperCase()}</span>
+                                <h5 className="text-xs font-black text-white mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</h5>
+                              </div>
+                              <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${isShipped
+                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+                                }`}>
+                                {isShipped ? 'SHIPPED' : 'PROCESSING'}
+                              </span>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <div className="flex justify-between text-[8px] font-black uppercase text-slate-500 tracking-wider">
+                                <span>Progress</span>
+                                <span className="font-mono font-black text-[9px] text-zinc-300">{progress}%</span>
+                              </div>
+                              <div className="w-full bg-zinc-800 border border-zinc-700/50 h-2 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full transition-all ${isShipped ? 'bg-amber-400' : 'bg-indigo-400'}`}
+                                  style={{ width: `${progress}%` }}
+                                ></div>
+                              </div>
+                            </div>
+
+                            {(job.rfq_id || job.rfq?.id) && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const rfqId = job.rfq_id || job.rfq?.id;
+                                  if (rfqId) {
+                                    setActiveChatRfqId && setActiveChatRfqId(rfqId);
+                                    setActiveTab && setActiveTab('chats');
+                                  }
+                                }}
+                                className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-zinc-700/50"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                <span>Open Quote Chat</span>
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </>
+                  );
+                })()}
               </div>
             </div>
+          </div>
 
             {/* PENDING ORDERS */}
             <div className="bg-zinc-800/80 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
