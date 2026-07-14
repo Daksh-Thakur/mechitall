@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Cpu, ShieldCheck, Clock, Package, Mail, MapPin, Send, HelpCircle, FileText } from 'lucide-react';
+import { Cpu, ShieldCheck, Clock, Package, Mail, MapPin, Send, HelpCircle, FileText, MessageSquare, Zap } from 'lucide-react';
 
 export default function Footer() {
   const handleSubmitNewsletter = (e: React.FormEvent) => {
@@ -131,24 +131,24 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs text-zinc-400 font-sans">
               <li className="flex items-start gap-2">
-                <FileText className="w-3.5 h-3.5 text-cobalt shrink-0 mt-0.5" />
+                <MessageSquare className="w-3.5 h-3.5 text-cobalt shrink-0 mt-0.5" />
                 <div>
-                  <span className="block text-[10px] font-bold text-white uppercase font-mono">Digital RFQ Vault</span>
-                  <span className="text-[10px] text-zinc-500 leading-none font-sans">Instant 3D file estimations</span>
+                  <span className="block text-[10px] font-bold text-white uppercase font-mono">Negotiation Desk</span>
+                  <span className="text-[10px] text-zinc-500 leading-none font-sans">Live quote counter-offers &amp; chats</span>
                 </div>
               </li>
               <li className="flex items-start gap-2">
-                <Clock className="w-3.5 h-3.5 text-emerald shrink-0 mt-0.5" />
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald shrink-0 mt-0.5" />
                 <div>
-                  <span className="block text-[10px] font-bold text-white uppercase font-mono">Fast-track Logistics</span>
-                  <span className="text-[10px] text-zinc-500 leading-none font-sans">Express pan-India delivery</span>
+                  <span className="block text-[10px] font-bold text-white uppercase font-mono">Escrow Payments</span>
+                  <span className="text-[10px] text-zinc-500 leading-none font-sans">PayU secure escrow auto-releases</span>
                 </div>
               </li>
               <li className="flex items-start gap-2">
-                <HelpCircle className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
+                <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
                 <div>
-                  <span className="block text-[10px] font-bold text-white uppercase font-mono">Engineering Support</span>
-                  <span className="text-[10px] text-zinc-500 leading-none font-sans">Mon–Fri: 09:00 - 18:00 IST</span>
+                  <span className="block text-[10px] font-bold text-white uppercase font-mono">Bolts Rewards</span>
+                  <span className="text-[10px] text-zinc-500 leading-none font-sans">Progression milestones &amp; seller tiers</span>
                 </div>
               </li>
             </ul>
