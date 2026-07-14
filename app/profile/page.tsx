@@ -1957,9 +1957,11 @@ function QuotationChatsTab({
   const [showRejectForm, setShowRejectForm] = useState(false);
   const [rejectionReasonInput, setRejectionReasonInput] = useState('');
   const [rejecting, setRejecting] = useState(false);
-  const [cancelling, setCancelling] = useState(false);
   const [threadOrder, setThreadOrder] = useState<any | null>(null);
   const [updatingThreadOrderStatus, setUpdatingThreadOrderStatus] = useState(false);
+  const [showDesignDisclaimer, setShowDesignDisclaimer] = useState(false);
+  const [pendingDesignUrl, setPendingDesignUrl] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const [offerPrice, setOfferPrice] = useState(0);
   const [offerQuantity, setOfferQuantity] = useState(1);
@@ -2788,7 +2790,12 @@ function QuotationChatsTab({
                         .from('rfq-cad-files')
                         .createSignedUrl(activeThread.cadFilePath!, 60);
                       if (data?.signedUrl) {
-                        window.open(data.signedUrl, '_blank');
+                        if (profile.is_seller && !localStorage.getItem('mechitall_design_disclaimer_accepted')) {
+                          setPendingDesignUrl(data.signedUrl);
+                          setShowDesignDisclaimer(true);
+                        } else {
+                          window.open(data.signedUrl, '_blank');
+                        }
                       } else {
                         showToast('Failed to open design file.', 'error');
                       }
@@ -3158,6 +3165,51 @@ function QuotationChatsTab({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Design IP Disclaimer Modal */}
+      {showDesignDisclaimer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-[#0F172A]/80 backdrop-blur-sm" onClick={() => {
+            setShowDesignDisclaimer(false);
+            setPendingDesignUrl(null);
+          }} />
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative z-10 space-y-5 text-left font-sans">
+            <div className="flex items-center gap-3 text-amber-500 pb-2 border-b border-zinc-800">
+              <ShieldCheck className="w-5 h-5" />
+              <h3 className="text-sm font-black uppercase tracking-wider text-white">Confidentiality &amp; IP Agreement</h3>
+            </div>
+            <p className="text-[11px] font-medium leading-relaxed text-zinc-400">
+              This design and its associated CAD files belong entirely and exclusively to the Buyer.
+              As a seller, you must respect the confidentiality of this proprietary mechatronic design.
+              Any malpractice, unauthorized distribution, plagiarism, or misuse of this intellectual property is strictly prohibited under our platform policies.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => {
+                  localStorage.setItem('mechitall_design_disclaimer_accepted', 'true');
+                  setShowDesignDisclaimer(false);
+                  if (pendingDesignUrl) {
+                    window.open(pendingDesignUrl, '_blank');
+                    setPendingDesignUrl(null);
+                  }
+                }}
+                className="bg-[#00D0F5] hover:bg-[#00e5ff] text-zinc-950 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow"
+              >
+                I Agree &amp; Proceed
+              </button>
+              <button
+                onClick={() => {
+                  setShowDesignDisclaimer(false);
+                  setPendingDesignUrl(null);
+                }}
+                className="border border-zinc-800 hover:bg-zinc-800/50 text-zinc-550 hover:text-zinc-300 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
