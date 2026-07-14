@@ -565,7 +565,7 @@ export default function SellerRfqsTab(props: any) {
                                 {new Date(quote.created_at).toLocaleDateString()}
                               </span>
                               <span className="text-xs font-black text-white font-mono">
-                                ₹{Number(quote.total_amount).toLocaleString('en-IN')}
+                                ₹{Number(quote.total_cost || quote.price || (quote.machiningQuote?.offer_price) || 0).toLocaleString('en-IN')}
                               </span>
                             </div>
                           </div>
