@@ -48,11 +48,31 @@ export default function SellerRfqsTab(props: any) {
                 <span>Progress to {sellerData.nextTier}</span>
                 <span>{sellerData.sellerTier === 'Apex Manufacturer' ? 'MAX LEVEL' : `${sellerData.totalUnitsSold} / ${sellerData.nextTierGoal} sold`}</span>
               </div>
-              <div className="w-full bg-zinc-950 border border-zinc-800 h-2 rounded-full overflow-hidden shadow-inner">
+              <div className="w-full bg-zinc-950 border border-zinc-800 h-2.5 rounded-full overflow-hidden shadow-inner relative">
                 <div
-                  className="h-full bg-gradient-to-r from-sky-400 to-[#00D0F5] transition-all duration-500 rounded-full"
-                  style={{ width: `${sellerData.tierProgress}%` }}
-                ></div>
+                  className="h-full rounded-full transition-all duration-700 relative overflow-hidden"
+                  style={{
+                    width: `${sellerData.tierProgress}%`,
+                    background:
+                      sellerData.sellerTier === 'Apex Manufacturer'
+                        ? 'linear-gradient(90deg, #f43f5e, #fb923c, #fbbf24)'
+                        : sellerData.sellerTier === 'Master Builder'
+                        ? 'linear-gradient(90deg, #f59e0b, #fde68a, #f59e0b)'
+                        : sellerData.sellerTier === 'Pro Craftsman'
+                        ? 'linear-gradient(90deg, #6366f1, #818cf8, #00D0F5)'
+                        : 'linear-gradient(90deg, #00D0F5, #34d399)',
+                  }}
+                >
+                  {/* shimmer sweep */}
+                  <span
+                    className="absolute inset-0 opacity-40"
+                    style={{
+                      background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%)',
+                      backgroundSize: '200% 100%',
+                      animation: 'shimmer 2s infinite linear',
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>

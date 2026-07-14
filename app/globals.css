@@ -200,4 +200,7 @@ h1, h2, h3, h4, h5, h6 {
   scrollbar-width: none;
 }
 
-
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
