@@ -12,6 +12,71 @@ export default function SellerEarningsTab(props: any) {
     const [bankAccount, setBankAccount] = useState(profile?.bank_account_number || '');
     const [ifsc, setIfsc] = useState(profile?.ifsc_code || '');
     const [saving, setSaving] = useState(false);
+    const [chartView, setChartView] = useState<'weekly' | 'monthly' | 'yearly'>('weekly');
+
+    const chartData = React.useMemo(() => {
+      if (!sellerData) return [];
+
+      const allJobs = [...(sellerData.completedJobs || []), ...(sellerData.activeJobs || [])];
+
+      if (chartView === 'weekly') {
+        return sellerData.earningsVelocity || [];
+      }
+
+      if (chartView === 'monthly') {
+        const months: Array<{ label: string; monthNum: number; year: number; amount: number }> = [];
+        const now = new Date();
+        for (let i = 4; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const label = d.toLocaleString('en-IN', { month: 'short' });
+          const year = d.getFullYear();
+          months.push({
+            label: i === 0 ? 'This Mo' : `${label}`,
+            monthNum: d.getMonth(),
+            year: year,
+            amount: 0
+          });
+        }
+
+        allJobs.forEach((job: any) => {
+          if (!job.created_at) return;
+          const jobDate = new Date(job.created_at);
+          const jobMonth = jobDate.getMonth();
+          const jobYear = jobDate.getFullYear();
+          const matchedMonth = months.find(m => m.monthNum === jobMonth && m.year === jobYear);
+          if (matchedMonth) {
+            matchedMonth.amount += Number(job.total_cost || 0);
+          }
+        });
+
+        return months.map(m => ({ label: m.label, amount: m.amount }));
+      }
+
+      if (chartView === 'yearly') {
+        const currentYear = new Date().getFullYear();
+        const years: Array<{ label: string; year: number; amount: number }> = [];
+        for (let i = 3; i >= 0; i--) {
+          years.push({
+            label: String(currentYear - i),
+            year: currentYear - i,
+            amount: 0
+          });
+        }
+
+        allJobs.forEach((job: any) => {
+          if (!job.created_at) return;
+          const jobYear = new Date(job.created_at).getFullYear();
+          const matchedYear = years.find(y => y.year === jobYear);
+          if (matchedYear) {
+            matchedYear.amount += Number(job.total_cost || 0);
+          }
+        });
+
+        return years.map(y => ({ label: y.label, amount: y.amount }));
+      }
+
+      return [];
+    }, [sellerData, chartView]);
 
     // Sync input values when profile loads/changes
     React.useEffect(() => {
@@ -180,15 +245,33 @@ export default function SellerEarningsTab(props: any) {
                   <div className="lg:col-span-2 space-y-6">
                     {/* Velocity Chart */}
                     <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded-2xl shadow-sm space-y-4">
-                      <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono">
-                        Weekly Sales Velocity
-                      </span>
+                      <div className="flex justify-between items-center pb-1">
+                        <span className="block text-[9px] uppercase font-bold text-zinc-400 tracking-wider font-mono">
+                          {chartView === 'weekly' ? 'Weekly' : chartView === 'monthly' ? 'Monthly' : 'Yearly'} Sales Velocity
+                        </span>
+                        {/* Selector Tabs */}
+                        <div className="flex bg-zinc-900/80 border border-zinc-750 p-1 rounded-xl gap-0.5">
+                          {(['weekly', 'monthly', 'yearly'] as const).map(view => (
+                            <button
+                              key={view}
+                              onClick={() => setChartView(view)}
+                              className={`px-3 py-1 text-[8px] font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
+                                chartView === view
+                                  ? 'bg-[#00D0F5] text-zinc-950 shadow-md shadow-[#00D0F5]/10'
+                                  : 'text-zinc-500 hover:text-zinc-300'
+                              }`}
+                            >
+                              {view}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
-                      <div className="flex items-end justify-between h-44 px-2">
-                        {sellerData?.earningsVelocity.map((item: any, idx: number) => {
-                          const maxVal = Math.max(...sellerData.earningsVelocity.map((v: any) => v.amount), 1000);
+                      <div className="flex items-end justify-around h-44 px-2">
+                        {chartData.map((item: any, idx: number) => {
+                          const maxVal = Math.max(...chartData.map((v: any) => v.amount), 1000);
                           const barHeight = Math.max(Math.round((item.amount / maxVal) * 100), item.amount > 0 ? 8 : 4);
-                          const isActive = idx === 4;
+                          const isActive = idx === chartData.length - 1;
 
                           return (
                             <div key={idx} className="flex flex-col items-center gap-1 group relative">
@@ -200,7 +283,7 @@ export default function SellerEarningsTab(props: any) {
                                 className={`w-8 rounded-t transition-all duration-300 origin-bottom hover:scale-x-105 hover:shadow-md ${
                                   isActive
                                     ? 'bg-gradient-to-t from-[#00D0F5]/50 to-[#00D0F5] shadow-lg shadow-[#00D0F5]/20 hover:brightness-110'
-                                    : 'bg-zinc-800 border border-zinc-700 hover:bg-[#00D0F5]/20 hover:border-[#00D0F5]/30'
+                                    : 'bg-zinc-850 border border-zinc-750 hover:bg-[#00D0F5]/20 hover:border-[#00D0F5]/30'
                                 }`}
                                 style={{ height: `${barHeight}px` }}
                               ></div>
