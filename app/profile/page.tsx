@@ -2676,13 +2676,18 @@ function QuotationChatsTab({
                       {initials}
                     </div>
                     <span className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[#0B1120] ${statusDot}`}></span>
+                    {isUnread && (
+                      <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00D0F5] opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#00D0F5]"></span>
+                      </span>
+                    )}
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0 space-y-0.5">
                     <div className="flex items-center justify-between gap-1">
                       <span className={`text-[11px] font-black line-clamp-1 ${isActive ? 'text-white' : 'text-zinc-200 group-hover:text-white'}`}>
-                        {isUnread && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#00D0F5] mr-1 mb-0.5 align-middle animate-pulse"></span>}
                         {t.rfqTitle}
                       </span>
                       {t.lastMessageTime && (
@@ -2695,13 +2700,20 @@ function QuotationChatsTab({
                       <span className="text-[9px] text-zinc-500 font-semibold line-clamp-1 flex-1">
                         {t.lastMessageText ? `"${t.lastMessageText}"` : `With ${t.otherParticipantName}`}
                       </span>
-                      <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
-                        isAccepted ? 'text-emerald-400 bg-emerald-500/10'
-                        : isRejected ? 'text-rose-400 bg-rose-500/10'
-                        : 'text-amber-400 bg-amber-500/10'
-                      }`}>
-                        {isAccepted ? 'Accepted' : t.status === 'SUBMITTED' ? 'Submitted' : t.status}
-                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {isUnread && (
+                          <span className="px-1.5 py-0.5 rounded text-[8px] font-black tracking-wider uppercase bg-[#00D0F5]/20 text-[#00D0F5] border border-[#00D0F5]/30 animate-pulse">
+                            New
+                          </span>
+                        )}
+                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                          isAccepted ? 'text-emerald-400 bg-emerald-500/10'
+                          : isRejected ? 'text-rose-400 bg-rose-500/10'
+                          : 'text-amber-400 bg-amber-500/15'
+                        }`}>
+                          {isAccepted ? 'Accepted' : t.status === 'SUBMITTED' ? 'Submitted' : t.status}
+                        </span>
+                      </div>
                     </div>
                     {isAccepted && t.machiningQuote?.offer_price && (
                       <div className="text-[9px] font-black text-[#00D0F5] font-mono">
