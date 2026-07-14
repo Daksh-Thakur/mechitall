@@ -11,8 +11,11 @@ export default function SellerRfqsTab(props: any) {
     const [activeStatusMenuId, setActiveStatusMenuId] = React.useState<string | null>(null);
 
     React.useEffect(() => {
-      const handleOutsideClick = () => {
-        setActiveStatusMenuId(null);
+      const handleOutsideClick = (e: MouseEvent) => {
+        const target = e.target as HTMLElement;
+        if (!target.closest('.status-trigger') && !target.closest('.status-menu')) {
+          setActiveStatusMenuId(null);
+        }
       };
       document.addEventListener('click', handleOutsideClick);
       return () => document.removeEventListener('click', handleOutsideClick);
@@ -359,14 +362,14 @@ export default function SellerRfqsTab(props: any) {
                                       e.stopPropagation();
                                       setActiveStatusMenuId(activeStatusMenuId === quote.id ? null : quote.id);
                                     }}
-                                    className="hover:underline flex items-center gap-1 font-mono text-emerald-400 hover:text-emerald-300 cursor-pointer"
+                                    className="hover:underline flex items-center gap-1 font-mono text-emerald-400 hover:text-emerald-300 cursor-pointer status-trigger"
                                   >
                                     <span>Awaiting Start</span>
                                     <span className="text-[7px]">▼</span>
                                   </button>
                                   
                                   {activeStatusMenuId === quote.id && (
-                                    <div className="absolute left-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden" onClick={e => e.stopPropagation()}>
+                                    <div className="absolute left-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden status-menu" onClick={e => e.stopPropagation()}>
                                       {['Processing', 'Shipped', 'Delivered', 'Completed'].map((status) => (
                                         <button
                                           key={status}
@@ -392,16 +395,17 @@ export default function SellerRfqsTab(props: any) {
                             <div className="w-[100px] md:w-[120px] shrink-0 pl-2 md:pl-4 flex items-center justify-end" onClick={e => e.stopPropagation()}>
                               <div className="relative w-full">
                                 <button
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setActiveStatusMenuId(activeStatusMenuId === quote.id ? null : quote.id);
                                   }}
-                                  className="w-full bg-zinc-900 border border-zinc-700/60 rounded-lg text-[9px] font-black text-zinc-300 hover:text-white hover:border-zinc-500 px-2 py-1 outline-none transition-all flex items-center justify-between cursor-pointer"
+                                  className="w-full bg-zinc-900 border border-zinc-700/60 rounded-lg text-[9px] font-black text-zinc-300 hover:text-white hover:border-zinc-500 px-2 py-1 outline-none transition-all flex items-center justify-between cursor-pointer status-trigger"
                                 >
                                   <span>Accepted</span>
                                   <span className="text-[7px] text-zinc-400">▼</span>
                                 </button>
                                 {activeStatusMenuId === quote.id && (
-                                  <div className="absolute right-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden">
+                                  <div className="absolute right-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden status-menu">
                                     {['Processing', 'Shipped', 'Delivered', 'Completed'].map((status) => (
                                       <button
                                         key={status}
@@ -452,7 +456,7 @@ export default function SellerRfqsTab(props: any) {
                                       e.stopPropagation();
                                       setActiveStatusMenuId(activeStatusMenuId === job.id ? null : job.id);
                                     }}
-                                    className="hover:underline flex items-center gap-1 font-mono text-zinc-300 hover:text-white cursor-pointer"
+                                    className="hover:underline flex items-center gap-1 font-mono text-zinc-300 hover:text-white cursor-pointer status-trigger"
                                   >
                                     <span>{job.status}</span>
                                     {isUpdating ? (
@@ -463,7 +467,7 @@ export default function SellerRfqsTab(props: any) {
                                   </button>
                                   
                                   {activeStatusMenuId === job.id && (
-                                    <div className="absolute left-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden" onClick={e => e.stopPropagation()}>
+                                    <div className="absolute left-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden status-menu" onClick={e => e.stopPropagation()}>
                                       {['Processing', 'Shipped', 'Delivered', 'Completed'].map((status) => (
                                         <button
                                           key={status}
@@ -494,10 +498,11 @@ export default function SellerRfqsTab(props: any) {
                             <div className="w-[100px] md:w-[120px] shrink-0 pl-2 md:pl-4 flex items-center justify-end" onClick={e => e.stopPropagation()}>
                               <div className="relative w-full">
                                 <button
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setActiveStatusMenuId(activeStatusMenuId === job.id ? null : job.id);
                                   }}
-                                  className="w-full bg-zinc-900 border border-zinc-700/60 rounded-lg text-[9px] font-black text-zinc-300 hover:text-white hover:border-zinc-500 px-2 py-1 outline-none transition-all flex items-center justify-between cursor-pointer"
+                                  className="w-full bg-zinc-900 border border-zinc-700/60 rounded-lg text-[9px] font-black text-zinc-300 hover:text-white hover:border-zinc-500 px-2 py-1 outline-none transition-all flex items-center justify-between cursor-pointer status-trigger"
                                 >
                                   <span>{job.status}</span>
                                   {isUpdating ? (
@@ -507,7 +512,7 @@ export default function SellerRfqsTab(props: any) {
                                   )}
                                 </button>
                                 {activeStatusMenuId === job.id && (
-                                  <div className="absolute right-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden">
+                                  <div className="absolute right-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden status-menu">
                                     {['Processing', 'Shipped', 'Delivered', 'Completed'].map((status) => (
                                       <button
                                         key={status}
