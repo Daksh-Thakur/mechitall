@@ -360,11 +360,17 @@ export default function ProfilePage() {
     }
   };
 
+  // Re-fetch seller data only when user switches between seller sub-tabs.
+  // The initial fetch is handled by the consolidated profile.id effect below.
+  const hasFetchedSellerTabRef = React.useRef<string | null>(null);
   useEffect(() => {
-    if (profile?.is_seller && activeTab.startsWith('seller_')) {
-      fetchSellerData();
-    }
-  }, [profile?.is_seller, activeTab]);
+    if (!profile?.is_seller || !activeTab.startsWith('seller_')) return;
+    // Avoid re-fetching the same tab twice in a row
+    if (hasFetchedSellerTabRef.current === activeTab) return;
+    hasFetchedSellerTabRef.current = activeTab;
+    fetchSellerData();
+  }, [activeTab]);
+
 
   const handleToggleSellerMode = async () => {
     if (!profile) return;
@@ -397,8 +403,9 @@ export default function ProfilePage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Load products from Supabase
+  // Lazy-load products only when the seller listings tab is opened
   useEffect(() => {
+    if (activeTab !== 'seller_listings') return;
     async function loadProducts() {
       try {
         const { data } = await supabase.from('products').select('*');
@@ -422,7 +429,7 @@ export default function ProfilePage() {
       }
     }
     loadProducts();
-  }, [supabase]);
+  }, [supabase, activeTab]);
 
   // Authentication check
   useEffect(() => {
@@ -478,22 +485,26 @@ export default function ProfilePage() {
     }
   };
 
-  // Load orders
+  // Single consolidated effect — fetch orders once on profile load.
+  // A ref guard prevents the double-invocation from React Strict Mode / concurrent renders.
+  const hasFetchedRef = React.useRef<string | null>(null);
   useEffect(() => {
-    if (activeTab === 'orders') {
-      fetchOrders();
-    }
-  }, [profile?.id, activeTab]);
-
-  // Fetch buyer & seller orders on initial load / profile load to determine notifications immediately
-  useEffect(() => {
-    if (profile?.id) {
-      fetchOrders();
-      if (profile.is_seller) {
-        fetchSellerData();
-      }
+    if (!profile?.id) return;
+    // Only re-fetch when profile ID changes (not on every render)
+    if (hasFetchedRef.current === profile.id) return;
+    hasFetchedRef.current = profile.id;
+    fetchOrders();
+    if (profile.is_seller) {
+      fetchSellerData();
     }
   }, [profile?.id]);
+
+  // Reload orders when user navigates back to orders tab
+  useEffect(() => {
+    if (activeTab === 'orders' && profile?.id) {
+      fetchOrders();
+    }
+  }, [activeTab]);
 
   // Sync seen buyer orders to display notification badge if there are unseen ones
   useEffect(() => {
@@ -632,11 +643,26 @@ export default function ProfilePage() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const handleUpdateOrderStatus = async (orderId: string, nextStatus: 'Processing' | 'Shipped' | 'Delivered' | 'Completed') => {
     setUpdatingOrderId(orderId);
+    // Optimistic update — reflect the new status immediately in local state
+    // without waiting for a full server re-fetch
+    setSellerData((prev: any) => {
+      if (!prev) return prev;
+      const updateJob = (jobs: any[]) =>
+        jobs.map((j: any) => j.id === orderId ? { ...j, status: nextStatus } : j);
+      return {
+        ...prev,
+        activeJobs: updateJob(prev.activeJobs || []),
+        completedJobs: updateJob(prev.completedJobs || []),
+      };
+    });
     try {
       await updateSellerOrderStatus(orderId, nextStatus);
       showToast(`Order status updated to "${nextStatus}" successfully!`, 'success');
-      await fetchSellerData();
+      // Refresh in background so data stays consistent with server
+      fetchSellerData();
     } catch (err: any) {
+      // Roll back optimistic update on failure
+      await fetchSellerData();
       showToast(err.message || 'Failed to update order status.', 'error');
     } finally {
       setUpdatingOrderId(null);

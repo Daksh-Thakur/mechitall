@@ -397,17 +397,18 @@ export async function getProfileOrders(profileId: string) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  const { data: orders } = await supabase
-    .from('orders')
-    .select('*, profiles:profile_id(full_name, email, business_address)')
-    .eq('profile_id', profileId)
-    .order('created_at', { ascending: false });
-
-  // Fetch buyer's RFQs
-  const { data: buyerRfqs } = await supabase
-    .from('rfqs')
-    .select('id, title')
-    .eq('buyer_id', profileId);
+  // Fetch orders and buyer RFQs in parallel
+  const [{ data: orders }, { data: buyerRfqs }] = await Promise.all([
+    supabase
+      .from('orders')
+      .select('*, profiles:profile_id(full_name, email, business_address)')
+      .eq('profile_id', profileId)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('rfqs')
+      .select('id, title')
+      .eq('buyer_id', profileId),
+  ]);
 
   const rfqIds = (buyerRfqs || []).map((r: any) => r.id);
   
@@ -847,34 +848,59 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  // 1. Get active RFQs (all OPEN_FOR_BIDS RFQs)
-  const { data: openRfqs } = await supabase
-    .from('rfqs')
-    .select('*, buyer:profiles(full_name)')
-    .eq('status', 'OPEN_FOR_BIDS')
-    .order('created_at', { ascending: false });
+  // Run all independent queries in parallel — eliminates 5+ sequential round-trips
+  const [
+    { data: openRfqs },
+    { data: myQuotes },
+    { data: orders },
+    { data: sellerServices },
+    { data: capabilities },
+    { data: products },
+    { data: services },
+  ] = await Promise.all([
+    // 1. Active RFQs open for bids
+    supabase
+      .from('rfqs')
+      .select('*, buyer:profiles(full_name)')
+      .eq('status', 'OPEN_FOR_BIDS')
+      .order('created_at', { ascending: false }),
+    // 2. My submitted quotes
+    supabase
+      .from('quotes')
+      .select('*, rfq:rfqs(*)')
+      .eq('seller_id', sellerProfileId),
+    // 3. My orders
+    supabase
+      .from('orders')
+      .select('*, profiles:profile_id(full_name, email)')
+      .eq('seller_id', sellerProfileId)
+      .order('created_at', { ascending: false }),
+    // 4. My machining service IDs (needed for machining_quotes lookup below)
+    supabase
+      .from('machining_services')
+      .select('id')
+      .eq('seller_profile_id', sellerProfileId),
+    // 5. Listed capabilities (full records needed for mapping)
+    supabase
+      .from('machining_services')
+      .select('*')
+      .eq('seller_profile_id', sellerProfileId),
+    // 6. Listed products
+    supabase
+      .from('products')
+      .select('*')
+      .eq('seller_profile_id', sellerProfileId)
+      .order('created_at', { ascending: false }),
+    // 7. Listed catalog services
+    supabase
+      .from('services')
+      .select('*')
+      .eq('seller_profile_id', sellerProfileId)
+      .order('created_at', { ascending: false }),
+  ]);
 
-  // 2. Get my quotes (all quotes submitted by this seller)
-  const { data: myQuotes } = await supabase
-    .from('quotes')
-    .select('*, rfq:rfqs(*)')
-    .eq('seller_id', sellerProfileId);
-
-  // 3. Get my actual orders from orders table
-  const { data: orders } = await supabase
-    .from('orders')
-    .select('*, profiles:profile_id(full_name, email)')
-    .eq('seller_id', sellerProfileId)
-    .order('created_at', { ascending: false });
-
-  // Fetch machining quotes for this seller to resolve RFQ titles
-  const { data: sellerServices } = await supabase
-    .from('machining_services')
-    .select('id')
-    .eq('seller_profile_id', sellerProfileId);
-
+  // machining_quotes depends on service IDs — run after first batch resolves
   const serviceIds = (sellerServices || []).map((s: any) => s.id);
-  
   let machQuotes: any[] = [];
   if (serviceIds.length > 0) {
     const { data } = await supabase
@@ -1041,27 +1067,8 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     { label: 'This Wk', amount: weeklyEarnings[4] }
   ];
 
-  // 5. Get listed capabilities
-  const { data: capabilities } = await supabase
-    .from('machining_services')
-    .select('*')
-    .eq('seller_profile_id', sellerProfileId);
 
-  // 6. Get listed products
-  const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .eq('seller_profile_id', sellerProfileId)
-    .order('created_at', { ascending: false });
-
-  // 7. Get listed catalog services
-  const { data: services } = await supabase
-    .from('services')
-    .select('*')
-    .eq('seller_profile_id', sellerProfileId)
-    .order('created_at', { ascending: false });
-
-  // Map image data to capabilities
+  // Map image data to capabilities (both fetched in parallel above)
   const mappedCapabilities = (capabilities || []).map((cap: any) => {
     const matchedService = (services || []).find((s: any) => s.title === cap.title);
     return {
@@ -1070,6 +1077,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
       images_data: matchedService?.images_data || [],
     };
   });
+
 
   // Calculate total units sold
   const totalUnitsSold = (orders || [])
