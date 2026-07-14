@@ -607,195 +607,251 @@ export default function CommunityPage() {
           </div>
 
           {/* ==================== DISCUSSIONS TAB ==================== */}
-          {activeTab === 'Discussions' && (
-            <div className="space-y-4">
-              {loadingDiscussions ? (
-                <div className="space-y-4 animate-pulse">
-                  {[1, 2, 3].map(n => <div key={n} className="h-40 bg-zinc-800 border border-zinc-700/60 rounded-2xl" />)}
+          {activeTab === 'Discussions' && (() => {
+            const catAccent: Record<string, { border: string; badge: string; dot: string }> = {
+              General:    { border: 'border-blue-500/40',   badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20',   dot: 'bg-blue-400' },
+              'Build Log':{ border: 'border-emerald-500/40',badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', dot: 'bg-emerald-400' },
+              Question:   { border: 'border-amber-500/40',  badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20',  dot: 'bg-amber-400' },
+              Showcase:   { border: 'border-violet-500/40', badge: 'bg-violet-500/10 text-violet-400 border-violet-500/20', dot: 'bg-violet-400' },
+            };
+
+            const activeDisc = expandedId ? filteredDiscussions.find(d => d.id === expandedId) : null;
+            const activeReplies = expandedId ? (replies[expandedId] || []) : [];
+            const isLoadingActive = expandedId ? loadingReplies[expandedId] : false;
+
+            return (
+              <div className="flex gap-0 rounded-2xl overflow-hidden border border-zinc-700/60 bg-zinc-900 shadow-xl min-h-[600px]">
+
+                {/* ── LEFT: Thread list ── */}
+                <div className={`${activeDisc ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-[340px] shrink-0 border-r border-zinc-800`}>
+
+                  {/* List header */}
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900/80 shrink-0">
+                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                      {filteredDiscussions.length} Thread{filteredDiscussions.length !== 1 ? 's' : ''}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (!profile) { showToast('Please sign in to start a discussion.', 'error'); return; }
+                        setShowDiscussionCompose(true);
+                      }}
+                      className="flex items-center gap-1 text-[10px] font-black text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" /> New Thread
+                    </button>
+                  </div>
+
+                  {/* Thread list */}
+                  <div className="flex-1 overflow-y-auto divide-y divide-zinc-800/60">
+                    {loadingDiscussions ? (
+                      <div className="space-y-0 animate-pulse">
+                        {[1,2,3,4,5].map(n => <div key={n} className="h-24 bg-zinc-800/40 border-b border-zinc-800" />)}
+                      </div>
+                    ) : filteredDiscussions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-16 px-6 text-center gap-3">
+                        <MessageSquare className="w-10 h-10 text-zinc-700" />
+                        <p className="text-xs font-bold text-zinc-400">No discussions yet</p>
+                        <p className="text-[10px] text-zinc-600">Start the first thread in this community!</p>
+                      </div>
+                    ) : (
+                      filteredDiscussions.map(disc => {
+                        const accent = catAccent[disc.category] || catAccent.General;
+                        const isActive = expandedId === disc.id;
+                        const initials = (disc.author_name || 'AN').substring(0, 2).toUpperCase();
+                        return (
+                          <button
+                            key={disc.id}
+                            onClick={() => toggleThread(disc.id)}
+                            className={`w-full text-left px-4 py-4 transition-all cursor-pointer group relative ${
+                              isActive
+                                ? 'bg-zinc-800 border-l-2 border-l-[#00D0F5]'
+                                : 'hover:bg-zinc-800/40 border-l-2 border-l-transparent'
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              {/* Category dot */}
+                              <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${accent.dot}`} />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded border font-mono ${accent.badge}`}>
+                                    {disc.category}
+                                  </span>
+                                  <span className="text-[9px] text-zinc-500 font-mono ml-auto">{new Date(disc.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                                </div>
+                                <h4 className={`text-xs font-bold leading-snug truncate pr-2 transition-colors ${isActive ? 'text-white' : 'text-zinc-200 group-hover:text-white'}`}>
+                                  {disc.title}
+                                </h4>
+                                <p className="text-[10px] text-zinc-500 truncate mt-0.5">{disc.body}</p>
+                                <div className="flex items-center gap-3 mt-2">
+                                  <span className="text-[10px] text-zinc-600 font-mono">{initials} · {disc.author_name}</span>
+                                  <span className="flex items-center gap-1 text-[10px] text-zinc-600 font-mono ml-auto">
+                                    <MessageSquare className="w-2.5 h-2.5" /> {disc.reply_count || 0}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
-              ) : filteredDiscussions.length === 0 ? (
-                <div className="text-center py-20 border border-dashed border-zinc-800 bg-zinc-900/40 rounded-2xl space-y-4">
-                  <MessageSquare className="w-12 h-12 text-zinc-500/20 mx-auto" />
-                  <p className="text-sm font-bold text-white">No discussions found</p>
-                  <p className="text-xs text-zinc-400">Be the first to start a discussion by clicking the compose button!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredDiscussions.map(disc => {
-                    const isExpanded = expandedId === disc.id;
-                    const threadReplies = replies[disc.id] || [];
-                    const isLoadingThread = loadingReplies[disc.id];
-                    const initials = (disc.author_name || 'AN').substring(0, 2).toUpperCase();
-                    const catBorder: Record<string, string> = {
-                      General: 'border-l-blue-500',
-                      'Build Log': 'border-l-emerald-500',
-                      Question: 'border-l-amber-500',
-                      Showcase: 'border-l-violet-500',
-                    };
+
+                {/* ── RIGHT: Active thread / empty state ── */}
+                <div className="flex-1 flex flex-col min-w-0 bg-zinc-950/40">
+                  {!activeDisc ? (
+                    <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8 py-16">
+                      <div className="w-16 h-16 rounded-2xl bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-center">
+                        <MessageSquare className="w-7 h-7 text-zinc-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-zinc-300">Select a thread</p>
+                        <p className="text-xs text-zinc-600 mt-1">Click any discussion on the left to read and reply.</p>
+                      </div>
+                    </div>
+                  ) : (() => {
+                    const accent = catAccent[activeDisc.category] || catAccent.General;
+                    const initials = (activeDisc.author_name || 'AN').substring(0, 2).toUpperCase();
                     return (
-                      <div
-                        key={disc.id}
-                        className={`bg-zinc-800/80 border border-zinc-700/60 border-l-4 ${catBorder[disc.category] || 'border-l-zinc-600'} rounded-2xl overflow-hidden transition-all duration-300 hover:border-zinc-600/80 shadow-sm`}
-                      >
-                        {/* Main post */}
-                        <div className="p-5">
-                          <div className="flex items-start gap-4">
-                            {/* Avatar */}
-                            <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-700 text-white flex items-center justify-center font-black text-sm shrink-0 select-none">
+                      <div className="flex flex-col h-full">
+                        {/* Thread header */}
+                        <div className={`px-6 py-4 border-b border-zinc-800 bg-zinc-900/60 shrink-0`}>
+                          {/* Mobile back button */}
+                          <button
+                            onClick={() => { setExpandedId(null); setReplyingTo(null); setReplyBody(''); }}
+                            className="md:hidden flex items-center gap-1.5 text-[10px] font-black text-zinc-400 hover:text-white mb-3 cursor-pointer transition-colors"
+                          >
+                            <ArrowRight className="w-3 h-3 rotate-180" /> Back to threads
+                          </button>
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center font-black text-sm shrink-0">
                               {initials}
                             </div>
-
                             <div className="flex-1 min-w-0">
-                              {/* Meta row */}
-                              <div className="flex flex-wrap items-center gap-2 mb-2">
-                                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border font-mono ${CATEGORY_COLORS[disc.category] || 'bg-zinc-700/40 text-zinc-400 border-zinc-700'}`}>
-                                  {disc.category}
+                              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                                <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border font-mono ${accent.badge}`}>
+                                  {activeDisc.category}
                                 </span>
-                                <span className="text-[10px] font-bold text-zinc-400 font-mono">{disc.author_name}</span>
-                                {disc.is_verified_buyer && (
-                                  <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-400/20 px-1.5 py-0.5 rounded" title="Verified Buyer">
+                                <span className="text-[10px] font-bold text-zinc-400">{activeDisc.author_name}</span>
+                                {activeDisc.is_verified_buyer && (
+                                  <span className="inline-flex items-center gap-0.5 text-[8px] uppercase font-black bg-emerald-500/10 text-emerald-400 border border-emerald-400/20 px-1.5 py-0.5 rounded">
                                     <ShieldCheck className="w-2.5 h-2.5" /> Verified
                                   </span>
                                 )}
-                                <span className="text-[9px] text-zinc-500 font-mono flex items-center gap-1 ml-auto">
-                                  <Clock className="w-3 h-3" /> {new Date(disc.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                <span className="text-[9px] text-zinc-600 font-mono ml-auto flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {new Date(activeDisc.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                                 </span>
                               </div>
-
-                              {/* Title */}
-                              <h3 className="font-['Space_Grotesk'] text-base font-bold text-white leading-snug mb-2">{disc.title}</h3>
-
-                              {/* Body */}
-                              <p className={`text-xs text-zinc-400 leading-relaxed font-medium ${!isExpanded ? 'line-clamp-3' : ''}`}>{disc.body}</p>
+                              <h2 className="font-['Space_Grotesk'] text-lg font-extrabold text-white leading-snug">{activeDisc.title}</h2>
                             </div>
                           </div>
-
-                          {/* Action bar */}
-                          <div className="flex items-center gap-3 mt-4 pt-3 border-t border-zinc-700/50">
-                            <button
-                              onClick={() => toggleThread(disc.id)}
-                              className={`flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer ${
-                                isExpanded
-                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                  : 'text-zinc-400 border-zinc-700/60 hover:border-emerald-500/30 hover:text-emerald-400'
-                              }`}
-                            >
-                              <MessageSquare className="w-3.5 h-3.5" />
-                              {disc.reply_count || 0} {(disc.reply_count || 0) === 1 ? 'Reply' : 'Replies'}
-                              {isExpanded ? <ChevronUp className="w-3 h-3 ml-0.5" /> : <ChevronDown className="w-3 h-3 ml-0.5" />}
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                if (!isExpanded) toggleThread(disc.id);
-                                setReplyingTo(disc.id);
-                              }}
-                              className="flex items-center gap-1.5 text-[10px] font-black px-2.5 py-1.5 rounded-lg border text-zinc-400 border-zinc-700/60 hover:border-[#00D0F5]/30 hover:text-[#00D0F5] transition-all cursor-pointer"
-                            >
-                              <Reply className="w-3.5 h-3.5" /> Reply
-                            </button>
-                          </div>
+                          <p className="text-sm text-zinc-400 leading-relaxed mt-4 font-medium">{activeDisc.body}</p>
                         </div>
 
-                        {/* Expanded thread panel */}
-                        {isExpanded && (
-                          <div className="border-t border-zinc-700/50 bg-zinc-900/40">
-                            {/* Replies list */}
-                            {isLoadingThread ? (
-                              <div className="flex items-center gap-2 px-5 py-4 text-xs text-zinc-500 animate-pulse">
-                                <div className="w-4 h-4 rounded-full border-2 border-zinc-600 border-t-emerald-400 animate-spin" />
-                                Loading replies...
-                              </div>
-                            ) : threadReplies.length === 0 && replyingTo !== disc.id ? (
-                              <div className="px-5 py-5 text-center">
-                                <p className="text-xs text-zinc-500 font-medium">No replies yet. Be the first to respond!</p>
-                              </div>
-                            ) : (
-                              <div className="divide-y divide-zinc-800/60">
-                                {threadReplies.map((reply, idx) => (
-                                  <div key={reply.id} className="flex gap-3 px-5 py-4 group hover:bg-zinc-800/30 transition-colors">
-                                    {/* Thread line + avatar */}
-                                    <div className="flex flex-col items-center gap-1 shrink-0">
-                                      <div className="w-7 h-7 rounded-lg bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center font-black text-[10px]">
-                                        {(reply.author_name || 'AN').substring(0, 2).toUpperCase()}
+                        {/* Replies */}
+                        <div className="flex-1 overflow-y-auto">
+                          {isLoadingActive ? (
+                            <div className="flex items-center justify-center gap-2 py-10 text-xs text-zinc-500">
+                              <div className="w-4 h-4 rounded-full border-2 border-zinc-600 border-t-emerald-400 animate-spin" />
+                              Loading replies...
+                            </div>
+                          ) : activeReplies.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
+                              <Reply className="w-8 h-8 text-zinc-700" />
+                              <p className="text-xs font-bold text-zinc-500">No replies yet</p>
+                              <p className="text-[10px] text-zinc-600">Be the first to join this discussion!</p>
+                            </div>
+                          ) : (
+                            <div className="px-6 py-4 space-y-1">
+                              {activeReplies.map((reply, idx) => {
+                                const rInitials = (reply.author_name || 'AN').substring(0, 2).toUpperCase();
+                                return (
+                                  <div key={reply.id} className="flex gap-3 group py-3">
+                                    {/* Avatar + connector */}
+                                    <div className="flex flex-col items-center gap-0.5 shrink-0">
+                                      <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 text-white flex items-center justify-center font-black text-[10px]">
+                                        {rInitials}
                                       </div>
-                                      {idx < threadReplies.length - 1 && (
-                                        <div className="w-px flex-1 bg-zinc-700/40 min-h-[12px]" />
+                                      {idx < activeReplies.length - 1 && (
+                                        <div className="w-px flex-1 min-h-[20px] bg-zinc-800" />
                                       )}
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                        <span className="text-[10px] font-black text-zinc-300">{reply.author_name}</span>
+                                    <div className="flex-1 min-w-0 bg-zinc-900/40 rounded-xl px-4 py-3 border border-zinc-800/60 group-hover:border-zinc-700/60 transition-colors">
+                                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                        <span className="text-[10px] font-black text-zinc-200">{reply.author_name}</span>
                                         {reply.is_verified_buyer && (
                                           <span className="inline-flex items-center gap-0.5 text-[8px] uppercase font-black bg-emerald-500/10 text-emerald-400 border border-emerald-400/20 px-1 py-0.5 rounded">
                                             <ShieldCheck className="w-2 h-2" /> Verified
                                           </span>
                                         )}
                                         <span className="text-[9px] text-zinc-600 font-mono ml-auto">
-                                          {new Date(reply.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                          {new Date(reply.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                                         </span>
                                       </div>
-                                      <p className="text-xs text-zinc-400 leading-relaxed">{reply.body}</p>
+                                      <p className="text-xs text-zinc-300 leading-relaxed">{reply.body}</p>
                                     </div>
                                   </div>
-                                ))}
-                              </div>
-                            )}
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
 
-                            {/* Reply compose */}
-                            {replyingTo === disc.id ? (
-                              <div className="px-5 py-4 border-t border-zinc-800/60 bg-zinc-900/60">
-                                <div className="flex gap-3">
-                                  <div className="w-7 h-7 rounded-lg bg-zinc-700 border border-zinc-600 text-white flex items-center justify-center font-black text-[10px] shrink-0">
-                                    {profile ? (profile.full_name || 'You').substring(0, 2).toUpperCase() : 'YO'}
-                                  </div>
-                                  <div className="flex-1">
-                                    <textarea
-                                      autoFocus
-                                      placeholder="Write your reply..."
-                                      value={replyBody}
-                                      onChange={e => setReplyBody(e.target.value)}
-                                      rows={3}
-                                      className="w-full bg-zinc-800 border border-zinc-700/60 focus:border-[#00D0F5]/40 focus:ring-1 focus:ring-[#00D0F5]/20 outline-none rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-zinc-500 resize-none transition-all"
-                                    />
-                                    <div className="flex items-center gap-2 mt-2 justify-end">
-                                      <button
-                                        onClick={() => { setReplyingTo(null); setReplyBody(''); }}
-                                        className="px-3 py-1.5 text-[10px] font-black text-zinc-400 hover:text-white border border-zinc-700 rounded-lg transition-colors cursor-pointer"
-                                      >
-                                        Cancel
-                                      </button>
-                                      <button
-                                        onClick={() => handleReplySubmit(disc.id)}
-                                        disabled={submittingReply || !replyBody.trim()}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black bg-[#00D0F5] hover:bg-[#00e5ff] disabled:opacity-50 disabled:cursor-not-allowed text-zinc-950 rounded-lg transition-colors cursor-pointer"
-                                      >
-                                        <Send className="w-3 h-3" />
-                                        {submittingReply ? 'Posting...' : 'Post Reply'}
-                                      </button>
-                                    </div>
-                                  </div>
+                        {/* Reply compose — sticky footer */}
+                        <div className="shrink-0 border-t border-zinc-800 px-6 py-4 bg-zinc-900/80">
+                          {profile ? (
+                            <div className="flex gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-zinc-700 border border-zinc-600 text-white flex items-center justify-center font-black text-[10px] shrink-0">
+                                {(profile.full_name || 'You').substring(0, 2).toUpperCase()}
+                              </div>
+                              <div className="flex-1">
+                                <textarea
+                                  placeholder="Write a reply to this thread..."
+                                  value={replyBody}
+                                  onChange={e => setReplyBody(e.target.value)}
+                                  rows={2}
+                                  onKeyDown={e => {
+                                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                      e.preventDefault();
+                                      if (replyBody.trim() && !submittingReply && expandedId) {
+                                        handleReplySubmit(expandedId);
+                                      }
+                                    }
+                                  }}
+                                  className="w-full bg-zinc-800/80 border border-zinc-700/60 focus:border-[#00D0F5]/40 focus:ring-1 focus:ring-[#00D0F5]/15 outline-none rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-zinc-600 resize-none transition-all"
+                                />
+                                <div className="flex items-center justify-between mt-2">
+                                  <span className="text-[9px] text-zinc-600 font-mono">⌘↵ to send</span>
+                                  <button
+                                    onClick={() => expandedId && handleReplySubmit(expandedId)}
+                                    disabled={submittingReply || !replyBody.trim()}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black bg-[#00D0F5] hover:bg-[#00e5ff] disabled:opacity-40 disabled:cursor-not-allowed text-zinc-950 rounded-lg transition-colors cursor-pointer"
+                                  >
+                                    <Send className="w-3 h-3" />
+                                    {submittingReply ? 'Posting...' : 'Post Reply'}
+                                  </button>
                                 </div>
                               </div>
-                            ) : (
-                              <div className="px-5 py-3 border-t border-zinc-800/60">
-                                <button
-                                  onClick={() => setReplyingTo(disc.id)}
-                                  className="text-[10px] font-black text-zinc-500 hover:text-[#00D0F5] flex items-center gap-1.5 transition-colors cursor-pointer"
-                                >
-                                  <Reply className="w-3 h-3" /> Write a reply...
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                            </div>
+                          ) : (
+                            <div className="text-center py-2">
+                              <p className="text-xs text-zinc-500">
+                                <button onClick={() => showToast('Please sign in to reply.', 'error')} className="text-[#00D0F5] font-bold hover:underline cursor-pointer">Sign in</button> to join the discussion
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
-                  })}
+                  })()}
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            );
+          })()}
+
+
+
 
           {/* ==================== REVIEWS TAB ==================== */}
           {activeTab === 'Reviews' && (
