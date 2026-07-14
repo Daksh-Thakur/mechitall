@@ -2780,7 +2780,7 @@ function QuotationChatsTab({
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {activeThread.cadFilePath && (
+                {activeThread.cadFilePath && !(profile.is_seller && activeThread.status === 'REJECTED') && (
                   <button
                     onClick={async () => {
                       const client = createClient();
