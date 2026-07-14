@@ -14,9 +14,9 @@ const SellerRfqsTab = dynamic(() => import('@/components/profile/SellerRfqsTab')
 const SellerOrdersTab = dynamic(() => import('@/components/profile/SellerOrdersTab'), { ssr: false });
 const SellerListingsTab = dynamic(() => import('@/components/profile/SellerListingsTab'), { ssr: false });
 const SellerEarningsTab = dynamic(() => import('@/components/profile/SellerEarningsTab'), { ssr: false });
-import QuotationChatsTab from '@/components/profile/QuotationChatsTab';
-import AddListingModal from '@/components/profile/AddListingModal';
-import SellerKYCModal from '@/components/profile/SellerKYCModal';
+const QuotationChatsTab = dynamic(() => import('@/components/profile/QuotationChatsTab'), { ssr: false });
+const AddListingModal = dynamic(() => import('@/components/profile/AddListingModal'), { ssr: false });
+const SellerKYCModal = dynamic(() => import('@/components/profile/SellerKYCModal'), { ssr: false });
 
 import { createClient } from '@/utils/supabase/client';
 import { useCart } from '@/components/CartProvider';

@@ -853,7 +853,6 @@ export async function getSellerDashboardData(sellerProfileId: string) {
     { data: openRfqs },
     { data: myQuotes },
     { data: orders },
-    { data: sellerServices },
     { data: capabilities },
     { data: products },
     { data: services },
@@ -875,23 +874,18 @@ export async function getSellerDashboardData(sellerProfileId: string) {
       .select('*, profiles:profile_id(full_name, email)')
       .eq('seller_id', sellerProfileId)
       .order('created_at', { ascending: false }),
-    // 4. My machining service IDs (needed for machining_quotes lookup below)
-    supabase
-      .from('machining_services')
-      .select('id')
-      .eq('seller_profile_id', sellerProfileId),
-    // 5. Listed capabilities (full records needed for mapping)
+    // 4. Listed capabilities (full records needed for mapping)
     supabase
       .from('machining_services')
       .select('*')
       .eq('seller_profile_id', sellerProfileId),
-    // 6. Listed products
+    // 5. Listed products
     supabase
       .from('products')
       .select('*')
       .eq('seller_profile_id', sellerProfileId)
       .order('created_at', { ascending: false }),
-    // 7. Listed catalog services
+    // 6. Listed catalog services
     supabase
       .from('services')
       .select('*')
@@ -900,7 +894,7 @@ export async function getSellerDashboardData(sellerProfileId: string) {
   ]);
 
   // machining_quotes depends on service IDs — run after first batch resolves
-  const serviceIds = (sellerServices || []).map((s: any) => s.id);
+  const serviceIds = (capabilities || []).map((s: any) => s.id);
   let machQuotes: any[] = [];
   if (serviceIds.length > 0) {
     const { data } = await supabase
