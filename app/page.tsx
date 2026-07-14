@@ -183,69 +183,51 @@ export default function Home() {
           </div>
         </section>
 
-        {/* TRUSTED MAKERS & CASE STUDIES */}
-        <section className="bg-zinc-900 text-zinc-100 py-16 border-b border-zinc-800">
-          <div className="max-w-7xl mx-auto px-6 space-y-12">
-            <div className="text-center space-y-2">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-blue-400 bg-blue-400/5 border border-blue-400/15 px-3 py-1 rounded">
-                Trusted Makers &amp; Case Studies
+        {/* OUR MISSION */}
+        <section className="bg-zinc-900 text-zinc-100 py-20 border-b border-zinc-800 relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="max-w-7xl mx-auto px-6 space-y-16 relative z-10">
+            <div className="text-center space-y-3">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-[#00D0F5] bg-[#00D0F5]/5 border border-[#00D0F5]/15 px-3 py-1 rounded">
+                Our Mission
               </span>
-              <h2 className="text-3xl font-bold text-white tracking-tight font-['Space_Grotesk'] mt-2">Powering Next-Gen Robotics</h2>
-              <p className="text-xs text-zinc-400 max-w-lg mx-auto font-medium">From premier university labs to venture-backed UAV startups, engineers choose MechItAll.</p>
-            </div>
-
-            {/* Testimonials Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-zinc-805 border border-zinc-800 p-6 rounded-2xl space-y-4 relative">
-                <div className="flex items-center gap-1 text-amber-500">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                  ))}
-                </div>
-                <p className="text-xs text-zinc-300 italic leading-relaxed">
-                  "MechItAll solved our sourcing bottlenecks overnight. We were able to procure NEMA 23 motors and get custom CNC-milled mounting plates quoted and dispatched within 4 days. The PayU escrow protection gave our finance team peace of mind."
-                </p>
-                <div>
-                  <span className="block text-xs font-bold text-white font-['Space_Grotesk']">Dr. Aris Thorne</span>
-                  <span className="block text-[10px] text-zinc-500 font-mono">Lead Kinematics Researcher, AeroDrive Labs</span>
-                </div>
-              </div>
-
-              <div className="bg-zinc-805 border border-zinc-800 p-6 rounded-2xl space-y-4 relative">
-                <div className="flex items-center gap-1 text-amber-500">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                  ))}
-                </div>
-                <p className="text-xs text-zinc-300 italic leading-relaxed">
-                  "As a DIY maker building autonomous rovers, finding high-quality mechatronics without high MOQs was nearly impossible. MechItAll has changed that. The Nuts &amp; Bolts loyalty program keeps my prototyping costs extremely low."
-                </p>
-                <div>
-                  <span className="block text-xs font-bold text-white font-['Space_Grotesk']">Kabir Sen</span>
-                  <span className="block text-[10px] text-zinc-500 font-mono">Founding Engineer, Veloce UAVs</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Maker Logo Grid Placeholder */}
-            <div className="pt-6 border-t border-zinc-800/60">
-              <p className="text-center text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-500 mb-6">
-                Accredited Collaborations &amp; Maker Networks
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-['Space_Grotesk'] mt-2">
+                Democratizing Precision Engineering
+              </h2>
+              <p className="text-xs text-zinc-400 max-w-2xl mx-auto font-medium leading-relaxed">
+                At MechItAll, our purpose is simple: to bridge the gap between complex engineering dreams and physical reality. We empower makers, robotics labs, and industrial designers by providing transparent sourcing, instant custom quotes, and quality components without minimum order bounds.
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 items-center justify-items-center opacity-40">
-                <div className="flex items-center gap-2 text-white font-['Space_Grotesk'] font-bold text-sm tracking-wide">
-                  <Cpu className="w-5 h-5 text-blue-400" /> AERO_DRIVE
+            </div>
+
+            {/* Core Values / Columns */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  icon: <Cpu className="w-6 h-6 text-[#00D0F5]" />,
+                  title: "Transparent Sourcing",
+                  description: "Connecting buyers to certified manufacturers across regions with fully tracked production milestones, clear lead times, and verified hardware credentials."
+                },
+                {
+                  icon: <Settings className="w-6 h-6 text-emerald-400" />,
+                  title: "No-Barrier Custom Machining",
+                  description: "From a single prototype mounting plate to full batches of autonomous robot casings, we make industrial CNC milling, sheet metal fabrication, and 3D printing accessible instantly."
+                },
+                {
+                  icon: <Zap className="w-6 h-6 text-amber-400" />,
+                  title: "Fast-Track Development",
+                  description: "Real-time quote sheets, integrated digital payments, and direct buyer-to-fabricator chats ensure your projects move from design file to functional prototype in record time."
+                }
+              ].map((value, idx) => (
+                <div key={idx} className="bg-zinc-800/40 border border-zinc-800 hover:border-zinc-700/60 p-8 rounded-2xl space-y-4 hover:shadow-xl transition-all duration-300 relative group">
+                  <div className="w-12 h-12 rounded-xl bg-zinc-900/60 border border-zinc-800 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+                    {value.icon}
+                  </div>
+                  <h3 className="text-sm font-black text-white font-['Space_Grotesk'] uppercase tracking-wider">{value.title}</h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed font-medium">{value.description}</p>
                 </div>
-                <div className="flex items-center gap-2 text-white font-['Space_Grotesk'] font-bold text-sm tracking-wide">
-                  <Settings className="w-5 h-5 text-emerald-400" /> HINDUSTAN_ROBOTICS
-                </div>
-                <div className="flex items-center gap-2 text-white font-['Space_Grotesk'] font-bold text-sm tracking-wide">
-                  <Zap className="w-5 h-5 text-blue-400" /> VELOCE_UAVS
-                </div>
-                <div className="flex items-center gap-2 text-white font-['Space_Grotesk'] font-bold text-sm tracking-wide">
-                  <Users className="w-5 h-5 text-emerald-400" /> IIT_MECHATRONICS
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </section>
