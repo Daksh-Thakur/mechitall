@@ -1,0 +1,60 @@
+MechItAll - Changes Made (14 July 2026)
+========================================
+
+1. RFQ Status Fix
+   - Removed separate 'Submitted' status from negotiation flow
+   - Negotiation stays as 'Submitted' during active back-and-forth
+   - Moves to 'Accepted' only once final amount is agreed upon
+
+2. Earnings Chart - Monthly/Yearly Toggle
+   - Added period switcher (Weekly / Monthly / Yearly) to the bar chart
+   - File: components/profile/SellerEarningsTab.tsx
+
+3. Chat Notification Badge
+   - Added a glowing unread message badge on the Chats tab
+   - Badge shows count of new/unread messages in real time
+
+4. CAD Design Access Control
+   - Sellers can no longer view RFQ design files once the quote is rejected
+   - Files are hidden as soon as rejection status is set
+
+5. Design Confidentiality Disclaimer
+   - Added a one-time popup modal when a seller accesses a CAD design for the first time
+   - Modal warns about IP ownership and confidentiality obligations of the buyer's design
+
+6. Customer Support Email Automation
+   - Replaced the raise-a-ticket form in the Support section
+   - User complaints now sent directly to the official MechItAll email via email automation
+
+7. Footer Operations Section Update
+   - Updated the Operations column in the footer
+   - Content now reflects the actual current workflow:
+     RFQ → Negotiation → Payment → Delivery
+
+8. Negotiation Panel Total Amount Calculation
+   - All 4 quote actions now store total as: unit price x quantity
+   - Live "Total Amount" row appears in the negotiation form as seller types
+   - Covers both initial offer and counter-offer forms
+   - Accepted banner shows Unit Price and Total separately
+   - PayU payment gateway is now charged the correct full contract total
+
+9. Shopping Cart - GST Removed
+   - Removed the 18% GST line from the cart summary entirely
+   - New formula: Total = Subtotal - Bulk Discount - Bolts Discount + Shipping
+   - Files: components/CartProvider.tsx, components/CartDrawer.tsx
+
+10. Delivery Details Confirmation Modal at Checkout
+    - Clicking "Place Order Securely" now opens a confirmation modal
+    - Buyer can review and edit before payment:
+        * Recipient Name
+        * Email Address
+        * Phone Number
+        * Shipping Address
+    - On confirm: details are saved to the profiles table in the database
+    - Address propagates automatically to:
+        * Buyer's order history view
+        * Seller's order management panel
+    - Replaced the hardcoded delivery address in buyer order details
+      with the real dynamic value from the database
+    - Files: components/CartDrawer.tsx, components/CartProvider.tsx,
+             app/actions/rewards.ts, components/profile/OrdersTab.tsx

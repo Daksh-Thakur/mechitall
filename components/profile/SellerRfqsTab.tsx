@@ -8,6 +8,50 @@ export default function SellerRfqsTab(props: any) {
     const { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, base64String, boltsProgressPercent, cadFile, channel, checkUnreadChats, customSpecs, data, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, file, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasNewMsg, hasNewStatus, hasTimedOut, imageFileNames, imagePreviews, isActive, isGuest, isMasterBuilder, isPending, isUpdatingName, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, mapped, msg, nextState, openAddListingModal, orderId, orders, params, paymentStatus, processFile, profile, publishingListing, reader, reason, res, response, router, sOrders, seen, seenChats, seenChatsStr, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, sizeStr, startTransition, startTransitionStatus, storedProds, storedServs, supabase, tabParam, timer, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updated, updatingOrderId, uploadingOrderId, wishlist } = props;
 
     const [activePendingOrder, setActivePendingOrder] = React.useState<any | null>(null);
+    const [activeStatusMenuId, setActiveStatusMenuId] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+      const handleOutsideClick = () => {
+        setActiveStatusMenuId(null);
+      };
+      document.addEventListener('click', handleOutsideClick);
+      return () => document.removeEventListener('click', handleOutsideClick);
+    }, []);
+
+    const activeAcceptedRfqsCount = React.useMemo(() => {
+      if (!sellerData) return 0;
+      const acceptedQuotes = (sellerData.myQuotes || []).filter((q: any) => 
+        q.status === 'ACCEPTED' || (q.machiningQuote?.status === 'Accepted') || q.status === 'Accepted'
+      );
+      return acceptedQuotes.filter((q: any) => {
+        const orderId = `RFQ-${(q.id || '').substring(0, 8).toUpperCase()}`;
+        const matchedOrder = (sellerOrders || []).find((o: any) => o.id === orderId);
+        if (matchedOrder) {
+          return matchedOrder.status !== 'Delivered' && 
+                 matchedOrder.status !== 'Completed' && 
+                 matchedOrder.status !== 'Cancelled' && 
+                 matchedOrder.status !== 'Rejected';
+        }
+        return true;
+      }).length;
+    }, [sellerData, sellerOrders]);
+
+    const getProgressForStatus = (status: string) => {
+      switch (status) {
+        case 'Accepted':
+        case 'Awaiting Start':
+          return 10;
+        case 'Processing':
+          return 40;
+        case 'Shipped':
+          return 80;
+        case 'Delivered':
+        case 'Completed':
+          return 100;
+        default:
+          return 0;
+      }
+    };
 
     const pendingOrders = React.useMemo(() => {
       return (sellerOrders || []).filter(
@@ -81,7 +125,7 @@ export default function SellerRfqsTab(props: any) {
         {/* Top Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'ACTIVE RFQS', value: sellerData ? String(sellerData.openRfqs.length) : '0', icon: FileText, color: 'text-[#00D0F5] bg-[#00D0F5]/10 border-[#00D0F5]/20' },
+            { label: 'ACTIVE RFQS', value: sellerData ? String(sellerData.openRfqs.length + activeAcceptedRfqsCount) : '0', icon: FileText, color: 'text-[#00D0F5] bg-[#00D0F5]/10 border-[#00D0F5]/20' },
             { label: 'ACTIVE JOBS', value: sellerData ? String(sellerData.activeJobs.length) : '0', icon: Cpu, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
             { label: 'ESCROW BALANCE', value: sellerData ? `₹${Number(sellerData.escrowBalance).toLocaleString('en-IN')}` : '₹0', icon: ShieldCheck, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
             { label: 'CLEARED EARNINGS', value: sellerData ? `₹${Number(sellerData.clearedEarnings).toLocaleString('en-IN')}` : '₹0', icon: IndianRupee, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
@@ -229,7 +273,7 @@ export default function SellerRfqsTab(props: any) {
                   ))
                 )}
               </div>
-                {/* PRODUCTION PIPELINE */}
+            {/* PRODUCTION PIPELINE */}
             <div className="bg-zinc-800/80 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
               <div className="flex justify-between items-center pb-3 border-b border-zinc-700/60">
                 <div className="flex items-center gap-2">
@@ -237,9 +281,14 @@ export default function SellerRfqsTab(props: any) {
                   <h4 className="text-sm font-black text-white uppercase tracking-tight">Production Pipeline</h4>
                 </div>
                 {(() => {
-                  const acceptedRfqs = (sellerData?.myQuotes || []).filter(
-                    (q: any) => q.status === 'ACCEPTED' || (q.machiningQuote?.status === 'Accepted') || q.status === 'Accepted'
-                  );
+                  const acceptedRfqs = (sellerData?.myQuotes || []).filter((q: any) => {
+                    const isAccepted = q.status === 'ACCEPTED' || (q.machiningQuote?.status === 'Accepted') || q.status === 'Accepted';
+                    if (!isAccepted) return false;
+                    const orderId = `RFQ-${(q.id || '').substring(0, 8).toUpperCase()}`;
+                    const hasOrder = (sellerData?.activeJobs || []).some((j: any) => j.id === orderId) ||
+                                     (sellerData?.completedJobs || []).some((j: any) => j.id === orderId);
+                    return !hasOrder;
+                  });
                   const totalPipeline = (sellerData?.activeJobs.length || 0) + acceptedRfqs.length;
                   return (
                     <span className="px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-400 rounded border border-indigo-500/20">
@@ -249,15 +298,20 @@ export default function SellerRfqsTab(props: any) {
                 })()}
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="w-full overflow-hidden">
                 {loadingSeller ? (
                   <div className="py-8 text-center animate-pulse">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-500" />
                   </div>
                 ) : (() => {
-                  const acceptedRfqs = (sellerData?.myQuotes || []).filter(
-                    (q: any) => q.status === 'ACCEPTED' || (q.machiningQuote?.status === 'Accepted') || q.status === 'Accepted'
-                  );
+                  const acceptedRfqs = (sellerData?.myQuotes || []).filter((q: any) => {
+                    const isAccepted = q.status === 'ACCEPTED' || (q.machiningQuote?.status === 'Accepted') || q.status === 'Accepted';
+                    if (!isAccepted) return false;
+                    const orderId = `RFQ-${(q.id || '').substring(0, 8).toUpperCase()}`;
+                    const hasOrder = (sellerData?.activeJobs || []).some((j: any) => j.id === orderId) ||
+                                     (sellerData?.completedJobs || []).some((j: any) => j.id === orderId);
+                    return !hasOrder;
+                  });
                   const totalPipeline = (sellerData?.activeJobs.length || 0) + acceptedRfqs.length;
 
                   if (!sellerData || totalPipeline === 0) {
@@ -269,17 +323,18 @@ export default function SellerRfqsTab(props: any) {
                   }
 
                   return (
-                    <div className="min-w-[620px] max-h-[300px] overflow-y-auto pr-1 space-y-1.5 divide-y divide-zinc-800/40">
+                    <div className="w-full max-h-[300px] overflow-y-auto pr-1 space-y-1.5 divide-y divide-zinc-800/40">
                       {/* Header row */}
                       <div className="flex items-center text-[9px] font-black uppercase tracking-wider text-zinc-500 pb-2 px-3">
-                        <div className="w-[180px]">Job/Order ID</div>
-                        <div className="flex-1 px-4">Production Progress</div>
-                        <div className="w-[160px]">Update Status</div>
+                        <div className="w-[110px] md:w-[130px] shrink-0">Job/Order ID</div>
+                        <div className="flex-1 min-w-0 px-2">Production Progress</div>
+                        <div className="w-[100px] md:w-[120px] shrink-0 text-right pr-2">Update Status</div>
                       </div>
 
                       {/* Accepted RFQ quotes — awaiting production start */}
                       {acceptedRfqs.map((quote: any) => {
                         const rfqId = quote.rfq_id || quote.rfqId;
+                        const orderId = `RFQ-${(quote.id || '').substring(0, 8).toUpperCase()}`;
                         return (
                           <div
                             key={quote.id}
@@ -291,25 +346,77 @@ export default function SellerRfqsTab(props: any) {
                             }}
                             className="flex items-center py-3 px-3 hover:bg-zinc-700/20 rounded-xl transition-all cursor-pointer group text-left"
                           >
-                            <div className="w-[180px] min-w-0 pr-2">
+                            <div className="w-[110px] md:w-[130px] shrink-0 min-w-0 pr-2">
                               <span className="block text-[8px] font-black text-emerald-500 font-mono">RFQ-{(quote.rfq_id || quote.id || '').substring(0, 8).toUpperCase()}</span>
                               <span className="block text-[11px] font-black text-zinc-200 truncate group-hover:text-white mt-0.5">{quote.rfqTitle || quote.rfq?.title || 'Accepted Machining Quote'}</span>
                             </div>
 
-                            <div className="flex-1 px-4 space-y-1">
+                            <div className="flex-1 min-w-0 px-2 space-y-1">
                               <div className="flex justify-between items-center text-[8px] font-black uppercase text-zinc-550">
-                                <span>Awaiting Start</span>
-                                <span className="font-mono text-emerald-500">0%</span>
+                                <div className="relative" onClick={e => e.stopPropagation()}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveStatusMenuId(activeStatusMenuId === quote.id ? null : quote.id);
+                                    }}
+                                    className="hover:underline flex items-center gap-1 font-mono text-emerald-400 hover:text-emerald-300 cursor-pointer"
+                                  >
+                                    <span>Awaiting Start</span>
+                                    <span className="text-[7px]">▼</span>
+                                  </button>
+                                  
+                                  {activeStatusMenuId === quote.id && (
+                                    <div className="absolute left-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden" onClick={e => e.stopPropagation()}>
+                                      {['Processing', 'Shipped', 'Delivered', 'Completed'].map((status) => (
+                                        <button
+                                          key={status}
+                                          onClick={async () => {
+                                            setActiveStatusMenuId(null);
+                                            await handleUpdateOrderStatus(orderId, status as any);
+                                          }}
+                                          className="w-full text-left px-3 py-1.5 text-[9px] font-black uppercase tracking-wider hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                                        >
+                                          {status}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="font-mono text-emerald-500">10%</span>
                               </div>
                               <div className="w-full bg-zinc-900 border border-zinc-800 h-1.5 rounded-full overflow-hidden">
-                                <div className="h-full rounded-full bg-emerald-500/20 w-0"></div>
+                                <div className="h-full rounded-full bg-emerald-500/20 w-[10%]"></div>
                               </div>
                             </div>
 
-                            <div className="w-[160px] pl-4 flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
-                              <span className="px-2 py-1 rounded text-[8px] font-black uppercase tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shrink-0">
-                                Accepted
-                              </span>
+                            <div className="w-[100px] md:w-[120px] shrink-0 pl-2 md:pl-4 flex items-center justify-end" onClick={e => e.stopPropagation()}>
+                              <div className="relative w-full">
+                                <button
+                                  onClick={() => {
+                                    setActiveStatusMenuId(activeStatusMenuId === quote.id ? null : quote.id);
+                                  }}
+                                  className="w-full bg-zinc-900 border border-zinc-700/60 rounded-lg text-[9px] font-black text-zinc-300 hover:text-white hover:border-zinc-500 px-2 py-1 outline-none transition-all flex items-center justify-between cursor-pointer"
+                                >
+                                  <span>Accepted</span>
+                                  <span className="text-[7px] text-zinc-400">▼</span>
+                                </button>
+                                {activeStatusMenuId === quote.id && (
+                                  <div className="absolute right-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden">
+                                    {['Processing', 'Shipped', 'Delivered', 'Completed'].map((status) => (
+                                      <button
+                                        key={status}
+                                        onClick={async () => {
+                                          setActiveStatusMenuId(null);
+                                          await handleUpdateOrderStatus(orderId, status as any);
+                                        }}
+                                        className="w-full text-left px-3 py-1.5 text-[9px] font-black uppercase tracking-wider hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+                                      >
+                                        {status}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         );
@@ -317,9 +424,10 @@ export default function SellerRfqsTab(props: any) {
 
                       {/* Regular activeJobs — Processing / Shipped */}
                       {sellerData.activeJobs.map((job: any) => {
+                        const progress = getProgressForStatus(job.status);
                         const isShipped = job.status === 'Shipped';
-                        const progress = isShipped ? 80 : 40;
                         const rfqId = job.rfq_id || job.rfq?.id;
+                        const isUpdating = updatingOrderId === job.id;
                         return (
                           <div
                             key={job.id}
@@ -331,37 +439,92 @@ export default function SellerRfqsTab(props: any) {
                             }}
                             className="flex items-center py-3 px-3 hover:bg-zinc-700/20 rounded-xl transition-all cursor-pointer group text-left"
                           >
-                            <div className="w-[180px] min-w-0 pr-2">
+                            <div className="w-[110px] md:w-[130px] shrink-0 min-w-0 pr-2">
                               <span className="block text-[8px] font-black text-slate-500 font-mono">ORDER-{job.id.substring(0, 8).toUpperCase()}</span>
                               <span className="block text-[11px] font-black text-zinc-200 truncate group-hover:text-white mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</span>
                             </div>
 
-                            <div className="flex-1 px-4 space-y-1">
+                            <div className="flex-1 min-w-0 px-2 space-y-1">
                               <div className="flex justify-between items-center text-[8px] font-black uppercase text-zinc-550">
-                                <span>{job.status}</span>
+                                <div className="relative" onClick={e => e.stopPropagation()}>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setActiveStatusMenuId(activeStatusMenuId === job.id ? null : job.id);
+                                    }}
+                                    className="hover:underline flex items-center gap-1 font-mono text-zinc-300 hover:text-white cursor-pointer"
+                                  >
+                                    <span>{job.status}</span>
+                                    {isUpdating ? (
+                                      <RefreshCw className="w-2.5 h-2.5 animate-spin text-zinc-500" />
+                                    ) : (
+                                      <span className="text-[7px]">▼</span>
+                                    )}
+                                  </button>
+                                  
+                                  {activeStatusMenuId === job.id && (
+                                    <div className="absolute left-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden" onClick={e => e.stopPropagation()}>
+                                      {['Processing', 'Shipped', 'Delivered', 'Completed'].map((status) => (
+                                        <button
+                                          key={status}
+                                          onClick={async () => {
+                                            setActiveStatusMenuId(null);
+                                            await handleUpdateOrderStatus(job.id, status as any);
+                                          }}
+                                          className={`w-full text-left px-3 py-1.5 text-[9px] font-black uppercase tracking-wider hover:bg-zinc-800 transition-colors ${
+                                            job.status === status ? 'text-[#00D0F5] bg-zinc-800/30' : 'text-zinc-400 hover:text-white'
+                                          }`}
+                                        >
+                                          {status}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
                                 <span className="font-mono text-zinc-300">{progress}%</span>
                               </div>
                               <div className="w-full bg-zinc-900 border border-zinc-800 h-1.5 rounded-full overflow-hidden">
                                 <div
-                                  className={`h-full rounded-full transition-all ${isShipped ? 'bg-amber-400' : 'bg-indigo-400'}`}
+                                  className={`h-full rounded-full transition-all duration-500 ${isShipped ? 'bg-amber-400' : 'bg-indigo-400'}`}
                                   style={{ width: `${progress}%` }}
                                 ></div>
                               </div>
                             </div>
 
-                            <div className="w-[160px] pl-4" onClick={e => e.stopPropagation()}>
-                              <select
-                                value={job.status}
-                                onChange={(e) => {
-                                  handleUpdateOrderStatus(job.id, e.target.value as any);
-                                }}
-                                className="bg-zinc-900 border border-zinc-700/60 rounded-lg text-[9px] font-black text-zinc-300 hover:text-white hover:border-zinc-500 px-2 py-1 outline-none focus:ring-1 focus:ring-[#00D0F5] cursor-pointer transition-all w-full"
-                              >
-                                <option value="Processing">Processing</option>
-                                <option value="Shipped">Shipped</option>
-                                <option value="Delivered">Delivered</option>
-                                <option value="Completed">Completed</option>
-                              </select>
+                            <div className="w-[100px] md:w-[120px] shrink-0 pl-2 md:pl-4 flex items-center justify-end" onClick={e => e.stopPropagation()}>
+                              <div className="relative w-full">
+                                <button
+                                  onClick={() => {
+                                    setActiveStatusMenuId(activeStatusMenuId === job.id ? null : job.id);
+                                  }}
+                                  className="w-full bg-zinc-900 border border-zinc-700/60 rounded-lg text-[9px] font-black text-zinc-300 hover:text-white hover:border-zinc-500 px-2 py-1 outline-none transition-all flex items-center justify-between cursor-pointer"
+                                >
+                                  <span>{job.status}</span>
+                                  {isUpdating ? (
+                                    <RefreshCw className="w-3 h-3 animate-spin text-zinc-500" />
+                                  ) : (
+                                    <span className="text-[7px] text-zinc-400">▼</span>
+                                  )}
+                                </button>
+                                {activeStatusMenuId === job.id && (
+                                  <div className="absolute right-0 mt-1 w-32 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-xl z-50 py-1 overflow-hidden">
+                                    {['Processing', 'Shipped', 'Delivered', 'Completed'].map((status) => (
+                                      <button
+                                        key={status}
+                                        onClick={async () => {
+                                          setActiveStatusMenuId(null);
+                                          await handleUpdateOrderStatus(job.id, status as any);
+                                        }}
+                                        className={`w-full text-left px-3 py-1.5 text-[9px] font-black uppercase tracking-wider hover:bg-zinc-800 transition-colors ${
+                                          job.status === status ? 'text-[#00D0F5] bg-zinc-800/30' : 'text-zinc-400 hover:text-white'
+                                        }`}
+                                      >
+                                        {status}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         );

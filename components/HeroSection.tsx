@@ -12,6 +12,10 @@ import {
   Settings,
   Upload,
   Cpu,
+  ShieldCheck,
+  Mail,
+  LifeBuoy,
+  Award,
 } from 'lucide-react';
 
 interface HeroSectionProps {
@@ -20,14 +24,6 @@ interface HeroSectionProps {
 
 export default function HeroSection({ onShuffle }: HeroSectionProps) {
   const [currentAdSlide, setCurrentAdSlide] = useState(0);
-  const AD_SLIDE_COUNT = 5;
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentAdSlide((prev) => (prev + 1) % AD_SLIDE_COUNT);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [AD_SLIDE_COUNT]);
 
   const adSlides = [
     {
@@ -40,8 +36,8 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
         <div className="space-y-2.5">
           {[
             { icon: Zap, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'Custom CAD Quoting', desc: 'Upload STEP/STL/PDF, sellers quote your design' },
-            { icon: Package, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Same-Day Dispatch', desc: 'Orders placed before 2 PM ship today' },
-            { icon: CheckCircle2, color: 'text-red-400', bg: 'bg-red-500/10', label: 'Quality Certified', desc: 'ISO 9001:2015 & RoHS compliant parts' },
+            { icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'PayU Escrow Protection', desc: 'Funds released only upon delivery confirmation' },
+            { icon: Mail, color: 'text-[#00D0F5]', bg: 'bg-[#00D0F5]/10', label: 'Dedicated Support Desk', desc: 'Direct assistance via mechitallsupport@gmail.com' },
           ].map(({ icon: Icon, color, bg, label, desc }) => (
             <div key={label} className="flex items-center gap-3 p-2 bg-zinc-900/60 border border-zinc-700/60 rounded-xl">
               <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
@@ -58,20 +54,19 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
     },
     {
       badge: 'Loyalty Club',
-      title: 'Join & Get 25 Welcome Bolts',
+      title: 'Earn & Redeem Bolts',
       gradient: 'from-amber-500/10 to-zinc-900/40 border-amber-500/20',
       cta: 'Create Free Account',
       link: '/login',
       content: (
         <div className="py-3 text-center space-y-4">
           <div className="inline-flex w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 items-center justify-center text-amber-500 shadow-sm animate-bounce">
-            <Zap className="w-6 h-6 fill-amber-500" />
+            <Award className="w-6 h-6 fill-amber-500" />
           </div>
           <div className="space-y-1 px-2">
-            <span className="block text-lg font-mono font-black text-amber-400">25 BOLTS WELCOME BONUS</span>
+            <span className="block text-base font-mono font-black text-amber-400">UNBOX & CLAIM REWARDS</span>
             <p className="text-[11px] text-zinc-400 leading-relaxed font-semibold">
-              Create your Shopper Account today. Get 25 Bolts instantly to redeem as discount at checkout!
-              Our points expire in 45 days.
+              Earn 1 Bolt for every ₹10 spent! Upload unboxing photos upon delivery to confirm receipt, release escrow, and claim Bolts to redeem as instant discounts at checkout.
             </p>
           </div>
         </div>
@@ -89,9 +84,9 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
             <Cpu className="w-6 h-6 animate-pulse" />
           </div>
           <div className="space-y-1 px-2">
-            <span className="block text-xs font-black uppercase text-emerald-400 leading-tight">High-Torque Actuators</span>
+            <span className="block text-xs font-black uppercase text-emerald-400 leading-tight">High-Torque Actuators & ESCs</span>
             <p className="text-[11px] text-zinc-400 leading-relaxed font-semibold">
-              Closed-loop steppers, NEMA motors, and high-performance servo controllers. Complete stock with detailed specifications!
+              Closed-loop steppers, NEMA motors, servo controllers, and 4-channel brushless ESCs with silent Field-Oriented Control (FOC). Complete specs & CAD models!
             </p>
           </div>
         </div>
@@ -109,9 +104,9 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
             <Package className="w-6 h-6" />
           </div>
           <div className="space-y-1 px-2">
-            <span className="block text-xs font-black uppercase text-purple-400 leading-tight">Makers &amp; Industrial controllers</span>
+            <span className="block text-xs font-black uppercase text-purple-400 leading-tight">Makers & Industrial Controllers</span>
             <p className="text-[11px] text-zinc-400 leading-relaxed font-semibold">
-              ESP32 modules, Arduino boards, lidar modules, and visual sensor shields. All items include fully validated datasheets!
+              ToF LiDAR sensors (up to 8m range with I2C/UART), ESP32 modules, Arduino boards, and visual sensor shields. All items include fully validated datasheets!
             </p>
           </div>
         </div>
@@ -126,9 +121,35 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
       content: (
         <div className="space-y-2.5">
           {[
-            { icon: Upload, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'Upload Your CAD File', desc: 'STEP, STL, IGES, DXF, OBJ or PDF' },
-            { icon: Settings, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'CNC, 3D Print, Laser Cut', desc: 'Multiple processes, one platform' },
-            { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Seller Sends You a Quote', desc: 'Accept when the price suits you' },
+            { icon: Upload, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'Upload Your CAD File', desc: 'STEP, STL, IGES, DXF, OBJ or PDF files' },
+            { icon: Settings, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'CNC, SLS & 3D Print', desc: 'Precision up to +/- 0.005mm & zero-support SLS' },
+            { icon: CheckCircle2, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Direct Quote & 1-on-1 Consult', desc: 'Connect directly with certified engineering shops' },
+          ].map(({ icon: Icon, color, bg, label, desc }) => (
+            <div key={label} className="flex items-center gap-3 p-2 bg-zinc-900/60 border border-zinc-700/60 rounded-xl">
+              <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
+                <Icon className={`w-4 h-4 ${color}`} />
+              </div>
+              <div className="text-left">
+                <span className="block text-xs font-bold text-white leading-tight">{label}</span>
+                <span className="block text-[10px] text-zinc-400">{desc}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    },
+    {
+      badge: 'Customer Support Desk',
+      title: 'We Are Here For You',
+      gradient: 'from-[#00D0F5]/10 to-zinc-900/40 border-[#00D0F5]/20',
+      cta: 'Visit Support Desk',
+      link: '/profile?tab=support',
+      content: (
+        <div className="space-y-2.5">
+          {[
+            { icon: Mail, color: 'text-[#00D0F5]', bg: 'bg-[#00D0F5]/10', label: 'Official Support Mailbox', desc: 'mechitallsupport@gmail.com for rapid review' },
+            { icon: LifeBuoy, color: 'text-indigo-400', bg: 'bg-indigo-500/10', label: 'Visual Discrepancy Reports', desc: 'Attach images to your complaints directly from your profile' },
+            { icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Strict IPNDA Protocols', desc: 'All mechatronic assembly designs are 100% protected' },
           ].map(({ icon: Icon, color, bg, label, desc }) => (
             <div key={label} className="flex items-center gap-3 p-2 bg-zinc-900/60 border border-zinc-700/60 rounded-xl">
               <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
@@ -144,6 +165,15 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
       )
     }
   ];
+
+  const AD_SLIDE_COUNT = adSlides.length;
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentAdSlide((prev) => (prev + 1) % AD_SLIDE_COUNT);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [AD_SLIDE_COUNT]);
 
   return (
     <section

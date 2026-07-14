@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { RefreshCw, CheckCircle2, Mail, Send } from 'lucide-react';
+import { RefreshCw, CheckCircle2, Mail, Send, Upload, X } from 'lucide-react';
 import { sendSupportEmail } from '@/app/actions/support';
 
 export default function SupportTab(props: any) {
@@ -9,6 +9,51 @@ export default function SupportTab(props: any) {
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [attachments, setAttachments] = useState<{ name: string; dataUrl: string }[]>([]);
+  const [dragActive, setDragActive] = useState(false);
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const processFiles = (files: FileList) => {
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setAttachments((prev) => [...prev, { name: file.name, dataUrl: reader.result as string }]);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        showToast('Only image files are allowed.', 'error');
+      }
+    });
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(e.target.files);
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,13 +67,15 @@ export default function SupportTab(props: any) {
       const res = await sendSupportEmail({
         subject: subject.trim(),
         message: message.trim(),
+        attachments: attachments,
       });
 
       if (res.success) {
         setSent(true);
         setSubject('');
         setMessage('');
-        showToast('Complaint sent to support@mechitall.com!', 'success');
+        setAttachments([]);
+        showToast('Complaint sent to mechitallsupport@gmail.com!', 'success');
       } else {
         showToast(res.error || 'Failed to send complaint.', 'error');
       }
@@ -51,13 +98,13 @@ export default function SupportTab(props: any) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <div className="flex gap-3 p-4 bg-zinc-900 border border-zinc-700/60 rounded-xl">
-            <div className="w-10 h-10 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-[#00D0F5]/10 text-[#00D0F5] flex items-center justify-center shrink-0">
               <Mail className="w-5 h-5" />
             </div>
             <div>
               <h4 className="text-xs font-black text-white">Email Automation</h4>
               <p className="text-[10px] text-zinc-400 mt-0.5 font-semibold">
-                Your report goes directly to <strong className="text-[#00D0F5] font-mono">support@mechitall.com</strong> for rapid review.
+                Your report goes directly to <strong className="text-[#00D0F5] font-mono">mechitallsupport@gmail.com</strong> for rapid review.
               </p>
             </div>
           </div>
@@ -112,6 +159,50 @@ export default function SupportTab(props: any) {
                 className="w-full text-xs font-bold p-3 border border-zinc-700/60 rounded-lg bg-zinc-900/30 text-white focus:outline-none focus:border-[#00D0F5] resize-none transition-colors"
               ></textarea>
             </div>
+
+            {/* Image Attachments */}
+            <div className="space-y-1.5">
+              <label className="block text-[10px] font-bold text-zinc-550 uppercase">Attach Images (Optional)</label>
+              <div
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+                className={`relative border-2 border-dashed rounded-lg p-3 transition-all flex flex-col items-center justify-center gap-1.5 text-center cursor-pointer ${
+                  dragActive ? 'border-[#00D0F5] bg-[#00D0F5]/5' : 'border-zinc-700/60 hover:border-zinc-500'
+                }`}
+              >
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileChange}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                />
+                <Upload className="w-5 h-5 text-zinc-500" />
+                <span className="text-[10px] text-zinc-400 font-bold leading-tight">
+                  {attachments.length > 0 ? `Selected ${attachments.length} Image(s)` : 'Drag & Drop or Click to Attach Images'}
+                </span>
+              </div>
+              
+              {attachments.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {attachments.map((att, index) => (
+                    <div key={index} className="relative w-12 h-12 border border-zinc-700/60 overflow-hidden rounded-lg group">
+                      <img src={att.dataUrl} alt={att.name} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeAttachment(index)}
+                        className="absolute top-0.5 right-0.5 bg-red-500 hover:bg-red-650 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] font-black cursor-pointer shadow-sm"
+                      >
+                        <X className="w-2 h-2" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
               disabled={submitting}
