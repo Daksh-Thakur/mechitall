@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -1958,6 +1958,8 @@ function QuotationChatsTab({
   const [rejectionReasonInput, setRejectionReasonInput] = useState('');
   const [rejecting, setRejecting] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [threadOrder, setThreadOrder] = useState<any | null>(null);
+  const [updatingThreadOrderStatus, setUpdatingThreadOrderStatus] = useState(false);
 
   const [offerPrice, setOfferPrice] = useState(0);
   const [offerQuantity, setOfferQuantity] = useState(1);
@@ -1990,6 +1992,28 @@ function QuotationChatsTab({
       onClearInitialActiveRfqId();
     }
   }, [initialActiveRfqId, threads]);
+
+  // Load order associated with activeThread
+  useEffect(() => {
+    if (!activeThread) {
+      setThreadOrder(null);
+      return;
+    }
+    const fetchThreadOrder = async () => {
+      const orderId = `RFQ-${activeThread.quoteId.substring(0, 8).toUpperCase()}`;
+      const { data } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .maybeSingle();
+      if (data) {
+        setThreadOrder(data);
+      } else {
+        setThreadOrder(null);
+      }
+    };
+    fetchThreadOrder();
+  }, [activeThread]);
 
   useEffect(() => {
     const channel = supabase
@@ -2283,6 +2307,31 @@ function QuotationChatsTab({
       showToast(res.error || 'Failed to cancel quote negotiation.', 'error');
     }
     setCancelling(false);
+  };
+
+  const handleUpdateThreadOrderStatus = async (nextStatus: 'Processing' | 'Shipped' | 'Delivered' | 'Completed') => {
+    if (!activeThread || !threadOrder) return;
+    setUpdatingThreadOrderStatus(true);
+    try {
+      await updateSellerOrderStatus(threadOrder.id, nextStatus);
+      setThreadOrder(prev => prev ? { ...prev, status: nextStatus } : null);
+      showToast(`Order status updated to "${nextStatus}" successfully!`, 'success');
+
+      // Send a system message in the chat to notify the buyer too
+      const statusMessageText = `[SYSTEM] Order status updated to "${nextStatus}". The buyer has been notified.`;
+      const res = await sendChatMessage({
+        rfqId: activeThread.rfqId,
+        quoteId: activeThread.quoteId,
+        messageText: statusMessageText,
+      });
+      if (res.success && res.data) {
+        setMessages((prev) => [...prev, res.data!]);
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update order status.', 'error');
+    } finally {
+      setUpdatingThreadOrderStatus(false);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -2733,6 +2782,22 @@ function QuotationChatsTab({
                     <Eye className="w-3 h-3" />
                     <span>Design</span>
                   </button>
+                )}
+                {profile.is_seller && threadOrder && (
+                  <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5">
+                    <span className="text-[8px] font-black uppercase text-zinc-550 tracking-wider">Status:</span>
+                    <select
+                      value={threadOrder.status}
+                      disabled={updatingThreadOrderStatus}
+                      onChange={(e) => handleUpdateThreadOrderStatus(e.target.value as any)}
+                      className="bg-transparent border-none text-[10px] font-black text-white outline-none cursor-pointer focus:ring-0 p-0"
+                    >
+                      <option value="Processing" className="bg-zinc-900">Processing</option>
+                      <option value="Shipped" className="bg-zinc-900">Shipped</option>
+                      <option value="Delivered" className="bg-zinc-900">Delivered</option>
+                      <option value="Completed" className="bg-zinc-900">Completed</option>
+                    </select>
+                  </div>
                 )}
                 {activeThread.status !== 'REJECTED' && (
                   <button

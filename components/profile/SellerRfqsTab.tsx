@@ -249,7 +249,7 @@ export default function SellerRfqsTab(props: any) {
                 })()}
               </div>
 
-              <div className="space-y-3">
+              <div className="overflow-x-auto">
                 {loadingSeller ? (
                   <div className="py-8 text-center animate-pulse">
                     <RefreshCw className="w-6 h-6 animate-spin mx-auto text-zinc-500" />
@@ -269,97 +269,79 @@ export default function SellerRfqsTab(props: any) {
                   }
 
                   return (
-                    <>
+                    <div className="min-w-[620px] max-h-[300px] overflow-y-auto pr-1 space-y-1.5 divide-y divide-zinc-800/40">
+                      {/* Header row */}
+                      <div className="flex items-center text-[9px] font-black uppercase tracking-wider text-zinc-500 pb-2 px-3">
+                        <div className="w-[180px]">Job/Order ID</div>
+                        <div className="flex-1 px-4">Production Progress</div>
+                        <div className="w-[160px]">Update Status</div>
+                      </div>
+
                       {/* Accepted RFQ quotes — awaiting production start */}
-                      {acceptedRfqs.map((quote: any) => (
-                        <div
-                          key={quote.id}
-                          onClick={() => {
-                            const rfqId = quote.rfq_id || quote.rfqId;
-                            if (rfqId) {
-                              setActiveChatRfqId && setActiveChatRfqId(rfqId);
-                              setActiveTab && setActiveTab('chats');
-                            }
-                          }}
-                          className="bg-emerald-950/30 border border-emerald-500/20 rounded-2xl p-4 space-y-3 hover:border-emerald-500/40 hover:shadow-lg transition-all cursor-pointer shadow-sm"
-                        >
-                          <div className="flex justify-between items-start gap-4">
-                            <div>
-                              <span className="block text-[8px] font-black text-emerald-600 font-mono">RFQ-{(quote.rfq_id || quote.id || '').substring(0, 8).toUpperCase()}</span>
-                              <h5 className="text-xs font-black text-white mt-0.5">{quote.rfqTitle || quote.rfq?.title || 'Accepted Machining Quote'}</h5>
-                              {quote.machiningQuote?.offer_price && (
-                                <span className="text-[10px] text-[#00D0F5] font-black font-mono">
-                                  ₹{Number(quote.machiningQuote.offer_price).toLocaleString('en-IN')}
-                                </span>
-                              )}
-                            </div>
-                            <span className="px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shrink-0">
-                              ACCEPTED
-                            </span>
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <div className="flex justify-between text-[8px] font-black uppercase text-slate-500 tracking-wider">
-                              <span>Awaiting Production Start</span>
-                              <span className="font-mono font-black text-[9px] text-emerald-500">0%</span>
-                            </div>
-                            <div className="w-full bg-zinc-800 border border-zinc-700/50 h-2 rounded-full overflow-hidden">
-                              <div className="h-full rounded-full bg-emerald-500/30 w-0"></div>
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const rfqId = quote.rfq_id || quote.rfqId;
+                      {acceptedRfqs.map((quote: any) => {
+                        const rfqId = quote.rfq_id || quote.rfqId;
+                        return (
+                          <div
+                            key={quote.id}
+                            onClick={() => {
                               if (rfqId) {
                                 setActiveChatRfqId && setActiveChatRfqId(rfqId);
                                 setActiveTab && setActiveTab('chats');
                               }
                             }}
-                            className="w-full py-2 bg-emerald-900/30 hover:bg-emerald-900/50 text-emerald-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-500/20"
+                            className="flex items-center py-3 px-3 hover:bg-zinc-700/20 rounded-xl transition-all cursor-pointer group text-left"
                           >
-                            <MessageSquare className="w-3.5 h-3.5" />
-                            <span>Open Negotiation Chat</span>
-                          </button>
-                        </div>
-                      ))}
+                            <div className="w-[180px] min-w-0 pr-2">
+                              <span className="block text-[8px] font-black text-emerald-500 font-mono">RFQ-{(quote.rfq_id || quote.id || '').substring(0, 8).toUpperCase()}</span>
+                              <span className="block text-[11px] font-black text-zinc-200 truncate group-hover:text-white mt-0.5">{quote.rfqTitle || quote.rfq?.title || 'Accepted Machining Quote'}</span>
+                            </div>
+
+                            <div className="flex-1 px-4 space-y-1">
+                              <div className="flex justify-between items-center text-[8px] font-black uppercase text-zinc-550">
+                                <span>Awaiting Start</span>
+                                <span className="font-mono text-emerald-500">0%</span>
+                              </div>
+                              <div className="w-full bg-zinc-900 border border-zinc-800 h-1.5 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full bg-emerald-500/20 w-0"></div>
+                              </div>
+                            </div>
+
+                            <div className="w-[160px] pl-4 flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                              <span className="px-2 py-1 rounded text-[8px] font-black uppercase tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shrink-0">
+                                ACCEPTED
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
 
                       {/* Regular activeJobs — Processing / Shipped */}
                       {sellerData.activeJobs.map((job: any) => {
                         const isShipped = job.status === 'Shipped';
                         const progress = isShipped ? 80 : 40;
+                        const rfqId = job.rfq_id || job.rfq?.id;
                         return (
                           <div
                             key={job.id}
                             onClick={() => {
-                              const rfqId = job.rfq_id || job.rfq?.id;
                               if (rfqId) {
                                 setActiveChatRfqId && setActiveChatRfqId(rfqId);
                                 setActiveTab && setActiveTab('chats');
                               }
                             }}
-                            className="bg-zinc-900/50 border border-zinc-700/60 rounded-2xl p-4 space-y-4 hover:border-indigo-500/50 hover:shadow-lg transition-all cursor-pointer shadow-sm"
+                            className="flex items-center py-3 px-3 hover:bg-zinc-700/20 rounded-xl transition-all cursor-pointer group text-left"
                           >
-                            <div className="flex justify-between items-start gap-4">
-                              <div>
-                                <span className="block text-[8px] font-black text-slate-500 font-mono">ORDER-{job.id.substring(0, 8).toUpperCase()}</span>
-                                <h5 className="text-xs font-black text-white mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</h5>
-                              </div>
-                              <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${isShipped
-                                ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
-                                }`}>
-                                {isShipped ? 'SHIPPED' : 'PROCESSING'}
-                              </span>
+                            <div className="w-[180px] min-w-0 pr-2">
+                              <span className="block text-[8px] font-black text-slate-500 font-mono">ORDER-{job.id.substring(0, 8).toUpperCase()}</span>
+                              <span className="block text-[11px] font-black text-zinc-200 truncate group-hover:text-white mt-0.5">{job.rfq?.title || 'Custom Machining Job'}</span>
                             </div>
 
-                            <div className="space-y-1.5">
-                              <div className="flex justify-between text-[8px] font-black uppercase text-slate-500 tracking-wider">
-                                <span>Progress</span>
-                                <span className="font-mono font-black text-[9px] text-zinc-300">{progress}%</span>
+                            <div className="flex-1 px-4 space-y-1">
+                              <div className="flex justify-between items-center text-[8px] font-black uppercase text-zinc-550">
+                                <span>{job.status}</span>
+                                <span className="font-mono text-zinc-300">{progress}%</span>
                               </div>
-                              <div className="w-full bg-zinc-800 border border-zinc-700/50 h-2 rounded-full overflow-hidden">
+                              <div className="w-full bg-zinc-900 border border-zinc-800 h-1.5 rounded-full overflow-hidden">
                                 <div
                                   className={`h-full rounded-full transition-all ${isShipped ? 'bg-amber-400' : 'bg-indigo-400'}`}
                                   style={{ width: `${progress}%` }}
@@ -367,26 +349,24 @@ export default function SellerRfqsTab(props: any) {
                               </div>
                             </div>
 
-                            {(job.rfq_id || job.rfq?.id) && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const rfqId = job.rfq_id || job.rfq?.id;
-                                  if (rfqId) {
-                                    setActiveChatRfqId && setActiveChatRfqId(rfqId);
-                                    setActiveTab && setActiveTab('chats');
-                                  }
+                            <div className="w-[160px] pl-4" onClick={e => e.stopPropagation()}>
+                              <select
+                                value={job.status}
+                                onChange={(e) => {
+                                  handleUpdateOrderStatus(job.id, e.target.value as any);
                                 }}
-                                className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-zinc-700/50"
+                                className="bg-zinc-900 border border-zinc-700/60 rounded-lg text-[9px] font-black text-zinc-300 hover:text-white hover:border-zinc-500 px-2 py-1 outline-none focus:ring-1 focus:ring-[#00D0F5] cursor-pointer transition-all w-full"
                               >
-                                <MessageSquare className="w-3.5 h-3.5" />
-                                <span>Open Quote Chat</span>
-                              </button>
-                            )}
+                                <option value="Processing">Processing</option>
+                                <option value="Shipped">Shipped</option>
+                                <option value="Delivered">Delivered</option>
+                                <option value="Completed">Completed</option>
+                              </select>
+                            </div>
                           </div>
                         );
                       })}
-                    </>
+                    </div>
                   );
                 })()}
               </div>
