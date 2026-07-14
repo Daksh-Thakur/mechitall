@@ -2700,7 +2700,7 @@ function QuotationChatsTab({
                         : isRejected ? 'text-rose-400 bg-rose-500/10'
                         : 'text-amber-400 bg-amber-500/10'
                       }`}>
-                        {isAccepted ? 'Accepted' : t.status}
+                        {isAccepted ? 'Accepted' : t.status === 'SUBMITTED' ? 'Submitted' : t.status}
                       </span>
                     </div>
                     {isAccepted && t.machiningQuote?.offer_price && (
@@ -2758,7 +2758,11 @@ function QuotationChatsTab({
                         ? 'text-rose-400 bg-rose-500/10'
                         : 'text-amber-400 bg-amber-500/10'
                     }`}>
-                      {activeThread.status}
+                      {activeThread.status === 'ACCEPTED' || activeThread.machiningQuote?.status === 'Accepted'
+                        ? 'Accepted'
+                        : activeThread.status === 'SUBMITTED'
+                        ? 'Submitted'
+                        : activeThread.status}
                     </span>
                   </div>
                 </div>

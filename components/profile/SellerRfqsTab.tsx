@@ -308,7 +308,7 @@ export default function SellerRfqsTab(props: any) {
 
                             <div className="w-[160px] pl-4 flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
                               <span className="px-2 py-1 rounded text-[8px] font-black uppercase tracking-wider border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shrink-0">
-                                ACCEPTED
+                                Accepted
                               </span>
                             </div>
                           </div>
@@ -535,9 +535,8 @@ export default function SellerRfqsTab(props: any) {
                       </div>
                     ) : (
                       activeQuotes.map((quote: any) => {
-                        const isAccepted = quote.status === 'ACCEPTED';
-                        const isRejected = quote.status === 'REJECTED';
-                        const isPending = quote.status === 'SUBMITTED' || quote.status === 'NEGOTIATING';
+                        const isAccepted = quote.status === 'ACCEPTED' || quote.status === 'Accepted' || quote.machiningQuote?.status === 'Accepted';
+                        const isRejected = quote.status === 'REJECTED' || quote.status === 'Rejected';
                         
                         return (
                           <div 
@@ -557,7 +556,7 @@ export default function SellerRfqsTab(props: any) {
                                 isRejected ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 
                                 'bg-sky-500/10 text-sky-400 border-sky-500/20'
                               }`}>
-                                {quote.status}
+                                {isAccepted ? 'Accepted' : quote.status === 'SUBMITTED' ? 'Submitted' : quote.status}
                               </span>
                             </div>
                             <div className="flex justify-between items-end">
