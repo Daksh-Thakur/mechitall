@@ -13,7 +13,7 @@ MechItAll uses a dual-listing architecture to handle components and custom order
 
 2. **Custom Machining Hub (On-Demand RFQs)**
    - Services: CNC Milling, Industrial SLS 3D Printing, Sheet Metal Fabrication, SLA Resin Printing, and Engineering Consultation.
-   - Workflow: Buyers upload CAD files (STEP, STL, PDF). Sellers parse the geometry and return custom quotes. Payments are secured in PayU Escrow.
+   - Workflow: Buyers upload CAD files (STEP, STL, PDF). Sellers parse the geometry and return custom quotes. Payments are secured in a secure escrow.
    - Route URL: `/machining`
 
 ## Commissions & Fees

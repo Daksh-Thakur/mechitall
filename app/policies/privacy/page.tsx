@@ -19,7 +19,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <h2 className="text-xl font-semibold text-white">2. Payment Processing</h2>
             <p>
-              We handle payments via <strong className="text-white">PayU</strong>. We do not store your complete credit card numbers or payment details directly on our servers. All payment data is securely handled by our trusted payment gateways in compliance with industry standards.
+              We handle payments via secure third-party <strong className="text-white">payment gateways</strong>. We do not store your complete credit card numbers or payment details directly on our servers. All payment data is securely handled by our trusted payment gateways in compliance with industry standards.
             </p>
             <h2 className="text-xl font-semibold text-white">3. How We Use Your Information</h2>
             <p>

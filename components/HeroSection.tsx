@@ -36,7 +36,7 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
         <div className="space-y-2.5">
           {[
             { icon: Zap, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'Custom CAD Quoting', desc: 'Upload STEP/STL/PDF, sellers quote your design' },
-            { icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'PayU Escrow Protection', desc: 'Funds released only upon delivery confirmation' },
+            { icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Secure Escrow Protection', desc: 'Funds released only upon delivery confirmation' },
             { icon: Mail, color: 'text-[#00D0F5]', bg: 'bg-[#00D0F5]/10', label: 'Dedicated Support Desk', desc: 'Direct assistance via mechitallsupport@gmail.com' },
           ].map(({ icon: Icon, color, bg, label, desc }) => (
             <div key={label} className="flex items-center gap-3 p-2 bg-zinc-900/60 border border-zinc-700/60 rounded-xl">

@@ -76,7 +76,7 @@ export default function SellerKYCModal({
               pan,
               gstin
             });
-            showToast('KYC Verified & Seller Mode Activated! PayU sub-account created.', 'success');
+            showToast('KYC Verified & Seller Mode Activated!', 'success');
             onClose();
             await fetchProfile();
           } catch (err: any) {

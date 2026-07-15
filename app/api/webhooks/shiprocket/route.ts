@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       const deliveryTimestamp = new Date().toISOString();
 
       // Step A: Update order status to 'Delivered' and record the delivered_at timestamp
-      // This officially starts our strict 7-day PayU escrow auto-release countdown
+      // This officially starts our strict 7-day escrow auto-release countdown
       const { data: updatedOrder, error: updateError } = await supabase
         .from('orders')
         .update({

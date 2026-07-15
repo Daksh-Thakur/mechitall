@@ -36,7 +36,7 @@ MechItAll - Changes Made (14 July 2026)
    - Live "Total Amount" row appears in the negotiation form as seller types
    - Covers both initial offer and counter-offer forms
    - Accepted banner shows Unit Price and Total separately
-   - PayU payment gateway is now charged the correct full contract total
+   - Payment gateway is now charged the correct full contract total
 
 9. Shopping Cart - GST Removed
    - Removed the 18% GST line from the cart summary entirely

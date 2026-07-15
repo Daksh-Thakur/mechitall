@@ -26,7 +26,7 @@ import {
   updateSellerOrderStatus, deleteSellerCapability, deleteSellerProduct,
   deleteSellerService, Profile, BoltsTransaction, confirmDeliveryAndClaimBolts, simulateOrderStatus, updateProfilePhoto
 } from '@/app/actions/rewards';
-import { initiatePayUExistingOrderPayment, disputeOrder } from '@/app/actions/orders';
+import { disputeOrder } from '@/app/actions/orders';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import LoginPage from '../login/page';
@@ -105,7 +105,7 @@ export default function ProfilePage() {
 
 
 
-  // Load tab from URL query params and check PayU payment redirects
+  // Load tab from URL query params and check payment redirects
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -441,7 +441,7 @@ export default function ProfilePage() {
           const response = await confirmDeliveryAndClaimBolts(orderId, base64String, profile.id);
 
           if (response.success) {
-            showToast(`Successfully released PayU escrow funds & credited ${response.earnedBolts} Bolts!`, 'success');
+            showToast(`Order completed & ${response.earnedBolts} Bolts credited!`, 'success');
             await fetchProfile();
             await fetchOrders();
           }

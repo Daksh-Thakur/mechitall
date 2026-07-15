@@ -56,7 +56,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald" />
-                <span>PayU Digital Escrow Protection</span>
+                <span>Secure Digital Escrow Protection</span>
               </div>
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function Footer() {
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald shrink-0 mt-0.5" />
                 <div>
                   <span className="block text-[10px] font-bold text-white uppercase font-mono">Escrow Payments</span>
-                  <span className="text-[10px] text-zinc-500 leading-none font-sans">PayU secure escrow auto-releases</span>
+                  <span className="text-[10px] text-zinc-500 leading-none font-sans">Secure escrow auto-releases</span>
                 </div>
               </li>
               <li className="flex items-start gap-2">

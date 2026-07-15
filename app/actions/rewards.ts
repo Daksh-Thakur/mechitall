@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
-import { releasePayUEscrow } from '@/utils/payu';
+
 
 export interface Profile {
   id: string;
@@ -197,7 +197,7 @@ export async function getProfileTransactions(profileId: string) {
 }
 
 /**
- * Confirms order delivery via unboxing photo, releases escrow via PayU, and credits Bolts.
+ * Confirms order delivery via unboxing photo, marks order complete, and credits Bolts.
  */
 export async function confirmDeliveryAndClaimBolts(
   orderId: string,
@@ -225,7 +225,7 @@ export async function confirmDeliveryAndClaimBolts(
 
   // Enforce Freeze & Dispute Protocol check
   if (order.disputed) {
-    throw new Error('This order is currently disputed. Funds are frozen in the PayU Nodal Account for mediation.');
+    throw new Error('This order is currently disputed. Funds are frozen pending mediation.');
   }
 
   // Enforce that mandatory unboxing confirmation steps are completed
@@ -255,41 +255,8 @@ export async function confirmDeliveryAndClaimBolts(
     throw new Error(`Delivery confirmation period has expired. Must claim within ${maxWindowDays} days.`);
   }
 
-  // 3. Resolve seller's child_merchant_key
-  let childMerchantKey = '';
-  if (order.seller_id) {
-    const { data: sellerProf } = await supabase
-      .from('profiles')
-      .select('child_merchant_key')
-      .eq('id', order.seller_id)
-      .single();
-    if (sellerProf && sellerProf.child_merchant_key) {
-      childMerchantKey = sellerProf.child_merchant_key;
-    }
-  }
+  // 3. Mark escrow release locally (payment gateway integration pending)
 
-  if (!childMerchantKey) {
-    childMerchantKey = `CM-MOCK-SELLER-${Math.floor(100000 + Math.random() * 900000)}`;
-  }
-
-  // 4. Execute server-to-server ping invoking PayU’s Release Settlement API
-  let payuSuccess = false;
-  let payuTransactionId = '';
-  try {
-    console.log(`[PayU Escrow] Triggering fund release for Order ${orderId} to child merchant key ${childMerchantKey}...`);
-    const releaseRes = await releasePayUEscrow(orderId, Number(order.total_amount), childMerchantKey);
-    payuSuccess = releaseRes.success;
-    payuTransactionId = releaseRes.transactionId;
-    console.log(`[PayU Escrow] Escrow release succeeded. Txn ID: ${payuTransactionId}`);
-  } catch (err: any) {
-    console.warn('[PayU Escrow] Escrow release API failed, falling back to mock details. Reason:', err.message);
-    payuSuccess = true;
-    payuTransactionId = `PAYU-MOCK-REL-${Math.floor(100000 + Math.random() * 900000)}`;
-  }
-
-  if (!payuSuccess) {
-    throw new Error('Nodal escrow fund release failed. Unable to claim rewards.');
-  }
 
   // 4. Calculate earned Bolts with margin protection
   // exchange rate: 10 Bolts = ₹1.00 store value.
@@ -300,7 +267,8 @@ export async function confirmDeliveryAndClaimBolts(
   const rawBolts = Math.floor(Number(order.total_amount) * boltsPerRupee);
   const earnedBolts = Math.min(rawBolts, maxCap);
 
-  // 5. Update order details in DB with escrow release columns
+  // 4. Update order details in DB
+  const releaseRef = `REL-${orderId}-${Date.now()}`;
   const { error: updateOrderErr } = await supabase
     .from('orders')
     .update({
@@ -309,7 +277,7 @@ export async function confirmDeliveryAndClaimBolts(
       rewards_claimed: true,
       escrow_released: true,
       released_at: new Date().toISOString(),
-      released_transaction_id: payuTransactionId,
+      released_transaction_id: releaseRef,
       updated_at: new Date().toISOString(),
     })
     .eq('id', orderId);
@@ -385,7 +353,7 @@ export async function confirmDeliveryAndClaimBolts(
   return {
     success: true,
     earnedBolts,
-    payuTransactionId,
+    releaseRef,
     profile: finalProfile as Profile,
   };
 }
@@ -744,73 +712,8 @@ export async function submitSellerKYC(
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
 
-  let childMerchantKey = '';
-  const clientId = process.env.PAYU_AGGREGATOR_CLIENT_ID || 'mock_client_id';
-  const clientSecret = process.env.PAYU_AGGREGATOR_CLIENT_SECRET || 'mock_client_secret';
-  const isSandbox = process.env.PAYU_SANDBOX !== 'false';
-  const tokenUrl = isSandbox 
-    ? 'https://sandbox-accounts.payu.in/oauth/token' 
-    : 'https://accounts.payu.in/oauth/token';
-  const registerUrl = isSandbox 
-    ? 'https://sandboxsecure.payu.in/merchant/register' 
-    : 'https://api.payu.in/merchant/register';
-
-  try {
-    if (clientId === 'mock_client_id' || clientSecret === 'mock_client_secret') {
-      throw new Error('Using mock aggregator credentials');
-    }
-
-    // 1. Get OAuth token from Master Aggregator Client Credentials
-    const tokenResponse = await fetch(tokenUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: clientId,
-        client_secret: clientSecret,
-      }),
-    });
-
-    if (!tokenResponse.ok) {
-      throw new Error(`Failed to fetch OAuth token: ${tokenResponse.statusText}`);
-    }
-
-    const tokenData = await tokenResponse.json();
-    const token = tokenData.access_token;
-
-    // 2. Call Create Child Merchant API
-    const regResponse = await fetch(registerUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        legalName: formData.legalName,
-        accountNumber: formData.bankAccountNumber,
-        ifscCode: formData.ifscCode,
-        pan: formData.pan,
-        gstin: formData.gstin || null,
-      }),
-    });
-
-    if (!regResponse.ok) {
-      throw new Error(`Create Child Merchant API failed: ${regResponse.statusText}`);
-    }
-
-    const regData = await regResponse.json();
-    if (regData.status === 'success' && regData.childMerchantKey) {
-      childMerchantKey = regData.childMerchantKey;
-    } else {
-      throw new Error(regData.message || 'Child merchant creation failed');
-    }
-  } catch (err) {
-    console.warn('[PayU KYC] Real API flow failed, simulating child merchant key. Reason:', err);
-    // Simulate returned child merchant key
-    childMerchantKey = `CM-${formData.pan.toUpperCase()}-${Math.floor(100000 + Math.random() * 900000)}`;
-  }
+  // Generate a local seller reference key (payment gateway integration pending)
+  const childMerchantKey = `CM-${formData.pan.toUpperCase()}-${Math.floor(100000 + Math.random() * 900000)}`;
 
   const { data, error } = await supabase
     .from('profiles')

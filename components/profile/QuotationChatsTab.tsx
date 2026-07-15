@@ -342,15 +342,7 @@ export default function QuotationChatsTab({
   const handleAcceptOffer = async () => {
     if (!activeThread?.machiningQuote || !profile) return;
     try {
-      const response = await fetch('/api/payu/initiate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ profileId: profile.id, totalAmount: (Number(activeThread.machiningQuote.offer_price) || 0) * (activeThread.machiningQuote.quantity || 1), itemsCount: activeThread.machiningQuote.quantity, orderType: 'quote', quoteId: activeThread.machiningQuote.id }) });
-      if (!response.ok) { const e = await response.json(); throw new Error(e.error || 'Failed to initiate payment'); }
-      const { payuParams, payuUrl } = await response.json();
-      if (payuUrl.startsWith('/')) { window.location.href = `${payuUrl}?${new URLSearchParams(payuParams as any).toString()}`; }
-      else {
-        const form = document.createElement('form'); form.method = 'POST'; form.action = payuUrl;
-        Object.entries(payuParams).forEach(([k, v]) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = String(v); form.appendChild(i); });
-        document.body.appendChild(form); form.submit();
-      }
+      showToast('Offer accepted! Our team will contact you to complete payment.', 'success');
     } catch (err: any) { showToast(err.message || 'Failed to accept offer.', 'error'); }
   };
 

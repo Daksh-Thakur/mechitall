@@ -141,13 +141,13 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* PayU Escrow Protection */}
+              {/* Secure Escrow Protection */}
               <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded-2xl space-y-4 hover:border-emerald-400/40 transition-all duration-300">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div className="space-y-1.5">
-                  <h3 className="text-base font-bold text-white font-['Space_Grotesk']">PayU Escrow Protection</h3>
+                  <h3 className="text-base font-bold text-white font-['Space_Grotesk']">Secure Escrow Protection</h3>
                   <p className="text-xs text-zinc-400 leading-relaxed font-sans font-medium">
                     Sellers are only paid once you inspect and approve the delivered parts. Zero risk of unfulfilled custom orders or counterfeit components.
                   </p>

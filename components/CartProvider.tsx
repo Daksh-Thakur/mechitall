@@ -264,7 +264,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setShowDeliveryModal(true);
   }, [cart]);
 
-  // Step 2 of checkout: save delivery details to profile, then initiate PayU payment
+  // Step 2 of checkout: save delivery details to profile, then notify user payment is coming soon
   const handleDeliveryConfirm = useCallback(async (details: { name: string; email: string; phone: string; address: string }) => {
     setShowDeliveryModal(false);
     setCheckoutStatus('submitting');
@@ -290,69 +290,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         email: details.email,
         business_address: details.address,
       });
-      // Refresh local profile so UI reflects the updated details
       await fetchProfile();
 
-      // 3. Build stock items for order creation
-      const stockItems = cart
-        .filter(item => !item.isCustomQuote && item.part?.id)
-        .map(item => ({
-          product_id: item.part!.id,
-          quantity: item.quantity,
-          unit_price: item.pricePerUnit,
-        }));
-
-      // 4. Initiate PayU payment
-      const payuResponse = await fetch('/api/payu/initiate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          profileId: activeProfile.id,
-          totalAmount: cartSummary.total,
-          itemsCount: cart.reduce((sum, item) => sum + item.quantity, 0),
-          boltsSpent: isBoltsDiscountApplied ? cartSummary.boltsToDeduct : 0,
-          cartItems: stockItems,
-          orderType: 'shop',
-          buyerPhone: details.phone,
-        }),
-      });
-
-      if (!payuResponse.ok) {
-        const errorData = await payuResponse.json();
-        throw new Error(errorData.error || 'Failed to initiate payment');
-      }
-
-      const paymentData = await payuResponse.json();
-      const { payuParams, payuUrl } = paymentData;
-
-      setCart([]);
-      setIsBoltsDiscountApplied(false);
+      // 3. Payment integration coming soon
       setCheckoutStatus('idle');
-
-      if (payuUrl.startsWith('/')) {
-        const searchParams = new URLSearchParams(payuParams as any);
-        window.location.href = `${payuUrl}?${searchParams.toString()}`;
-      } else {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = payuUrl;
-        Object.entries(payuParams).forEach(([k, v]) => {
-          const input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = k;
-          input.value = String(v);
-          form.appendChild(input);
-        });
-        document.body.appendChild(form);
-        form.submit();
-      }
-      return;
+      showToast('Order received! Our team will contact you shortly to complete payment.', 'success');
     } catch (err) {
       console.error('Checkout process failed:', err);
       setCheckoutStatus('idle');
       showToast('Checkout failed. Please try again.', 'error');
     }
   }, [cart, cartSummary.total, cartSummary.boltsToDeduct, profile, fetchProfile, isBoltsDiscountApplied, showToast]);
+
 
   return (
     <CartContext.Provider value={{

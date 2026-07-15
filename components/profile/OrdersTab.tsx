@@ -1,4 +1,4 @@
-import { initiatePayUExistingOrderPayment, disputeOrder } from '@/app/actions/orders';
+import { disputeOrder } from '@/app/actions/orders';
 'use client';
 import React from 'react';
 import { User, ShoppingBag, Plus, Trash2, ShoppingCart, RefreshCw, AlertTriangle, CheckCircle2, Package, Play, Camera, Loader2, Upload, MessageSquare, Send, Paperclip, FileText, ExternalLink, CircleDollarSign, X, XCircle, ArrowRight, ArrowLeftRight, Gift, Cpu, IndianRupee, ShieldCheck, Settings, Heart } from 'lucide-react';
@@ -259,7 +259,7 @@ export default function OrdersTab(props: any) {
                       <div className="space-y-2">
                         <div className="flex justify-between border-b border-zinc-800/50 pb-1.5">
                           <span>Payment Mode</span>
-                          <span className="text-white font-bold">PayU Escrow</span>
+                          <span className="text-white font-bold">Secure Escrow</span>
                         </div>
                         <div className="flex justify-between border-b border-zinc-800/50 pb-1.5">
                           <span>Date Placed</span>
@@ -367,44 +367,6 @@ export default function OrdersTab(props: any) {
                           </button>
                         )}
 
-                        {/* Pay Now Button for Pending Payment orders */}
-                        {selectedOrder.status === 'Pending Payment' && (
-                          <button
-                            onClick={async () => {
-                              try {
-                                const res = await initiatePayUExistingOrderPayment(selectedOrder.id);
-                                if (res.success && res.payuParams) {
-                                  const { payuParams, payuUrl } = res;
-                                  if (payuUrl.startsWith('/')) {
-                                    const searchParams = new URLSearchParams(payuParams as any);
-                                    window.location.href = `${payuUrl}?${searchParams.toString()}`;
-                                  } else {
-                                    const form = document.createElement('form');
-                                    form.method = 'POST';
-                                    form.action = payuUrl;
-                                    Object.entries(payuParams).forEach(([k, v]) => {
-                                      const input = document.createElement('input');
-                                      input.type = 'hidden';
-                                      input.name = k;
-                                      input.value = String(v);
-                                      form.appendChild(input);
-                                    });
-                                    document.body.appendChild(form);
-                                    form.submit();
-                                  }
-                                } else {
-                                  showToast(res.error || 'Failed to initiate payment', 'error');
-                                }
-                              } catch (e: any) {
-                                showToast(e.message || 'Payment initiation error', 'error');
-                              }
-                            }}
-                            className="bg-[#A3E635] hover:bg-[#bef264] text-zinc-950 font-bold py-1.5 px-3 rounded-lg text-[10px] uppercase tracking-wider cursor-pointer transition-all shadow"
-                          >
-                            Pay Now (PayU)
-                          </button>
-                        )}
-
                         {/* Dispute / Report Issue Button */}
                         {!selectedOrder.disputed && selectedOrder.status !== 'Completed' && selectedOrder.status !== 'Pending Payment' && (
                           <button
@@ -506,10 +468,10 @@ export default function OrdersTab(props: any) {
                             <div className="text-right">
                               <span className="text-[10px] font-black text-emerald flex items-center gap-1 justify-end uppercase tracking-wider">
                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                Escrow Released (PayU)
+                                Escrow Released
                               </span>
                               <span className="text-[8px] font-mono text-zinc-400 block uppercase tracking-wider">
-                                Nodal Payout Confirmed
+                                Payout Confirmed
                               </span>
                             </div>
                           </div>

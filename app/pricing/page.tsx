@@ -80,7 +80,7 @@ export default function PricingPage() {
                 <span className="font-mono text-sm font-bold text-blue-500">8.0%</span>
               </div>
               <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center justify-between">
-                <span className="text-xs text-zinc-400 font-medium">PayU Digital Escrow Setup</span>
+                <span className="text-xs text-zinc-400 font-medium">Secure Digital Escrow Setup</span>
                 <span className="font-mono text-sm font-bold text-white">Included</span>
               </div>
             </div>
