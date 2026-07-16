@@ -30,6 +30,7 @@ export interface Part {
   };
   imageData?: string;
   imagesData?: string[];
+  sellerName?: string;
 }
 
 // Realistic products catalog

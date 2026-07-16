@@ -1,0 +1,71 @@
+TECHNICAL DATASHEET WORKFLOW: UPLOAD, STORAGE, AND FETCH
+
+================================================================================
+1. UPLOAD WORKFLOW (CLIENT-SIDE)
+================================================================================
+
+When a verified seller creates or edits a technical product listing via the frontend, the upload process proceeds as follows:
+
+* User Interface:
+  - File: components/profile/AddListingModal.tsx (lines 552-582)
+  - The modal provides an upload area supporting drag-and-drop and manual file selection for the Technical Datasheet (PDF).
+
+* Local File Processing:
+  - File: components/profile/AddListingModal.tsx (processFile function, lines 125-139)
+  - When a file is selected or dropped, the browser instantiates a FileReader and reads the file into memory using reader.readAsDataURL(file).
+  - The file is converted into a base64-encoded Data URL (e.g. data:application/pdf;base64,...).
+  - The component state (datasheetFile) is updated with the filename, size, and base64 data URL.
+
+* Submission Payload:
+  - File: components/profile/AddListingModal.tsx (form submission, lines 179-224)
+  - The submit handler constructs a productData payload containing the datasheet_url. If a file was uploaded, datasheet_url is assigned the base64 Data URL.
+  - The component calls the submitProductListing or updateProductListing server action.
+
+
+================================================================================
+2. STORAGE WORKFLOW (DATABASE & SUPABASE)
+================================================================================
+
+The marketplace currently stores and manages technical documents using two structures:
+
+* Database Storage (Inline Base64):
+  - File: schema_and_seed.sql (lines 26, 68) / schema_update.sql
+  - The "products" table contains a column named "datasheet_url" of type TEXT.
+  - The submitProductListing server action (app/actions/rewards.ts, lines 544-589) inserts the product payload directly into the database.
+  - The PDF file is stored inline inside the "datasheet_url" database column as the raw base64 Data URL string.
+
+* Static Hosting & External Links:
+  - For pre-seeded products, "datasheet_url" points to static HTTPS links hosted externally (e.g., https://datasheet.mechitall.io/ACT-NEMA23-CL.pdf).
+
+* Storage Buckets (Pre-configured Backup):
+  - File: supabase/migrations/20260709070000_create_storage_buckets.sql / schema_update.sql
+  - A Supabase Storage bucket named "technical-documents" is provisioned and configured with public read-only access ("Allow public read access for technical-documents"). 
+
+
+================================================================================
+3. FETCH & DOWNLOAD WORKFLOW (CLIENT-SIDE)
+================================================================================
+
+When a customer views a product listing and clicks to retrieve the datasheet:
+
+* Rendering:
+  - File: components/ProductModal.tsx (lines 353-360)
+  - The datasheet is displayed as a download link under the "CAD/Technical Documents" tab of the ProductModal.
+
+* Resolution and Retrieval (handleDocumentClick):
+  - File: components/ProductModal.tsx (lines 58-120)
+  - When the user clicks the download link, handleDocumentClick inspects the "datasheet_url" value and resolves the download using one of three methods:
+
+  1. Data URL (Base64 PDF):
+     - If the URL starts with "data:", the function creates a temporary HTML <a> element in memory.
+     - The "href" is set to the base64 string, the MIME type is evaluated to determine the extension (e.g., pdf), and a clean download filename is assigned.
+     - The link is appended to the DOM, programmatically clicked, and then removed to download the file directly from memory.
+
+  2. Direct HTTP/HTTPS Link:
+     - If the URL starts with "http" or "/", the function bypasses processing and opens the document in a new tab via window.open(url, '_blank').
+
+  3. Supabase Storage:
+     - If the URL is neither a base64 string nor a direct link, it is assumed to be a file path inside the Supabase Storage bucket.
+     - The client calls:
+       const { data } = await supabase.storage.from('technical-documents').download(url);
+     - The retrieved blob data is converted to an object URL (URL.createObjectURL) and downloaded programmatically using a temporary <a> tag, after which the object URL is revoked.

@@ -97,10 +97,11 @@ export default function ProductCard({ part, onViewDetails }: ProductCardProps) {
  
       {/* Body */}
       <div className="p-3 flex flex-col flex-1">
-        <div className="flex justify-between items-start mb-1 gap-1">
+        <div className="flex flex-col mb-1.5">
           <h3 className="font-['Space_Grotesk'] text-[11px] md:text-xs font-semibold text-zinc-100 leading-tight group-hover:text-emerald-400 transition-colors line-clamp-2 flex-1">
             {part.title}
           </h3>
+          <p className="text-[9px] text-zinc-400 mt-0.5 font-semibold">by {part.sellerName || 'MechItAll Official'}</p>
         </div>
         <div className="flex items-center gap-1 mb-2.5">
           <span className="font-['JetBrains_Mono'] text-[7px] text-zinc-500 uppercase tracking-wider font-bold">SKU:</span>

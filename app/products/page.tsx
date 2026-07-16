@@ -33,7 +33,7 @@ export default function ProductsPage() {
     async function loadData() {
       try {
         const supabase = createClient();
-        const { data: productsData } = await supabase.from('products').select('*');
+        const { data: productsData } = await supabase.from('products').select('*, profiles:seller_profile_id(full_name)');
         const mappedParts: Part[] = (productsData || []).map((p: any) => ({
           id: p.id,
           partNumber: p.part_number,
@@ -49,7 +49,8 @@ export default function ProductsPage() {
           cadFile: p.cad_file || '',
           extendedSpecs: p.extended_specs || { dimensions: '', temperatureRange: '', mtbf: '', ingressProtection: '' },
           imageData: p.image_data || undefined,
-          imagesData: p.images_data || []
+          imagesData: p.images_data || [],
+          sellerName: p.profiles?.full_name || undefined
         }));
 
         setParts(mappedParts);

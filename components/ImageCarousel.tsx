@@ -8,6 +8,7 @@ interface ImageCarouselProps {
   currentImageIndex: number;
   setCurrentImageIndex: React.Dispatch<React.SetStateAction<number>>;
   altText?: string;
+  onImageClick?: (index: number) => void;
 }
 
 export default function ImageCarousel({ 
@@ -15,13 +16,17 @@ export default function ImageCarousel({
   title, 
   currentImageIndex, 
   setCurrentImageIndex,
-  altText 
+  altText,
+  onImageClick
 }: ImageCarouselProps) {
   if (images.length === 0) return null;
 
   return (
     <>
-      <div className="absolute inset-0 w-full h-full">
+      <div 
+        className="absolute inset-0 w-full h-full cursor-zoom-in z-10"
+        onClick={() => onImageClick?.(currentImageIndex)}
+      >
         <img 
           src={images[currentImageIndex]} 
           alt={altText || title} 

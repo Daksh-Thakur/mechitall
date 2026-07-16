@@ -21,7 +21,12 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
   const [tab, setTab] = useState<'specs' | 'pricing' | 'cad' | 'reviews'>('specs');
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [fullscreenImageIndex, setFullscreenImageIndex] = useState<number | null>(null);
   const { addToCart, getPartPriceForQuantity, showToast, profile } = useCart();
+
+  const images = part.imagesData && part.imagesData.length > 0 
+    ? part.imagesData 
+    : (part.imageData ? [part.imageData] : []);
 
   // Reviews state
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -181,10 +186,6 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
 
         {/* Left — image carousel or gradient fallback */}
         {(() => {
-          const images = part.imagesData && part.imagesData.length > 0 
-            ? part.imagesData 
-            : (part.imageData ? [part.imageData] : []);
-
           return images.length > 0 ? (
             <div className="h-72 md:h-full w-full md:w-5/12 bg-slate-900 relative flex flex-col justify-between overflow-hidden group p-6 shrink-0">
               {/* Background Image Carousel */}
@@ -193,6 +194,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
                 title={part.title} 
                 currentImageIndex={currentImageIndex} 
                 setCurrentImageIndex={setCurrentImageIndex} 
+                onImageClick={(idx) => setFullscreenImageIndex(idx)}
               />
 
               {/* Category overlay */}
@@ -218,20 +220,6 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
                     ))}
                   </div>
                 )}
-
-                <div className="hidden md:block space-y-1.5 text-left">
-                  <div className="text-[9px] uppercase tracking-wider text-slate-300/80 font-bold font-mono">Lifespan &amp; Thermal</div>
-                  <div className="grid grid-cols-2 gap-2 text-white text-[10px] font-bold font-mono">
-                    <div className="bg-black/60 p-2 rounded backdrop-blur-md border border-white/5">
-                      <span className="block text-[7px] text-slate-300/60 uppercase font-bold">MTBF</span>
-                      {part.extendedSpecs?.mtbf || '50,000 Hours'}
-                    </div>
-                    <div className="bg-black/60 p-2 rounded backdrop-blur-md border border-white/5">
-                      <span className="block text-[7px] text-slate-300/60 uppercase font-bold">Oper Temp</span>
-                      {part.extendedSpecs?.temperatureRange || '-20°C to 80°C'}
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           ) : (
@@ -256,19 +244,6 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
                 <div>
                   <span className="block font-mono text-[9px] text-slate-text-primary/60 tracking-wider font-bold">CAD SOLID LAYER</span>
                   <span className="block text-[10px] text-slate-text-primary/80 font-bold font-mono border-t border-slate-text-primary/20 pt-1 mt-0.5">{part.cadFile}</span>
-                </div>
-              </div>
-              <div className="z-10 hidden md:block space-y-1.5">
-                <div className="text-[9px] uppercase tracking-wider text-slate-text-primary/60 font-bold font-mono">Lifespan &amp; Thermal</div>
-                <div className="grid grid-cols-2 gap-2 text-slate-text-primary text-[10px] font-bold font-mono">
-                  <div className="bg-white/45 p-2 rounded backdrop-blur-md border border-white/10">
-                    <span className="block text-[7px] text-slate-text-primary/60 uppercase font-bold">MTBF</span>
-                    {part.extendedSpecs.mtbf}
-                  </div>
-                  <div className="bg-white/45 p-2 rounded backdrop-blur-md border border-white/10">
-                    <span className="block text-[7px] text-slate-text-primary/60 uppercase font-bold">Oper Temp</span>
-                    {part.extendedSpecs.temperatureRange}
-                  </div>
                 </div>
               </div>
             </div>
@@ -350,14 +325,24 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
               <div className="space-y-4 text-xs font-medium text-[#45464d]">
                 <span className="block text-[9px] font-mono font-bold uppercase tracking-wider text-[#76777d]">Technical Documents</span>
                 <div className="space-y-3">
-                  <a
-                    href={part.datasheetUrl}
-                    onClick={(e) => handleDocumentClick(e, part.datasheetUrl, 'Technical Datasheet')}
-                    className="flex items-center justify-between p-3 border border-[#E4E4E7] rounded hover:border-[#06B6D4] hover:bg-[#F8FAFC] transition-all text-[#0F172A] font-mono font-bold text-xs cursor-pointer group"
-                  >
-                    <span className="flex items-center gap-2"><span className="px-1.5 py-0.5 rounded bg-red-100 text-coral text-[9px]">PDF</span> Technical Datasheet</span>
-                    <Download className="w-3.5 h-3.5 text-[#76777d] group-hover:translate-y-0.5 transition-transform" />
-                  </a>
+                  {(() => {
+                    const isImg = part.datasheetUrl?.startsWith('data:image/') || /\.(png|jpe?g|gif|webp)$/i.test(part.datasheetUrl || '');
+                    const badgeText = isImg ? 'IMAGE' : 'PDF';
+                    const badgeColor = isImg ? 'bg-amber-100 text-amber-700 text-[9px]' : 'bg-red-100 text-coral text-[9px]';
+                    return (
+                      <a
+                        href={part.datasheetUrl}
+                        onClick={(e) => handleDocumentClick(e, part.datasheetUrl, 'Technical Datasheet')}
+                        className="flex items-center justify-between p-3 border border-[#E4E4E7] rounded hover:border-[#06B6D4] hover:bg-[#F8FAFC] transition-all text-[#0F172A] font-mono font-bold text-xs cursor-pointer group"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className={`px-1.5 py-0.5 rounded ${badgeColor}`}>{badgeText}</span>
+                          Technical Datasheet
+                        </span>
+                        <Download className="w-3.5 h-3.5 text-[#76777d] group-hover:translate-y-0.5 transition-transform" />
+                      </a>
+                    );
+                  })()}
                   <a
                     href={`#cad-${part.cadFile}`}
                     onClick={(e) => handleDocumentClick(e, part.cadFile, '3D Solid Model File')}
@@ -503,6 +488,50 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
           </div>
         </div>
       </div>
+
+      {fullscreenImageIndex !== null && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md cursor-zoom-out"
+          onClick={() => setFullscreenImageIndex(null)}
+        >
+          <button 
+            className="absolute top-4 right-4 p-2 text-white/75 hover:text-white hover:bg-white/10 rounded-full border-none outline-none cursor-pointer transition-colors"
+            onClick={(e) => { e.stopPropagation(); setFullscreenImageIndex(null); }}
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {images.length > 1 && (
+            <>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFullscreenImageIndex((prev) => (prev! === 0 ? images.length - 1 : prev! - 1));
+                }}
+                className="absolute left-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-[#06B6D4] hover:scale-105 transition-all text-lg font-bold cursor-pointer border-none outline-none"
+              >
+                &larr;
+              </button>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFullscreenImageIndex((prev) => (prev! === images.length - 1 ? 0 : prev! + 1));
+                }}
+                className="absolute right-6 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-[#06B6D4] hover:scale-105 transition-all text-lg font-bold cursor-pointer border-none outline-none"
+              >
+                &rarr;
+              </button>
+            </>
+          )}
+
+          <img 
+            src={images[fullscreenImageIndex]} 
+            alt={part.title} 
+            className="max-w-[85vw] max-h-[85vh] object-contain rounded-lg shadow-2xl select-none cursor-default transition-all duration-300 ease-out"
+            onClick={(e) => e.stopPropagation()} 
+          />
+        </div>
+      )}
     </div>
   );
 }

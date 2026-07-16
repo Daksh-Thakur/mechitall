@@ -66,7 +66,16 @@ export default function AddListingModal({
       setEnableBulkPricing(Array.isArray(editingProduct.bulk_pricing) && editingProduct.bulk_pricing.length > 0);
       setImagePreviews(editingProduct.images_data || (editingProduct.image_data ? [editingProduct.image_data] : []));
       setImageFileNames(new Array(editingProduct.images_data?.length || (editingProduct.image_data ? 1 : 0)).fill('Product Image'));
-      setDatasheetFile(editingProduct.datasheet_url ? { name: 'Technical Datasheet.pdf', size: 'Unknown Size', dataUrl: editingProduct.datasheet_url } : null);
+      if (editingProduct.datasheet_url) {
+        const isImg = editingProduct.datasheet_url.startsWith('data:image/') || /\.(png|jpe?g|gif|webp)$/i.test(editingProduct.datasheet_url);
+        setDatasheetFile({
+          name: isImg ? 'Technical Datasheet Image' : 'Technical Datasheet.pdf',
+          size: 'Unknown Size',
+          dataUrl: editingProduct.datasheet_url
+        });
+      } else {
+        setDatasheetFile(null);
+      }
       setCadFile(editingProduct.cad_file ? { name: '3D CAD Model.step', size: 'Unknown Size', dataUrl: editingProduct.cad_file } : null);
       
       if (editingProduct.specs) {
@@ -548,10 +557,9 @@ export default function AddListingModal({
                       </div>
                     )}
                   </div>
-
-                  {/* Datasheet Upload Area */}
+                   {/* Datasheet Upload Area */}
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-zinc-500 uppercase">Technical Datasheet (PDF)</label>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase">Technical Datasheet (PDF or Image)</label>
                     <div
                       onDragEnter={(e) => handleDrag(e, 'datasheet')}
                       onDragOver={(e) => handleDrag(e, 'datasheet')}
@@ -561,7 +569,7 @@ export default function AddListingModal({
                     >
                       <input
                         type="file"
-                        accept=".pdf"
+                        accept=".pdf,.png,.jpg,.jpeg,image/*"
                         onChange={(e) => {
                           if (e.target.files && e.target.files[0]) {
                             processFile(e.target.files[0], 'datasheet');
@@ -571,13 +579,13 @@ export default function AddListingModal({
                       />
                       <FileText className="w-4 h-4 text-zinc-500" />
                       <span className="text-[10px] text-zinc-400 font-bold leading-tight">
-                        {datasheetFile ? `Uploaded: ${datasheetFile.name}` : 'Drag & Drop or Click to Upload PDF'}
+                        {datasheetFile ? `Uploaded: ${datasheetFile.name}` : 'Drag & Drop or Click to Upload PDF / Image'}
                       </span>
                     </div>
                     {datasheetFile && (
                       <div className="flex justify-between items-center text-[9px] font-bold uppercase mt-1">
                         <span className="text-emerald">{datasheetFile.size}</span>
-                        <button type="button" onClick={() => setDatasheetFile(null)} className="text-red-500 hover:text-red-700">Remove PDF</button>
+                        <button type="button" onClick={() => setDatasheetFile(null)} className="text-red-500 hover:text-red-700">Remove File</button>
                       </div>
                     )}
                   </div>

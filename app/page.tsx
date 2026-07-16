@@ -66,7 +66,7 @@ export default function Home() {
     async function loadData() {
       try {
         const supabase = createClient();
-        const { data: productsData } = await supabase.from('products').select('*');
+        const { data: productsData } = await supabase.from('products').select('*, profiles:seller_profile_id(full_name)');
         const { data: servicesData } = await supabase.from('services').select('*');
         const { data: machiningData } = await supabase
           .from('machining_services')
@@ -89,7 +89,8 @@ export default function Home() {
           cadFile: p.cad_file || '',
           extendedSpecs: p.extended_specs || { dimensions: '', temperatureRange: '', mtbf: '', ingressProtection: '' },
           imageData: p.image_data || undefined,
-          imagesData: p.images_data || []
+          imagesData: p.images_data || [],
+          sellerName: p.profiles?.full_name || undefined
         }));
 
         setAllParts(mappedParts);
