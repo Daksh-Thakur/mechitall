@@ -126,3 +126,14 @@ CREATE POLICY "Allow public insert transactions" ON public.bolts_transactions FO
 
 DROP POLICY IF EXISTS "Allow public read settings" ON public.rewards_settings;
 CREATE POLICY "Allow public read settings" ON public.rewards_settings FOR SELECT TO anon, authenticated USING (true);
+
+-- 8. Storage Buckets and Policies for technical-documents
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('technical-documents', 'technical-documents', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Allow public read access for technical-documents" ON storage.objects;
+CREATE POLICY "Allow public read access for technical-documents" ON storage.objects
+  FOR SELECT TO anon, authenticated
+  USING (bucket_id = 'technical-documents');
+

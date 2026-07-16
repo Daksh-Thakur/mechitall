@@ -8,6 +8,7 @@ import { getReviews, submitReview, Review } from '@/app/actions/community';
 
 import StarRating from './StarRating';
 import ImageCarousel from './ImageCarousel';
+import { createClient } from '@/utils/supabase/client';
 
 interface ProductModalProps {
   part: Part;
@@ -54,7 +55,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
     onClose();
   };
 
-  const handleDocumentClick = (e: React.MouseEvent, url: string | undefined, type: string) => {
+  const handleDocumentClick = async (e: React.MouseEvent, url: string | undefined, type: string) => {
     e.preventDefault();
     if (!url || url === '#' || url === '') {
       showToast(`${type} is not available currently.`, 'error');
@@ -89,8 +90,32 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
       // Direct Link
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
-      // Otherwise, it might be a mock string or missing prefix
-      showToast(`${type} is not available currently.`, 'error');
+      // It is a filename stored in Supabase Storage!
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase.storage
+          .from('technical-documents')
+          .download(url);
+
+        if (error) {
+          console.error(`Failed to download ${type} from storage:`, error);
+          showToast(`${type} is not available in store currently.`, 'error');
+          return;
+        }
+
+        const blobUrl = window.URL.createObjectURL(data);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+        showToast(`${type} downloaded successfully!`, 'success');
+      } catch (err) {
+        console.error(`Failed to fetch ${type} from storage:`, err);
+        showToast(`Failed to download ${type}.`, 'error');
+      }
     }
   };
 
@@ -152,7 +177,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="bg-white border border-[#E4E4E7] rounded-2xl w-full max-w-3xl shadow-2xl relative z-10 flex flex-col md:flex-row h-[85vh] md:h-[580px] overflow-y-auto md:overflow-hidden no-scrollbar animate-slide-in">
+      <div className="bg-white border border-[#E4E4E7] rounded-2xl w-full max-w-3xl shadow-2xl relative z-10 flex flex-col md:flex-row h-[85vh] md:h-[580px] overflow-hidden no-scrollbar animate-slide-in">
 
         {/* Left — image carousel or gradient fallback */}
         {(() => {
@@ -161,7 +186,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
             : (part.imageData ? [part.imageData] : []);
 
           return images.length > 0 ? (
-            <div className="md:w-5/12 bg-slate-900 relative flex flex-col justify-between overflow-hidden group p-6 shrink-0">
+            <div className="h-72 md:h-full w-full md:w-5/12 bg-slate-900 relative flex flex-col justify-between overflow-hidden group p-6 shrink-0">
               {/* Background Image Carousel */}
               <ImageCarousel 
                 images={images} 
@@ -194,7 +219,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
                   </div>
                 )}
 
-                <div className="space-y-1.5 text-left">
+                <div className="hidden md:block space-y-1.5 text-left">
                   <div className="text-[9px] uppercase tracking-wider text-slate-300/80 font-bold font-mono">Lifespan &amp; Thermal</div>
                   <div className="grid grid-cols-2 gap-2 text-white text-[10px] font-bold font-mono">
                     <div className="bg-black/60 p-2 rounded backdrop-blur-md border border-white/5">
@@ -210,7 +235,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
               </div>
             </div>
           ) : (
-            <div className={`md:w-5/12 bg-gradient-to-br ${part.gradientClass} p-6 flex flex-col justify-between relative overflow-hidden shrink-0`}>
+            <div className={`h-72 md:h-full w-full md:w-5/12 bg-gradient-to-br ${part.gradientClass} p-6 flex flex-col justify-between relative overflow-hidden shrink-0`}>
               <div 
                 className="absolute inset-0 opacity-15 pointer-events-none" 
                 style={{
@@ -226,14 +251,14 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
                   {part.extendedSpecs.ingressProtection}
                 </span>
               </div>
-              <div className="z-10 flex flex-col items-center justify-center py-6 text-center space-y-3">
+              <div className="z-10 flex-1 flex flex-col items-center justify-center py-6 text-center space-y-3">
                 <CategoryIcon className="w-16 h-16 text-slate-text-primary/20 animate-pulse" />
                 <div>
                   <span className="block font-mono text-[9px] text-slate-text-primary/60 tracking-wider font-bold">CAD SOLID LAYER</span>
                   <span className="block text-[10px] text-slate-text-primary/80 font-bold font-mono border-t border-slate-text-primary/20 pt-1 mt-0.5">{part.cadFile}</span>
                 </div>
               </div>
-              <div className="z-10 space-y-1.5">
+              <div className="z-10 hidden md:block space-y-1.5">
                 <div className="text-[9px] uppercase tracking-wider text-slate-text-primary/60 font-bold font-mono">Lifespan &amp; Thermal</div>
                 <div className="grid grid-cols-2 gap-2 text-slate-text-primary text-[10px] font-bold font-mono">
                   <div className="bg-white/45 p-2 rounded backdrop-blur-md border border-white/10">
@@ -251,7 +276,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
         })()}
 
         {/* Right — tabs + actions */}
-        <div className="md:w-7/12 flex flex-col justify-between bg-white">
+        <div className="w-full md:w-7/12 flex flex-col justify-between bg-white flex-1 min-h-0 overflow-hidden">
           <div className="p-6 pb-2 space-y-4">
             <div className="flex justify-between items-start gap-4">
               <div className="space-y-0.5">
@@ -335,7 +360,7 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
                   </a>
                   <a
                     href={`#cad-${part.cadFile}`}
-                    onClick={(e) => handleDocumentClick(e, part.cadFile?.startsWith('http') ? part.cadFile : undefined, '3D Solid Model File')}
+                    onClick={(e) => handleDocumentClick(e, part.cadFile, '3D Solid Model File')}
                     className="flex items-center justify-between p-3 border border-[#E4E4E7] rounded hover:border-[#06B6D4] hover:bg-[#F8FAFC] transition-all text-[#0F172A] font-mono font-bold text-xs cursor-pointer group"
                   >
                     <span className="flex items-center gap-2"><span className="px-1.5 py-0.5 rounded bg-blue-100 text-cobalt text-[9px]">STEP</span> 3D Solid Model File</span>
@@ -470,8 +495,9 @@ export default function ProductModal({ part, onClose }: ProductModalProps) {
                   <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <button onClick={handleAdd} className="bg-[#0F172A] hover:bg-[#06B6D4] text-white text-xs font-mono font-bold uppercase tracking-wider px-5 py-2.5 rounded cursor-pointer flex items-center gap-1.5 h-9 transition-colors shadow">
-                <ShoppingCart className="w-4 h-4" /> Add to Cart
+              <button onClick={handleAdd} className="bg-[#0F172A] hover:bg-[#06B6D4] text-white text-xs font-mono font-bold uppercase tracking-wider px-3 md:px-5 py-2.5 rounded cursor-pointer flex items-center justify-center gap-1.5 h-9 transition-colors shadow">
+                <ShoppingCart className="w-4 h-4" />
+                <span className="hidden md:inline">Add to Cart</span>
               </button>
             </div>
           </div>
