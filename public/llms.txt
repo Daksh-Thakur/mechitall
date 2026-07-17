@@ -8,7 +8,7 @@ MechItAll uses a dual-listing architecture to handle components and custom order
 
 1. **Standard Catalog (Off-The-Shelf)**
    - Includes Hybrid Stepper Motors, Linear Actuators, Distance Sensors, STM32 Controller Boards, Brushless ESCs, and Planetary Gearboxes.
-   - Sourcing Policies: No Minimum Order Quantity (MOQ). Same-day dispatch for catalog orders placed before 14:00 IST.
+   - Sourcing Policies: No Minimum Order Quantity (MOQ). Catalog orders are typically dispatched within 24-48 hours.
    - Route URL: `/products`
 
 2. **Custom Machining Hub (On-Demand RFQs)**

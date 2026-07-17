@@ -670,7 +670,59 @@ export default function ProfilePage() {
   const isMasterBuilder = profile.loyalty_tier === 'Master Builder';
   const boltsProgressPercent = Math.min(100, (profile.wallet_balance / 500) * 100);
 
-  const tabProps = { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, cadFile, checkUnreadChats, customSpecs, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleProfilePhotoUpload, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasTimedOut, imageFileNames, imagePreviews, isGuest, isPending, isUpdatingName, isUpdatingPhoto, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, openAddListingModal, handleEditProduct, handleEditService, orders, processFile, profile, publishingListing, router, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, startTransition, startTransitionStatus, supabase, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updatingOrderId, uploadingOrderId, wishlist, boltsProgressPercent, isMasterBuilder };
+  // Calculate buyer tier details based on total units bought
+  const totalUnitsBought = (orders || [])
+    .filter((o: any) => o.status !== 'Cancelled' && o.status !== 'Rejected' && o.status !== 'Pending Payment')
+    .reduce((sum: number, o: any) => sum + (o.items_count || 1), 0);
+
+  let buyerTier = 'Apprentice Builder';
+  let buyerProgress = 0;
+  let nextBuyerTierGoal = 10;
+  let nextBuyerTier = 'Pro Builder';
+  let buyerBadgeColor = 'bg-zinc-800/80 text-zinc-300 border-zinc-700/60';
+  let buyerBadgeText = '🌱 Apprentice Builder';
+
+  if (totalUnitsBought >= 100) {
+    buyerTier = 'Apex Engineer';
+    buyerBadgeColor = 'bg-rose-500/10 text-rose-400 border-rose-500/25';
+    buyerBadgeText = '👑 Apex Engineer';
+    buyerProgress = 100;
+    nextBuyerTierGoal = 100;
+    nextBuyerTier = 'Max Level';
+  } else if (totalUnitsBought >= 50) {
+    buyerTier = 'Master Builder';
+    buyerBadgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/25';
+    buyerBadgeText = '⭐ Master Builder';
+    buyerProgress = Math.round(((totalUnitsBought - 50) / 50) * 100);
+    nextBuyerTierGoal = 100;
+    nextBuyerTier = 'Apex Engineer';
+  } else if (totalUnitsBought >= 10) {
+    buyerTier = 'Pro Builder';
+    buyerBadgeColor = 'bg-indigo-500/10 text-indigo-400 border-indigo-500/25';
+    buyerBadgeText = '⚡ Pro Builder';
+    buyerProgress = Math.round(((totalUnitsBought - 10) / 40) * 100);
+    nextBuyerTierGoal = 50;
+    nextBuyerTier = 'Master Builder';
+  } else {
+    buyerTier = 'Apprentice Builder';
+    buyerBadgeColor = 'bg-zinc-800/80 text-zinc-300 border-zinc-700/60';
+    buyerBadgeText = '🌱 Apprentice Builder';
+    buyerProgress = Math.round((totalUnitsBought / 10) * 100);
+    nextBuyerTierGoal = 10;
+    nextBuyerTier = 'Pro Builder';
+  }
+
+  const buyerData = {
+    totalUnitsBought,
+    buyerTier,
+    buyerProgress,
+    nextBuyerTierGoal,
+    nextBuyerTier,
+    buyerBadgeColor,
+    buyerBadgeText
+  };
+
+  const tabProps = { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, cadFile, checkUnreadChats, customSpecs, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleProfilePhotoUpload, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasTimedOut, imageFileNames, imagePreviews, isGuest, isPending, isUpdatingName, isUpdatingPhoto, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, openAddListingModal, handleEditProduct, handleEditService, orders, processFile, profile, publishingListing, router, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, startTransition, startTransitionStatus, supabase, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updatingOrderId, uploadingOrderId, wishlist, boltsProgressPercent, isMasterBuilder, buyerData };
   return (
     <div className="flex flex-col min-h-screen bg-zinc-900 font-sans">
       <Navbar />
@@ -850,9 +902,14 @@ export default function ProfilePage() {
                 <div>
                   <h3 className="text-sm font-bold text-white tracking-tight truncate font-['Space_Grotesk']">Hello, {profile.full_name.split(' ')[0]}</h3>
                   <div className="flex flex-col items-center gap-1 mt-1.5">
-                    <span className="inline-block text-[8px] font-mono uppercase tracking-wider font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded">
-                      {profile.loyalty_tier}
-                    </span>
+                    <div className="flex items-center gap-1.5 flex-wrap justify-center">
+                      <span className="inline-block text-[8px] font-mono uppercase tracking-wider font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20 px-2 py-0.5 rounded">
+                        {profile.loyalty_tier}
+                      </span>
+                      <span className={`inline-block text-[8px] font-mono uppercase tracking-wider font-bold px-2 py-0.5 rounded border ${buyerData.buyerBadgeColor}`}>
+                        {buyerData.buyerBadgeText}
+                      </span>
+                    </div>
                     {profile.is_verified_buyer && (
                       <span className="inline-flex items-center gap-1 text-[8px] font-mono uppercase tracking-wider font-bold bg-emerald/10 text-emerald border border-emerald-500/20 px-2 py-0.5 rounded">
                         <ShieldCheck className="w-2.5 h-2.5" /> Verified Buyer

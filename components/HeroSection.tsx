@@ -222,6 +222,7 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
             </Link>
           </div>
 
+          {/* 
           <div className="border-t border-zinc-800 pt-8 grid grid-cols-3 gap-8">
             <div>
               <span className="block text-2xl md:text-3xl font-bold text-blue-400 font-mono">2 - 4 Days</span>
@@ -236,6 +237,7 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
               <span className="block text-[9px] uppercase tracking-wider text-zinc-500 font-bold font-mono mt-0.5">Parts in Stock</span>
             </div>
           </div>
+          */}
         </div>
 
         <div className="w-full md:w-[460px] z-10 shrink-0 select-none">

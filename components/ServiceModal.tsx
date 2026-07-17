@@ -149,7 +149,7 @@ export default function ServiceModal({ service, onClose }: ServiceModalProps) {
 
                 <div className="bg-black/60 border border-white/10 p-3 rounded-lg backdrop-blur-md text-[10px] font-bold text-white flex items-start gap-2">
                   <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-500" />
-                  <span>ISO 9001:2015 &amp; AS9100D manufacturing facilities verified.</span>
+                  <span>Verified quality and manufacturing capabilities.</span>
                 </div>
               </div>
             </div>
@@ -183,7 +183,7 @@ export default function ServiceModal({ service, onClose }: ServiceModalProps) {
               
               <div className="z-10 bg-white/40 border border-white/20 p-3 rounded-lg backdrop-blur-md text-[10px] font-bold text-white flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-600" />
-                <span>ISO 9001:2015 &amp; AS9100D manufacturing facilities verified.</span>
+                <span>Verified quality and manufacturing capabilities.</span>
               </div>
             </div>
           );

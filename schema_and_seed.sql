@@ -215,7 +215,7 @@ INSERT INTO public.services (title, category, description, base_price, lead_time
   'High-precision subtraction manufacturing on 3-axis and 5-axis CNC machining centers. Suitable for metals and engineered plastics.',
   150.00,
   '10 business days (Standard)',
-  '["ISO 9001 certified facilities", "Precision tolerances up to +/- 0.005mm", "Anodizing and bead blasting post-processing", "Supports over 30 metals and plastics"]',
+  '["Verified fabrication facilities", "Precision tolerances up to +/- 0.005mm", "Anodizing and bead blasting post-processing", "Supports over 30 metals and plastics"]',
   'from-cobalt/20 to-cobalt/5 border-cobalt/20'
 ),
 (

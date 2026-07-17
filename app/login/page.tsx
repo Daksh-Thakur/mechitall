@@ -117,8 +117,8 @@ export default function LoginPage() {
             <div className="space-y-3 font-sans">
               {[
                 { icon: BoltIcon, color: 'text-amber-500', label: '25 Bolts welcome bonus on sign-up' },
-                { icon: Package, color: 'text-emerald-400', label: 'Same-day dispatch, no minimum order' },
-                { icon: ShieldCheck, color: 'text-emerald-400', label: 'ISO 9001:2015 quality verified parts' },
+                { icon: Package, color: 'text-emerald-400', label: 'Fast order dispatch, no minimum order' },
+                { icon: ShieldCheck, color: 'text-emerald-400', label: 'Quality verified parts and sellers' },
               ].map(({ icon: Icon, color, label }) => (
                 <div key={label} className="flex items-center gap-3">
                   <div className="w-7 h-7 rounded-lg bg-zinc-850 flex items-center justify-center shrink-0 border border-zinc-750 shadow-inner">

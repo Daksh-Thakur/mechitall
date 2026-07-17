@@ -138,7 +138,7 @@ export default function Home() {
                 Why MechItAll?
               </span>
               <h2 className="text-3xl font-bold text-white tracking-tight font-['Space_Grotesk'] mt-2">Engineered for Reliability</h2>
-              <p className="text-xs text-zinc-400 max-w-lg mx-auto font-medium">We solve mechatronic sourcing fragmentation by offering verified hardware and rapid local manufacturing.</p>
+              <p className="text-xs text-zinc-400 max-w-lg mx-auto font-medium">We solve mechatronic sourcing fragmentation by connecting you with verified hardware sellers and rapid local manufacturing partners.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -155,28 +155,28 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Instant 3D File Estimations */}
+              {/* Verified RFQ Quotations */}
               <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded-2xl space-y-4 hover:border-blue-500/40 transition-all duration-300">
                 <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
                   <FileUp className="w-5 h-5" />
                 </div>
                 <div className="space-y-1.5">
-                  <h3 className="text-base font-bold text-white font-['Space_Grotesk']">Instant 3D File Estimations</h3>
+                  <h3 className="text-base font-bold text-white font-['Space_Grotesk']">Verified RFQ Quotations</h3>
                   <p className="text-xs text-zinc-400 leading-relaxed font-sans font-medium">
-                    Upload your STEP, STL, or PDF files. Our manufacturing partners parse your CAD model to return instant cost estimations and lead times.
+                    Upload your STEP, STL, or PDF files. Our manufacturing partners parse your CAD model to return verified cost estimations and custom lead times.
                   </p>
                 </div>
               </div>
 
-              {/* Same-Day Dispatch */}
+              {/* Fast Order Dispatch */}
               <div className="bg-zinc-800 border border-zinc-700/60 p-6 rounded-2xl space-y-4 hover:border-emerald-400/40 transition-all duration-300">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400">
                   <Clock className="w-5 h-5" />
                 </div>
                 <div className="space-y-1.5">
-                  <h3 className="text-base font-bold text-white font-['Space_Grotesk']">Same-Day Dispatch</h3>
+                  <h3 className="text-base font-bold text-white font-['Space_Grotesk']">Fast Order Dispatch</h3>
                   <p className="text-xs text-zinc-400 leading-relaxed font-sans font-medium">
-                    Catalog components ordered before <span className="font-mono text-emerald-400">14:00 IST</span> are dispatched same-day. Express logistics across pan-India routes.
+                    Catalog components are typically dispatched within <span className="font-mono text-emerald-400">24-48 hours</span>. Express logistics across pan-India routes.
                   </p>
                 </div>
               </div>
@@ -198,7 +198,7 @@ export default function Home() {
                 Democratizing Precision Engineering
               </h2>
               <p className="text-xs text-zinc-400 max-w-2xl mx-auto font-medium leading-relaxed">
-                At MechItAll, our purpose is simple: to bridge the gap between complex engineering dreams and physical reality. We empower makers, robotics labs, and industrial designers by providing transparent sourcing, instant custom quotes, and quality components without minimum order bounds.
+                At MechItAll, our purpose is simple: to bridge the gap between complex engineering dreams and physical reality. We empower makers, robotics labs, and industrial designers by providing transparent sourcing channels, custom quotes, and access to quality components from verified sellers without minimum order bounds.
               </p>
             </div>
 
@@ -213,7 +213,7 @@ export default function Home() {
                 {
                   icon: <Settings className="w-6 h-6 text-emerald-400" />,
                   title: "No-Barrier Custom Machining",
-                  description: "From a single prototype mounting plate to full batches of autonomous robot casings, we make industrial CNC milling, sheet metal fabrication, and 3D printing accessible instantly."
+                  description: "From a single prototype mounting plate to full batches of autonomous robot casings, we connect you with industrial CNC milling, sheet metal fabrication, and 3D printing services instantly."
                 },
                 {
                   icon: <Zap className="w-6 h-6 text-amber-400" />,
@@ -241,7 +241,7 @@ export default function Home() {
                 E-Commerce Catalog
               </span>
               <h2 className="text-3xl font-bold text-white tracking-tight font-['Space_Grotesk'] mt-2">Featured Products</h2>
-              <p className="text-xs text-zinc-400 font-medium">A curated selection of our in-stock mechatronics parts — refreshed every visit.</p>
+              <p className="text-xs text-zinc-400 font-medium">A curated selection of in-stock mechatronics parts listed by verified sellers — refreshed every visit.</p>
             </div>
             <div className="flex items-center gap-3">
               <button
@@ -291,7 +291,7 @@ export default function Home() {
               href="/products"
               className="inline-flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors group font-['JetBrains_Mono'] uppercase tracking-wider"
             >
-              Explore all {allParts.length > 0 ? `${allParts.length}+` : ''} parts in our catalog
+              Explore all {allParts.length > 0 ? `${allParts.length}+` : ''} parts in the catalog
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>

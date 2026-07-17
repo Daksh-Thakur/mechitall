@@ -32,7 +32,7 @@ export default function AboutPage() {
             </div>
             <h2 className="text-xl font-bold text-white font-['Space_Grotesk']">Our Mission</h2>
             <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-              To empower the DIY robotics community, hobbyists, and professional hardware developers by providing instant, unified access to high-fidelity mechatronics. We aim to eradicate sourcing delays, eliminate order minimums, and guarantee part specs with every single transaction.
+              To empower the DIY robotics community, hobbyists, and professional hardware developers by providing instant, unified access to high-fidelity mechatronics. The platform aims to eradicate sourcing delays, eliminate order minimums, and ensure verified part specifications with every single transaction.
             </p>
           </div>
 
@@ -59,8 +59,8 @@ export default function AboutPage() {
               <span className="block text-[9px] uppercase tracking-wider text-zinc-500 font-bold font-mono">CAD Estimations</span>
             </div>
             <div className="space-y-1">
-              <span className="block text-3xl md:text-4xl font-extrabold text-emerald-400 font-mono">ISO 9001</span>
-              <span className="block text-[9px] uppercase tracking-wider text-zinc-500 font-bold font-mono">Quality Standard</span>
+              <span className="block text-3xl md:text-4xl font-extrabold text-emerald-400 font-mono">100%</span>
+              <span className="block text-[9px] uppercase tracking-wider text-zinc-500 font-bold font-mono">Escrow Protected</span>
             </div>
             <div className="space-y-1">
               <span className="block text-3xl md:text-4xl font-extrabold text-blue-500 font-mono">0 Min</span>

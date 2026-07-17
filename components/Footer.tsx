@@ -13,7 +13,7 @@ export default function Footer() {
   return (
     <footer className="relative bg-[#090F1C] text-zinc-100 mt-20 border-t border-[#E4E4E7]/10 overflow-hidden">
       {/* Blueprint Grid Overlay */}
-      <div 
+      <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
           backgroundImage: 'linear-gradient(to right, rgba(6,182,212,0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(6,182,212,0.5) 1px, transparent 1px)',
@@ -26,13 +26,13 @@ export default function Footer() {
 
       <div className="relative max-w-7xl mx-auto px-6 py-12 z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-          
+
           {/* Brand Info */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <img 
-                src="/logo.png" 
-                alt="MechItAll Logo" 
+              <img
+                src="/logo.png"
+                alt="MechItAll Logo"
                 className="w-9 h-9 object-contain rounded group-hover:scale-105 transition-transform duration-200"
               />
               <div>
@@ -47,12 +47,12 @@ export default function Footer() {
               </div>
             </Link>
             <p className="text-xs text-zinc-400 leading-relaxed font-sans">
-              Precision mechatronics platform supply chains. Connecting designers, builders, and precision machining shops.
+              Connecting designers, builders, and precision machining shops.
             </p>
             <div className="space-y-1.5 font-mono text-[9px] uppercase font-bold text-zinc-400 tracking-wider">
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-cobalt" />
-                <span>ISO 9001:2015 Certified</span>
+                <span>Verified Sourcing Network</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald" />
@@ -108,7 +108,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/contact" className="hover:text-white transition-colors flex items-center gap-1">
-                  <span>&gt;</span> Contact
+                  <span>&gt;</span> Contact Us
                 </Link>
               </li>
               <li>
@@ -193,7 +193,7 @@ export default function Footer() {
 
         <div className="border-t border-white/10 mt-10 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] text-zinc-500 font-mono uppercase tracking-wider">
           <span>
-            © 2026 Daksh Thakur. All rights reserved.
+            © 2026 MechItAll. All rights reserved.
           </span>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/policies/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>

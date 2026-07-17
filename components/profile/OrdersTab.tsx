@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
 export default function OrdersTab(props: any) {
-    const { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, base64String, boltsProgressPercent, cadFile, channel, checkUnreadChats, customSpecs, data, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, file, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasNewMsg, hasNewStatus, hasTimedOut, imageFileNames, imagePreviews, isActive, isGuest, isMasterBuilder, isPending, isUpdatingName, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, mapped, msg, nextState, openAddListingModal, orderId, orders, params, paymentStatus, processFile, profile, publishingListing, reader, reason, res, response, router, sOrders, seen, seenChats, seenChatsStr, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, sizeStr, startTransition, startTransitionStatus, storedProds, storedServs, supabase, tabParam, timer, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updated, updatingOrderId, uploadingOrderId, wishlist } = props;
+    const { activeChatRfqId, activeShipmentsCount, activeTab, addToCart, base64String, boltsProgressPercent, cadFile, channel, checkUnreadChats, customSpecs, data, datasheetFile, dbProducts, deletingCatalogServiceId, deletingProductId, deletingServiceId, dragActiveCad, dragActiveDatasheet, dragActiveImage, editName, enableBulkPricing, fetchOrders, fetchProfile, fetchSellerData, file, handleDeleteCapability, handleDeleteProduct, handleDeleteService, handleDrag, handleDrop, handlePhotoUploadAndClaim, handleSimulateStatus, handleToggleSellerMode, handleUpdateNameSubmit, handleUpdateOrderStatus, hasNewMsg, hasNewStatus, hasTimedOut, imageFileNames, imagePreviews, isActive, isGuest, isMasterBuilder, isPending, isUpdatingName, listingType, loadingOrders, loadingSeller, loadingSellerOrders, loadingTx, localProducts, localServices, mapped, msg, nextState, openAddListingModal, orderId, orders, params, paymentStatus, processFile, profile, publishingListing, reader, reason, res, response, router, sOrders, seen, seenChats, seenChatsStr, selectedCategory, selectedOrder, selectedProcessType, sellerData, sellerOrders, setActiveChatRfqId, setActiveTab, setCadFile, setCustomSpecs, setDatasheetFile, setDbProducts, setDeletingCatalogServiceId, setDeletingProductId, setDeletingServiceId, setDragActiveCad, setDragActiveDatasheet, setDragActiveImage, setEditName, setEnableBulkPricing, setHasTimedOut, setImageFileNames, setImagePreviews, setIsGuest, setListingType, setLoadingOrders, setLoadingSeller, setLoadingSellerOrders, setLoadingTx, setLocalProducts, setLocalServices, setOrders, setPublishingListing, setSelectedCategory, setSelectedOrder, setSelectedProcessType, setSellerData, setSellerOrders, setShowAddListingModal, setShowKYCModal, setTogglingSeller, setTransactions, setUnreadChatsCount, setUpdatingOrderId, setUploadingOrderId, showAddListingModal, showKYCModal, showToast, sizeStr, startTransition, startTransitionStatus, storedProds, storedServs, supabase, tabParam, timer, toggleWishlist, togglingSeller, transactions, unreadChatsCount, updated, updatingOrderId, uploadingOrderId, wishlist, buyerData } = props;
   return (
     <>
       {/* Replace props with actual destructured props below */}
@@ -67,6 +67,61 @@ export default function OrdersTab(props: any) {
             </div>
           </div>
         </div>
+
+        {/* Buyer Level & Progress Banner */}
+        {buyerData && typeof buyerData.totalUnitsBought === 'number' && (
+          <div className="bg-gradient-to-r from-[#0F172A] to-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-zinc-950/60 border border-zinc-700/60 flex items-center justify-center text-xl shadow-inner shrink-0">
+                {buyerData.buyerTier === 'Apprentice Builder' && '🌱'}
+                {buyerData.buyerTier === 'Pro Builder' && '⚡'}
+                {buyerData.buyerTier === 'Master Builder' && '⭐'}
+                {buyerData.buyerTier === 'Apex Engineer' && '👑'}
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className={`text-[9px] font-black px-2 py-0.5 rounded border uppercase tracking-wider ${buyerData.buyerBadgeColor}`}>
+                    {buyerData.buyerBadgeText}
+                  </span>
+                </div>
+                <p className="text-[10px] text-zinc-400 font-semibold font-sans">
+                  Total Products Procured: <span className="text-white font-black font-mono">{buyerData.totalUnitsBought}</span> units
+                </p>
+              </div>
+            </div>
+
+            <div className="w-full md:w-5/12 space-y-1.5">
+              <div className="flex justify-between text-[8px] font-black uppercase tracking-wider text-slate-500 font-mono">
+                <span>Progress to {buyerData.nextBuyerTier}</span>
+                <span>{buyerData.buyerTier === 'Apex Engineer' ? 'MAX LEVEL' : `${buyerData.totalUnitsBought} / ${buyerData.nextBuyerTierGoal} bought`}</span>
+              </div>
+              <div className="w-full bg-zinc-950 border border-zinc-800 h-2.5 rounded-full overflow-hidden shadow-inner relative">
+                <div
+                  className="h-full rounded-full transition-all duration-700 relative overflow-hidden"
+                  style={{
+                    width: `${buyerData.buyerProgress}%`,
+                    background:
+                      buyerData.buyerTier === 'Apex Engineer'
+                        ? 'linear-gradient(90deg, #f43f5e, #fb923c, #fbbf24)'
+                        : buyerData.buyerTier === 'Master Builder'
+                        ? 'linear-gradient(90deg, #f59e0b, #fde68a, #f59e0b)'
+                        : buyerData.buyerTier === 'Pro Builder'
+                        ? 'linear-gradient(90deg, #6366f1, #818cf8, #00D0F5)'
+                        : 'linear-gradient(90deg, #00D0F5, #34d399)',
+                  }}
+                >
+                  {/* shimmer sweep */}
+                  <span
+                    className="absolute inset-0 opacity-40 animate-shimmer"
+                    style={{
+                      backgroundImage: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                    }}
+                  ></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
               {/* Recent Purchases List */}
               <div className="space-y-3">

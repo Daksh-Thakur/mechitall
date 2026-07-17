@@ -496,12 +496,7 @@ export default function QuotationChatsTab({
                 {profile.is_seller && threadOrder && (
                   <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5">
                     <span className="text-[8px] font-black uppercase text-zinc-500 tracking-wider">Status:</span>
-                    <select value={threadOrder.status} disabled={updatingThreadOrderStatus} onChange={e => handleUpdateThreadOrderStatus(e.target.value as any)} className="bg-transparent border-none text-[10px] font-black text-white outline-none cursor-pointer focus:ring-0 p-0">
-                      <option value="Processing" className="bg-zinc-900">Processing</option>
-                      <option value="Shipped" className="bg-zinc-900">Shipped</option>
-                      <option value="Delivered" className="bg-zinc-900">Delivered</option>
-                      <option value="Completed" className="bg-zinc-900">Completed</option>
-                    </select>
+                    <span className="text-[10px] font-black text-white font-mono uppercase tracking-wider">{threadOrder.status}</span>
                   </div>
                 )}
                 {activeThread.status !== 'REJECTED' && (

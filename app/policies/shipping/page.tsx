@@ -12,7 +12,7 @@ export default function ShippingPolicyPage() {
           <div className="space-y-6 text-sm text-zinc-300 leading-relaxed">
             <h2 className="text-xl font-semibold text-white">1. Off-the-Shelf Parts</h2>
             <p>
-              Standard off-the-shelf components are typically dispatched from our fulfillment centers within <strong className="font-mono text-white">24-48 hours</strong> of order confirmation.
+              Standard off-the-shelf components are typically dispatched by the sellers within <strong className="font-mono text-white">24-48 hours</strong> of order confirmation.
             </p>
             <h2 className="text-xl font-semibold text-white">2. Custom Machined Parts</h2>
             <p>

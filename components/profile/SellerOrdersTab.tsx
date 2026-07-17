@@ -176,23 +176,6 @@ export default function SellerOrdersTab(props: any) {
                   </div>
 
                   <div className="flex items-center gap-4 shrink-0">
-                    {nextStatus && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent modal from opening
-                          handleUpdateOrderStatus(order.id, nextStatus as any);
-                        }}
-                        disabled={isUpdating}
-                        className="bg-[#0f172a] hover:bg-[#06b6d4] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-colors shadow flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      >
-                        {isUpdating ? (
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                        )}
-                        <span>Mark as {nextStatus}</span>
-                      </button>
-                    )}
 
                     {order.status === 'Completed' && (
                       <div className="flex items-center gap-1.5 text-emerald font-bold text-xs">
@@ -343,36 +326,6 @@ export default function SellerOrdersTab(props: any) {
                 )}
               </div>
               <div className="flex gap-3">
-                {(() => {
-                  const nextStatusMap = {
-                    'Pending Payment': 'Processing',
-                    'Processing': 'Shipped',
-                    'Shipped': 'Delivered',
-                    'Delivered': 'Completed',
-                    'Completed': null
-                  };
-                  const nextStatus = nextStatusMap[selectedOrderDetails.status as keyof typeof nextStatusMap];
-                  const isUpdating = updatingOrderId === selectedOrderDetails.id;
-                  
-                  if (!nextStatus) return null;
-                  return (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleUpdateOrderStatus(selectedOrderDetails.id, nextStatus as any);
-                      }}
-                      disabled={isUpdating}
-                      className="bg-cobalt hover:bg-[#06b6d4] text-white text-xs font-mono font-bold uppercase tracking-wider px-4 py-2.5 rounded transition-all shadow flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                    >
-                      {isUpdating ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                      )}
-                      <span>Mark as {nextStatus}</span>
-                    </button>
-                  );
-                })()}
                 <button
                   onClick={() => setActiveOrderId(null)}
                   className="border border-zinc-700/60 hover:bg-zinc-900 text-zinc-400 hover:text-white px-4 py-2.5 rounded text-xs font-mono font-bold uppercase tracking-wider transition-all cursor-pointer"

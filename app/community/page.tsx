@@ -527,9 +527,7 @@ export default function CommunityPage() {
                     <Star className="w-3 h-3" /> Write Review
                   </button>
                 )}
-                <span className="px-2 py-1 bg-zinc-800 text-emerald-400 border border-zinc-700/60 text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider flex items-center gap-1 select-none font-bold rounded">
-                  ✓ 2,400+ Makers
-                </span>
+
               </div>
             </div>
           </div>

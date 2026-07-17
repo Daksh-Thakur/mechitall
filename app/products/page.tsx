@@ -216,7 +216,7 @@ export default function ProductsPage() {
                 </p>
               </div>
               <span className="px-2 py-1 bg-emerald-400 text-zinc-950 text-[8px] font-['JetBrains_Mono'] uppercase tracking-wider flex items-center gap-1 font-bold rounded">
-                ✓ ISO 9001:2015
+                ✓ Quality Sourced
               </span>
             </div>
           </div>
