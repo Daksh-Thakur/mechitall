@@ -1073,7 +1073,7 @@ export async function getSellerOrders(sellerProfileId: string) {
     ...o,
     buyer_name: o.profiles?.full_name || 'Guest Buyer',
     buyer_email: o.profiles?.email || '',
-    buyer_address: o.profiles?.business_address || '12, Industrial Development Block C, Peenya Phase 1, Bangalore, Karnataka - 560508',
+    buyer_address: o.profiles?.business_address || '',
     items: o.order_items || [],
   }));
 }

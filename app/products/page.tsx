@@ -123,17 +123,8 @@ export default function ProductsPage() {
       <Navbar />
 
       {/* ─── MOBILE TOP BAR ─── */}
-      <div className="md:hidden sticky top-0 z-40 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 h-14">
+      <div className="md:hidden sticky top-0 z-40 bg-zinc-900 border-b border-zinc-800 flex items-center justify-center px-4 h-14">
         <h1 className="font-['Space_Grotesk'] text-base font-bold text-white">Parts Catalog</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowFilterDrawer(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-700/60 bg-zinc-800 text-[11px] font-mono font-bold uppercase tracking-wider hover:bg-zinc-700 text-zinc-100 transition-colors cursor-pointer"
-          >
-            <SlidersVertical className="w-3.5 h-3.5" />
-            Filter
-          </button>
-        </div>
       </div>
 
       <div className="flex flex-1 w-full max-w-[1280px] mx-auto">

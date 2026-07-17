@@ -57,7 +57,6 @@ export function OrganizationSchema({
     sameAs,
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+91-120-490-8800',
       contactType: 'customer service',
       email: 'mechitallsupport@gmail.com',
       areaServed: 'IN',

@@ -58,29 +58,6 @@ export default function ContactPage() {
                   <span className="text-xs text-zinc-400 font-mono">mechitallsupport@gmail.com</span>
                 </div>
               </div>
-
-              <div className="flex items-start gap-4 p-4 bg-zinc-800 border border-zinc-700/60 rounded-2xl">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
-                  <Phone className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="block text-[10px] font-bold text-white uppercase font-mono">Phone Support</span>
-                  <span className="text-xs text-zinc-400 font-mono">8278860886</span>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 bg-zinc-800 border border-zinc-700/60 rounded-2xl">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400 shrink-0">
-                  <MapPin className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="block text-[10px] font-bold text-white uppercase font-mono">Registered Address</span>
-                  <span className="text-xs text-zinc-400 leading-relaxed font-sans">
-                    Nirmal Narayan Aawas, Divyanagar, Airport Road,<br />
-                    Totu, Shimla, H.P. <span className="font-mono">171011</span>
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
 

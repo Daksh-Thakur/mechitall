@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { User, ShoppingBag, Plus, Trash2, ShoppingCart, RefreshCw, AlertTriangle, CheckCircle2, Package, Play, Camera, Loader2, Upload, MessageSquare, Send, Paperclip, FileText, ExternalLink, CircleDollarSign, X, XCircle, ArrowRight, ArrowLeftRight, Gift, Cpu, IndianRupee, ShieldCheck, Settings, Heart } from 'lucide-react';
+import { User, ShoppingBag, Plus, Trash2, ShoppingCart, RefreshCw, AlertTriangle, CheckCircle2, Package, Play, Camera, Loader2, Upload, MessageSquare, Send, Paperclip, FileText, ExternalLink, CircleDollarSign, X, XCircle, ArrowRight, ArrowLeftRight, Gift, Cpu, IndianRupee, ShieldCheck, Settings, Heart, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
@@ -26,18 +26,13 @@ export default function AddressTab(props: any) {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="border border-zinc-700/60 rounded-xl p-4 space-y-3 relative">
-                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded text-[8px] font-black uppercase bg-zinc-900 text-zinc-400 border">Default</span>
-                  <div className="space-y-1">
-                    <span className="block text-xs font-black text-white">Elias Thorne</span>
-                    <span className="block text-[11px] text-zinc-500 font-semibold">
-                      12, Industrial Development Block C<br />
-                      Peenya Phase 1, Bangalore<br />
-                      Karnataka - 560058, India
-                    </span>
-                    <span className="block text-[10px] text-zinc-400 font-bold font-mono pt-1">Phone: +91 98450 12345</span>
-                  </div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="border border-zinc-700/60 border-dashed rounded-xl p-8 text-center flex flex-col items-center justify-center gap-2">
+                  <MapPin className="w-8 h-8 text-zinc-650" />
+                  <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider font-mono">No Saved Addresses</p>
+                  <p className="text-[11px] text-zinc-550 leading-normal max-w-xs">
+                    Your shipping addresses will appear here once saved during the checkout process.
+                  </p>
                 </div>
               </div>
             </div>
