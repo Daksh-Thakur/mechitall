@@ -202,7 +202,7 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
             </span>
           </h1>
           <p className="text-xs md:text-sm text-zinc-400 max-w-xl leading-relaxed font-semibold">
-            From blueprint to build, idea to reality. We connect passionate hobbyists with manufacturing pros in one seamless hub for off-the-shelf parts and custom machining."
+            From blueprint to build, idea to reality. We connect passionate hobbyists with manufacturing pros in one seamless hub for off-the-shelf high-tech mechatronics parts and custom machining.
           </p>
 
           <div className="flex flex-wrap gap-4 pt-2">

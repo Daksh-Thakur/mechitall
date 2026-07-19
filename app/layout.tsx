@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/components/CartProvider";
 import Script from "next/script";
+import CookieConsent from "@/components/CookieConsent";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -30,6 +31,33 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        {/* Google Consent Mode Initialization */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              
+              // Set default consent to denied/granted based on localStorage
+              var consentVal = null;
+              try {
+                consentVal = localStorage.getItem('mechitall_cookie_consent');
+              } catch(e) {}
+              
+              var consentObj = null;
+              if (consentVal) {
+                try { consentObj = JSON.parse(consentVal); } catch(e) {}
+              }
+              
+              gtag('consent', 'default', {
+                'ad_storage': (consentObj && consentObj.marketing) ? 'granted' : 'denied',
+                'analytics_storage': (consentObj && consentObj.analytics) ? 'granted' : 'denied',
+                'personalization_storage': (consentObj && consentObj.essential) ? 'granted' : 'denied',
+                'security_storage': 'granted'
+              });
+            `
+          }}
+        />
         {/* Google Tag Manager - Native, asynchronous loading */}
         <Script
           id="gtm-script"
@@ -92,6 +120,7 @@ export default function RootLayout({
         </noscript>
         <CartProvider>
           {children}
+          <CookieConsent />
         </CartProvider>
       </body>
     </html>
