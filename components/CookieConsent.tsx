@@ -111,7 +111,7 @@ export default function CookieConsent() {
               <h3 className="font-mono font-bold text-sm tracking-wider uppercase text-zinc-100 flex items-center gap-2">
                 Cookie Consent <span className="text-[10px] text-zinc-500 font-normal lowercase bg-zinc-900 border border-zinc-850 px-2 py-0.5 rounded-full">mechitall.io</span>
               </h3>
-              <p className="text-xs text-zinc-450 leading-relaxed font-sans">
+              <p className="text-xs text-zinc-400 leading-relaxed font-sans">
                 We use cookies to secure your session, personalize content, and analyze our traffic. Please choose which cookies you permit us to use.
               </p>
             </div>
@@ -193,7 +193,7 @@ export default function CookieConsent() {
               <div className="flex items-center justify-between gap-3 pt-2">
                 <button
                   onClick={() => setShowCustomize(false)}
-                  className="font-mono text-[10px] uppercase tracking-wider text-zinc-500 hover:text-zinc-350 transition-colors"
+                  className="font-mono text-[10px] uppercase tracking-wider text-zinc-500 hover:text-zinc-300 transition-colors"
                 >
                   Back
                 </button>
