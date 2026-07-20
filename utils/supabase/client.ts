@@ -33,5 +33,11 @@ export const createClient = () => {
   return createBrowserClient(
     supabaseUrl,
     supabaseKey,
+    {
+      cookieOptions: {
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      }
+    }
   );
 };

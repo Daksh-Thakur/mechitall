@@ -37,7 +37,7 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
           {[
             { icon: Zap, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'Custom CAD Quoting', desc: 'Upload STEP/STL/PDF, sellers quote your design' },
             { icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Secure Escrow Protection', desc: 'Funds released only upon delivery confirmation' },
-            { icon: Mail, color: 'text-[#00D0F5]', bg: 'bg-[#00D0F5]/10', label: 'Dedicated Support Desk', desc: 'Direct assistance via mechitallsupport@gmail.com' },
+            { icon: Mail, color: 'text-[#00D0F5]', bg: 'bg-[#00D0F5]/10', label: 'Dedicated Support Desk', desc: 'Direct assistance via support@mechitall.in' },
           ].map(({ icon: Icon, color, bg, label, desc }) => (
             <div key={label} className="flex items-center gap-3 p-2 bg-zinc-900/60 border border-zinc-700/60 rounded-xl">
               <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
@@ -147,7 +147,7 @@ export default function HeroSection({ onShuffle }: HeroSectionProps) {
       content: (
         <div className="space-y-2.5">
           {[
-            { icon: Mail, color: 'text-[#00D0F5]', bg: 'bg-[#00D0F5]/10', label: 'Official Support Mailbox', desc: 'mechitallsupport@gmail.com for rapid review' },
+            { icon: Mail, color: 'text-[#00D0F5]', bg: 'bg-[#00D0F5]/10', label: 'Official Support Mailbox', desc: 'support@mechitall.in for rapid review' },
             { icon: LifeBuoy, color: 'text-indigo-400', bg: 'bg-indigo-500/10', label: 'Visual Discrepancy Reports', desc: 'Attach images to your complaints directly from your profile' },
             { icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Strict IPNDA Protocols', desc: 'All mechatronic assembly designs are 100% protected' },
           ].map(({ icon: Icon, color, bg, label, desc }) => (

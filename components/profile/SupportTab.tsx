@@ -75,7 +75,7 @@ export default function SupportTab(props: any) {
         setSubject('');
         setMessage('');
         setAttachments([]);
-        showToast('Complaint sent to mechitallsupport@gmail.com!', 'success');
+        showToast('Complaint sent to support@mechitall.in!', 'success');
       } else {
         showToast(res.error || 'Failed to send complaint.', 'error');
       }
@@ -104,7 +104,7 @@ export default function SupportTab(props: any) {
             <div>
               <h4 className="text-xs font-black text-white">Email Automation</h4>
               <p className="text-[10px] text-zinc-400 mt-0.5 font-semibold">
-                Your report goes directly to <strong className="text-[#00D0F5] font-mono">mechitallsupport@gmail.com</strong> for rapid review.
+                Your report goes directly to <strong className="text-[#00D0F5] font-mono">support@mechitall.in</strong> for rapid review.
               </p>
             </div>
           </div>

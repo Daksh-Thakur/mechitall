@@ -58,7 +58,7 @@ export function OrganizationSchema({
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'customer service',
-      email: 'mechitallsupport@gmail.com',
+      email: 'support@mechitall.in',
       areaServed: 'IN',
       availableLanguage: ['en', 'hi']
     }

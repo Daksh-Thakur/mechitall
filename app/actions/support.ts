@@ -34,7 +34,7 @@ export async function sendSupportEmail(data: {
       }
     }
 
-    const officialSupportEmail = 'mechitallsupport@gmail.com';
+    const officialSupportEmail = 'support@mechitall.in';
 
     console.log('==================================================');
     console.log(`[EMAIL AUTOMATION] SENDING COMPLAINT TO ${officialSupportEmail}`);

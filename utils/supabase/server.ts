@@ -41,7 +41,13 @@ export const createClient = (cookieStore: Awaited<ReturnType<typeof cookies>>) =
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, {
+                ...options,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax'
+              })
+            })
           } catch {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have proxy refreshing
@@ -49,6 +55,10 @@ export const createClient = (cookieStore: Awaited<ReturnType<typeof cookies>>) =
           }
         },
       },
+      cookieOptions: {
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      }
     },
   );
 };
