@@ -95,182 +95,193 @@ export default function Navbar() {
 
           {/* Right controls */}
           <div className="flex items-center gap-3">
-
-
-            {/* Rewards Wallet Widget with Hover Rules Card */}
-            <div className="hidden sm:block relative group/rewards">
-              <Link
-                href="/profile?tab=rewards"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all text-amber-400 cursor-pointer group"
-              >
-                {/* 2D Screw Vector Illustration */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-4 h-4 text-amber-500 animate-spin-slow group-hover:rotate-45 transition-transform duration-300"
-                >
-                  {/* 3D Faceted Hexagonal Head */}
-                  <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
-                  <line x1="10" y1="3" x2="10" y2="11" />
-                  <line x1="14" y1="3" x2="14" y2="11" />
-                  
-                  {/* Bolt Shaft */}
-                  <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
-                  
-                  {/* Thread Ridges (Real Thread Pitch Look) */}
-                  <line x1="9" y1="13.5" x2="15" y2="12" />
-                  <line x1="9" y1="16" x2="15" y2="14.5" />
-                  <line x1="9" y1="18.5" x2="15" y2="17" />
-                </svg>
-                 <span className="font-mono text-xs font-bold tracking-tight">
-                   {profile ? profile.wallet_balance : '0'}<span className="hidden md:inline"> Bolts</span>
-                 </span>
-              </Link>
-
-              {/* Hover Rules Card */}
-              <div className="absolute right-0 mt-2 w-64 rounded-xl border border-zinc-700 bg-zinc-800 p-4 shadow-xl z-50 transition-all duration-200 origin-top-right scale-95 opacity-0 pointer-events-none group-hover/rewards:scale-100 group-hover/rewards:opacity-100 group-hover/rewards:pointer-events-auto text-zinc-100">
-                <div className="flex items-center gap-1.5 mb-2.5 pb-1.5 border-b border-zinc-700/60">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className="w-4 h-4 text-amber-400"
+            {user ? (
+              <>
+                {/* Rewards Wallet Widget with Hover Rules Card */}
+                <div className="hidden sm:block relative group/rewards">
+                  <Link
+                    href="/profile?tab=rewards"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all text-amber-400 cursor-pointer group"
                   >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="16" x2="12" y2="12" />
-                    <line x1="12" y1="8" x2="12.01" y2="8" />
-                  </svg>
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">
-                    Nuts &amp; Bolts Rules
-                  </span>
-                </div>
-                <ul className="space-y-2 text-[10.5px] leading-relaxed text-zinc-300 font-semibold font-sans">
-                  <li className="flex items-start gap-1.5">
-                    <span className="text-emerald-400 mt-0.5">•</span>
-                    <span><strong>10 Bolts = ₹1.00</strong> store credit value</span>
-                  </li>
-                  <li className="flex items-start gap-1.5">
-                    <span className="text-amber-400 mt-0.5">•</span>
-                    <span><strong>100 Bolts max</strong> earned per order</span>
-                  </li>
-                  <li className="flex items-start gap-1.5">
-                    <span className="text-orange-400 mt-0.5">•</span>
-                    <span><strong>45-Day window</strong> before earned Bolts expire</span>
-                  </li>
-                </ul>
-                <div className="mt-3 pt-2 border-t border-zinc-700/40 text-[10px] text-zinc-400 text-center font-bold">
-                  Click to view full Bolts Wallet
-                </div>
-              </div>
-            </div>
+                    {/* 2D Screw Vector Illustration */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="w-4 h-4 text-amber-500 animate-spin-slow group-hover:rotate-45 transition-transform duration-300"
+                    >
+                      {/* 3D Faceted Hexagonal Head */}
+                      <polygon points="8,3 16,3 18,7 16,11 8,11 6,7" fill="none" />
+                      <line x1="10" y1="3" x2="10" y2="11" />
+                      <line x1="14" y1="3" x2="14" y2="11" />
+                      
+                      {/* Bolt Shaft */}
+                      <path d="M9,11v9c0,0.6 0.4,1 1,1h4c0.6,0 1,-0.4 1,-1v-9" />
+                      
+                      {/* Thread Ridges (Real Thread Pitch Look) */}
+                      <line x1="9" y1="13.5" x2="15" y2="12" />
+                      <line x1="9" y1="16" x2="15" y2="14.5" />
+                      <line x1="9" y1="18.5" x2="15" y2="17" />
+                    </svg>
+                     <span className="font-mono text-xs font-bold tracking-tight">
+                       {profile ? profile.wallet_balance : '0'}<span className="hidden md:inline"> Bolts</span>
+                     </span>
+                  </Link>
 
-            {/* Cart Icon */}
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="relative p-2.5 rounded-md border border-zinc-700 bg-zinc-850 hover:bg-zinc-800 hover:border-zinc-650 transition-all text-zinc-200 flex items-center justify-center cursor-pointer"
-              aria-label="Open Shopping Cart"
-            >
-              <ShoppingCart className="w-4 h-4" />
-              {cartSummary.itemCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-coral text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
-                  {cartSummary.itemCount}
-                </span>
-              )}
-            </button>
-
-            {/* Profile */}
-            <div
-              className="relative py-2"
-              onMouseEnter={() => setProfileOpen(true)}
-              onMouseLeave={() => setProfileOpen(false)}
-            >
-              <button
-                onClick={() => {
-                  setProfileOpen(false);
-                  if (user) {
-                    window.location.href = '/profile';
-                  } else {
-                    window.location.href = '/login';
-                  }
-                }}
-                className="w-9 h-9 rounded-full border border-zinc-700 bg-zinc-850 text-zinc-200 flex items-center justify-center font-bold text-xs hover:bg-zinc-800 hover:border-zinc-650 transition-all cursor-pointer overflow-hidden"
-                aria-label="Open profile menu"
-              >
-                {user && profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  user ? (profile?.full_name ? profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0] : 'U') : 'GU'
-                )}
-              </button>
-
-              {profileOpen && (
-                <div className="absolute right-0 mt-1 w-56 rounded-xl border border-zinc-700 bg-zinc-800 shadow-lg py-1.5 z-[9999] animate-slide-in md:origin-top-right text-zinc-100">
-                  <div className="px-4 py-2 border-b border-zinc-700/60 mb-1">
-                    <span className="block text-xs text-zinc-400">
-                      {user ? 'Shopper Account' : 'Guest Shopper'}
-                    </span>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="block text-xs font-bold text-zinc-100 truncate">
-                        {profile?.full_name || 'Guest User'}
+                  {/* Hover Rules Card */}
+                  <div className="absolute right-0 mt-2 w-64 rounded-xl border border-zinc-700 bg-zinc-800 p-4 shadow-xl z-50 transition-all duration-200 origin-top-right scale-95 opacity-0 pointer-events-none group-hover/rewards:scale-100 group-hover/rewards:opacity-100 group-hover/rewards:pointer-events-auto text-zinc-100">
+                    <div className="flex items-center gap-1.5 mb-2.5 pb-1.5 border-b border-zinc-700/60">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="w-4 h-4 text-amber-400"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
+                      </svg>
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">
+                        Nuts &amp; Bolts Rules
                       </span>
-                      {profile?.is_verified_buyer && (
-                        <span className="text-emerald shrink-0" title="Verified Buyer">
-                          <ShieldCheck className="w-3.5 h-3.5 fill-emerald/5" />
-                        </span>
-                      )}
                     </div>
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      <span className="inline-block text-[9px] uppercase tracking-wider font-extrabold bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded">
-                        {profile?.loyalty_tier || 'Tinkerer'}
-                      </span>
-                      {profile?.is_verified_buyer && (
-                        <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald-400 border border-emerald/20 px-1.5 py-0.5 rounded">
-                          Verified
-                        </span>
-                      )}
-                      {profile?.is_verified_seller && (
-                        <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded">
-                          Seller Verified
-                        </span>
-                      )}
+                    <ul className="space-y-2 text-[10.5px] leading-relaxed text-zinc-300 font-semibold font-sans">
+                      <li className="flex items-start gap-1.5">
+                        <span className="text-emerald-400 mt-0.5">•</span>
+                        <span><strong>10 Bolts = ₹1.00</strong> store credit value</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <span className="text-amber-400 mt-0.5">•</span>
+                        <span><strong>100 Bolts max</strong> earned per order</span>
+                      </li>
+                      <li className="flex items-start gap-1.5">
+                        <span className="text-orange-400 mt-0.5">•</span>
+                        <span><strong>45-Day window</strong> before earned Bolts expire</span>
+                      </li>
+                    </ul>
+                    <div className="mt-3 pt-2 border-t border-zinc-700/40 text-[10px] text-zinc-400 text-center font-bold">
+                      Click to view full Bolts Wallet
                     </div>
                   </div>
-                  {user && (
-                    <Link
-                      href="/profile"
-                      onClick={() => setProfileOpen(false)}
-                      className="w-full text-left px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-700 hover:text-white flex items-center gap-2 cursor-pointer"
-                    >
-                      <User className="w-3.5 h-3.5" /> My Profile
-                    </Link>
+                </div>
+
+                {/* Cart Icon */}
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative p-2.5 rounded-md border border-zinc-700 bg-zinc-850 hover:bg-zinc-800 hover:border-zinc-650 transition-all text-zinc-200 flex items-center justify-center cursor-pointer"
+                  aria-label="Open Shopping Cart"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  {cartSummary.itemCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-coral text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                      {cartSummary.itemCount}
+                    </span>
                   )}
-                  <div className="border-t border-zinc-700/60 my-1"></div>
-                  {user ? (
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full text-left px-4 py-2 text-xs text-rose-400 hover:bg-rose-950/20 flex items-center gap-2 cursor-pointer font-bold"
-                    >
-                      <LogOut className="w-3.5 h-3.5" /> Sign Out
-                    </button>
-                  ) : (
-                    <Link
-                      href="/login"
-                      onClick={() => setProfileOpen(false)}
-                      className="w-full text-left px-4 py-2 text-xs text-blue-400 hover:bg-blue-950/20 flex items-center gap-2 cursor-pointer font-bold"
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5" /> Sign in / Create Account
-                    </Link>
+                </button>
+
+                {/* Profile */}
+                <div
+                  className="relative py-2"
+                  onMouseEnter={() => setProfileOpen(true)}
+                  onMouseLeave={() => setProfileOpen(false)}
+                >
+                  <button
+                    onClick={() => {
+                      setProfileOpen(false);
+                      if (user) {
+                        window.location.href = '/profile';
+                      } else {
+                        window.location.href = '/login';
+                      }
+                    }}
+                    className="w-9 h-9 rounded-full border border-zinc-700 bg-zinc-850 text-zinc-200 flex items-center justify-center font-bold text-xs hover:bg-zinc-800 hover:border-zinc-650 transition-all cursor-pointer overflow-hidden"
+                    aria-label="Open profile menu"
+                  >
+                    {user && profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      user ? (profile?.full_name ? profile.full_name[0] + (profile.full_name.split(' ').pop() || 'U')[0] : 'U') : 'GU'
+                    )}
+                  </button>
+
+                  {profileOpen && (
+                    <div className="absolute right-0 mt-1 w-56 rounded-xl border border-zinc-700 bg-zinc-800 shadow-lg py-1.5 z-[9999] animate-slide-in md:origin-top-right text-zinc-100">
+                      <div className="px-4 py-2 border-b border-zinc-700/60 mb-1">
+                        <span className="block text-xs text-zinc-400">
+                          {user ? 'Shopper Account' : 'Guest Shopper'}
+                        </span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="block text-xs font-bold text-zinc-100 truncate">
+                            {profile?.full_name || 'Guest User'}
+                          </span>
+                          {profile?.is_verified_buyer && (
+                            <span className="text-emerald shrink-0" title="Verified Buyer">
+                              <ShieldCheck className="w-3.5 h-3.5 fill-emerald/5" />
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          <span className="inline-block text-[9px] uppercase tracking-wider font-extrabold bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                            {profile?.loyalty_tier || 'Tinkerer'}
+                          </span>
+                          {profile?.is_verified_buyer && (
+                            <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald-400 border border-emerald/20 px-1.5 py-0.5 rounded">
+                              Verified
+                            </span>
+                          )}
+                          {profile?.is_verified_seller && (
+                            <span className="inline-flex items-center gap-0.5 text-[9px] uppercase tracking-wider font-extrabold bg-emerald/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded">
+                              Seller Verified
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {user && (
+                        <Link
+                          href="/profile"
+                          onClick={() => setProfileOpen(false)}
+                          className="w-full text-left px-4 py-2 text-xs text-zinc-300 hover:bg-zinc-700 hover:text-white flex items-center gap-2 cursor-pointer"
+                        >
+                          <User className="w-3.5 h-3.5" /> My Profile
+                        </Link>
+                      )}
+                      <div className="border-t border-zinc-700/60 my-1"></div>
+                      {user ? (
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full text-left px-4 py-2 text-xs text-rose-400 hover:bg-rose-950/20 flex items-center gap-2 cursor-pointer font-bold"
+                        >
+                          <LogOut className="w-3.5 h-3.5" /> Sign Out
+                        </button>
+                      ) : (
+                        <Link
+                          href="/login"
+                          onClick={() => setProfileOpen(false)}
+                          className="w-full text-left px-4 py-2 text-xs text-blue-400 hover:bg-blue-950/20 flex items-center gap-2 cursor-pointer font-bold"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" /> Sign in / Create Account
+                        </Link>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="bg-blue-500 hover:bg-blue-400 text-white px-3.5 py-1.5 rounded-md font-extrabold text-xs flex items-center gap-1.5 cursor-pointer transition-all uppercase tracking-wider font-mono border border-blue-600/30 shadow-md shadow-blue-950/20"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Login / Signup</span>
+                <span className="sm:hidden">Login</span>
+              </Link>
+            )}
 
             {/* Hamburger Menu Toggle */}
             <button
@@ -314,7 +325,7 @@ export default function Navbar() {
 
 
 
-          {profile && (
+          {user && profile && (
             <div className="border-t border-zinc-800/80 pt-3 px-1 flex items-center justify-between text-[10px] font-bold text-zinc-400 font-mono uppercase tracking-wider">
               <span className="flex items-center gap-1.5">
                 <svg
@@ -340,6 +351,18 @@ export default function Navbar() {
               <span className="text-amber-500 font-extrabold font-mono text-xs">
                 {profile.wallet_balance || 0} Bolts
               </span>
+            </div>
+          )}
+
+          {!user && (
+            <div className="border-t border-zinc-800/80 pt-3">
+              <Link
+                href="/login"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="w-full text-center py-2.5 bg-blue-500 hover:bg-blue-400 text-white rounded text-xs font-bold uppercase tracking-wider font-mono flex items-center justify-center gap-1.5 cursor-pointer border border-blue-600/30"
+              >
+                <User className="w-3.5 h-3.5" /> Sign In / Create Account
+              </Link>
             </div>
           )}
         </div>
