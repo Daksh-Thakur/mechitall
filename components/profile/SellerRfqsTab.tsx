@@ -631,41 +631,6 @@ export default function SellerRfqsTab(props: any) {
               );
             })()}
 
-            {/* SIGNED VENDOR AGREEMENT */}
-            {profile && profile.vendor_agreement_pdf && (
-              <div className="bg-zinc-800/80 border border-zinc-700/60 rounded-2xl p-5 shadow-sm space-y-4">
-                <div className="pb-3 border-b border-zinc-700/60 flex justify-between items-center">
-                  <h4 className="text-xs font-black text-white uppercase tracking-wider">Legal Documents</h4>
-                  <span className="bg-emerald-500/10 text-emerald-400 text-[8px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider border border-emerald-500/20">
-                    Active
-                  </span>
-                </div>
-                <div className="bg-zinc-900/50 border border-zinc-700/60 rounded-xl p-4 flex flex-col gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400 shrink-0">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div className="space-y-0.5 min-w-0 flex-1">
-                      <span className="block font-bold text-white text-xs truncate">
-                        Vendor Agreement
-                      </span>
-                      <span className="block text-[8px] font-mono text-zinc-500 uppercase tracking-wider">
-                        Signed PDF Copy
-                      </span>
-                    </div>
-                  </div>
-                  <a
-                    href={profile.vendor_agreement_pdf}
-                    download={`MechItAll_Vendor_Agreement_${(profile.company_name || profile.full_name || 'Seller').replace(/\s+/g, '_')}.pdf`}
-                    className="bg-[#0B1528] hover:bg-slate-900 text-white text-center text-xs font-mono font-bold uppercase tracking-wider py-2.5 rounded-xl transition-all cursor-pointer shadow flex items-center justify-center gap-1.5 border border-zinc-700/60"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    Download Agreement
-                  </a>
-                </div>
-              </div>
-            )}
-
           </div>
 
         </div>
