@@ -90,11 +90,22 @@ export default function LoginPage() {
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 z-10 w-fit">
-          <div className="w-9 h-9 rounded-xl bg-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-400/10 transition-transform hover:scale-105">
-            <Cpu className="w-5 h-5 text-zinc-950 animate-pulse" />
+        <Link href="/" className="flex items-center gap-2.5 z-10 w-fit cursor-pointer group">
+          <img 
+            src="/logo.png" 
+            alt="MechItAll Logo" 
+            className="w-9 h-9 object-contain rounded-full group-hover:scale-105 transition-transform duration-200"
+          />
+          <div>
+            <div className="flex items-center">
+              <span className="font-extrabold text-lg text-white tracking-tight">Mech</span>
+              <span className="font-extrabold text-lg text-blue-500 tracking-tight">It</span>
+              <span className="font-extrabold text-lg text-white tracking-tight">All</span>
+            </div>
+            <span className="block text-[8px] uppercase tracking-[0.12em] text-zinc-400 font-bold -mt-1">
+              Browse • Buy • Build
+            </span>
           </div>
-          <span className="text-white font-black text-lg tracking-tight font-['Space_Grotesk']">MechItAll</span>
         </Link>
 
         {/* Centre Copy / Value Prop card */}
@@ -143,11 +154,22 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:22px_22px] opacity-[0.02] pointer-events-none" />
 
         {/* Mobile logo */}
-        <Link href="/" className="flex lg:hidden items-center gap-2 mb-6 z-10">
-          <div className="w-8 h-8 rounded-xl bg-emerald-400 flex items-center justify-center shadow-md">
-            <Cpu className="w-4 h-4 text-zinc-955" />
+        <Link href="/" className="flex lg:hidden items-center gap-2.5 mb-6 z-10 group">
+          <img 
+            src="/logo.png" 
+            alt="MechItAll Logo" 
+            className="w-8 h-8 object-contain rounded-full group-hover:scale-105 transition-transform duration-200"
+          />
+          <div>
+            <div className="flex items-center">
+              <span className="font-extrabold text-base text-white tracking-tight">Mech</span>
+              <span className="font-extrabold text-base text-blue-500 tracking-tight">It</span>
+              <span className="font-extrabold text-base text-white tracking-tight">All</span>
+            </div>
+            <span className="block text-[7px] uppercase tracking-[0.12em] text-zinc-400 font-bold -mt-1">
+              Browse • Buy • Build
+            </span>
           </div>
-          <span className="font-black text-white text-base tracking-tight font-['Space_Grotesk']">MechItAll</span>
         </Link>
 
         <div className="w-full max-w-sm z-10 bg-zinc-800 border border-zinc-700/60 rounded-2xl p-6 md:p-8 shadow-2xl space-y-5 animate-slide-in">

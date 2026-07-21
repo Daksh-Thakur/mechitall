@@ -12,6 +12,7 @@ export interface Profile {
   role: UserRole;
   is_verified_seller?: boolean;
   avatar_url?: string;
+  vendor_agreement_pdf?: string | null;
   created_at: string;
   updated_at: string;
 }

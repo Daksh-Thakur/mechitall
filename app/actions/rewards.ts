@@ -21,6 +21,7 @@ export interface Profile {
   business_address?: string | null;
   primary_capability?: string | null;
   avatar_url?: string | null;
+  vendor_agreement_pdf?: string | null;
   created_at: string;
 }
 
@@ -707,6 +708,7 @@ export async function submitSellerKYC(
     ifscCode: string;
     pan: string;
     gstin?: string;
+    vendorAgreementPdf?: string;
   }
 ) {
   const cookieStore = await cookies();
@@ -715,27 +717,47 @@ export async function submitSellerKYC(
   // Generate a local seller reference key (payment gateway integration pending)
   const childMerchantKey = `CM-${formData.pan.toUpperCase()}-${Math.floor(100000 + Math.random() * 900000)}`;
 
-  const { data, error } = await supabase
+  const updateData: any = {
+    seller_kyc_completed: true,
+    is_seller: true,
+    company_name: formData.companyName,
+    tax_id: formData.taxId,
+    machine_count: formData.machineCount,
+    business_address: formData.businessAddress,
+    primary_capability: formData.primaryCapability,
+    legal_name: formData.legalName,
+    bank_account_number: formData.bankAccountNumber,
+    ifsc_code: formData.ifscCode,
+    pan: formData.pan,
+    gstin: formData.gstin || null,
+    child_merchant_key: childMerchantKey,
+    updated_at: new Date().toISOString()
+  };
+
+  if (formData.vendorAgreementPdf) {
+    updateData.vendor_agreement_pdf = formData.vendorAgreementPdf;
+  }
+
+  let { data, error } = await supabase
     .from('profiles')
-    .update({
-      seller_kyc_completed: true,
-      is_seller: true,
-      company_name: formData.companyName,
-      tax_id: formData.taxId,
-      machine_count: formData.machineCount,
-      business_address: formData.businessAddress,
-      primary_capability: formData.primaryCapability,
-      legal_name: formData.legalName,
-      bank_account_number: formData.bankAccountNumber,
-      ifsc_code: formData.ifscCode,
-      pan: formData.pan,
-      gstin: formData.gstin || null,
-      child_merchant_key: childMerchantKey,
-      updated_at: new Date().toISOString()
-    })
+    .update(updateData)
     .eq('id', profileId)
     .select()
-    .single();
+    .maybeSingle();
+
+  // If the database column does not exist yet (error 42703 or message indicates it)
+  if (error && (error.code === '42703' || error.message.includes('vendor_agreement_pdf'))) {
+    console.warn("vendor_agreement_pdf column does not exist in public.profiles. Falling back to update without it.");
+    delete updateData.vendor_agreement_pdf;
+    const fallbackResult = await supabase
+      .from('profiles')
+      .update(updateData)
+      .eq('id', profileId)
+      .select()
+      .single();
+    data = fallbackResult.data;
+    error = fallbackResult.error;
+  }
 
   if (error) {
     throw new Error(error.message);
