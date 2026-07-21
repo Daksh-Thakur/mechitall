@@ -12,7 +12,7 @@ interface SellerKYCModalProps {
   showToast: (msg: string, type: 'success' | 'error') => void;
 }
 
-const generateAgreementPDF = (vendorName: string, legalName: string, dateStr: string) => {
+const generateAgreementPDF = (sellerId: string, vendorName: string, legalName: string, dateStr: string) => {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -46,6 +46,8 @@ const generateAgreementPDF = (vendorName: string, legalName: string, dateStr: st
   doc.setFontSize(10);
   doc.setTextColor(11, 21, 40);
   doc.setFont('helvetica', 'bold');
+  doc.text(`Seller ID (UUID): ${sellerId}`, margin, y);
+  y += 5;
   doc.text(`Seller Name / Registered Business Name: ${vendorName}`, margin, y);
   y += 5;
   doc.text(`Legal Name (as in Bank Account): ${legalName}`, margin, y);
@@ -240,7 +242,7 @@ export default function SellerKYCModal({
               month: 'long',
               year: 'numeric'
             });
-            const agreementPdf = generateAgreementPDF(companyName, legalName, dateStr);
+            const agreementPdf = generateAgreementPDF(profileId, companyName, legalName, dateStr);
 
             await submitSellerKYC(profileId, {
               companyName,
