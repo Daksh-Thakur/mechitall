@@ -123,6 +123,17 @@ export default function Footer() {
                   <span>&gt;</span> Blog/Resources
                 </Link>
               </li>
+              {profile?.is_seller && profile?.vendor_agreement_pdf && (
+                <li>
+                  <a
+                    href={profile.vendor_agreement_pdf}
+                    download={`MechItAll_Vendor_Agreement_${(profile.company_name || profile.full_name || 'Seller').replace(/\s+/g, '_')}.pdf`}
+                    className="hover:text-white transition-colors flex items-center gap-1"
+                  >
+                    <span>&gt;</span> Vendor Agreement
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -205,18 +216,6 @@ export default function Footer() {
             <Link href="/policies/cancellation" className="hover:text-white transition-colors">Cancellation Policy</Link>
             <span className="hidden md:inline">•</span>
             <Link href="/policies/shipping" className="hover:text-white transition-colors">Shipping Policy</Link>
-            {profile?.is_seller && profile?.vendor_agreement_pdf && (
-              <>
-                <span className="hidden md:inline">•</span>
-                <a
-                  href={profile.vendor_agreement_pdf}
-                  download={`MechItAll_Vendor_Agreement_${(profile.company_name || profile.full_name || 'Seller').replace(/\s+/g, '_')}.pdf`}
-                  className="hover:text-white transition-colors"
-                >
-                  Vendor Agreement
-                </a>
-              </>
-            )}
           </div>
         </div>
 
