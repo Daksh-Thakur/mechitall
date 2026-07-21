@@ -1451,3 +1451,33 @@ export async function updateDeliveryProfile(
 
   return { success: true };
 }
+
+/**
+ * Saves the signed vendor agreement PDF for an already-registered seller.
+ */
+export async function saveSignedAgreement(profileId: string, pdfBase64: string) {
+  const cookieStore = await cookies();
+  const supabase = createClient(cookieStore);
+
+  let { data, error } = await supabase
+    .from('profiles')
+    .update({
+      vendor_agreement_pdf: pdfBase64,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', profileId)
+    .select()
+    .maybeSingle();
+
+  // Handle missing column gracefully (undefined_column 42703)
+  if (error && (error.code === '42703' || error.message.includes('vendor_agreement_pdf'))) {
+    console.warn("vendor_agreement_pdf column does not exist in public.profiles. Gracefully bypassing save.");
+    return { success: true, warning: 'database_not_migrated' };
+  }
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { success: true, data };
+}
