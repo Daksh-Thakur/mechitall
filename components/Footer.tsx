@@ -3,8 +3,10 @@
 import React from 'react';
 import Link from 'next/link';
 import { Cpu, ShieldCheck, Clock, Package, Mail, MapPin, Send, HelpCircle, FileText, MessageSquare, Zap } from 'lucide-react';
+import { useCart } from './CartProvider';
 
 export default function Footer() {
+  const { profile } = useCart();
   const handleSubmitNewsletter = (e: React.FormEvent) => {
     e.preventDefault();
     alert('Thank you for subscribing to MechItAll engineering updates!');
@@ -203,6 +205,18 @@ export default function Footer() {
             <Link href="/policies/cancellation" className="hover:text-white transition-colors">Cancellation Policy</Link>
             <span className="hidden md:inline">•</span>
             <Link href="/policies/shipping" className="hover:text-white transition-colors">Shipping Policy</Link>
+            {profile?.is_seller && profile?.vendor_agreement_pdf && (
+              <>
+                <span className="hidden md:inline">•</span>
+                <a
+                  href={profile.vendor_agreement_pdf}
+                  download={`MechItAll_Vendor_Agreement_${(profile.company_name || profile.full_name || 'Seller').replace(/\s+/g, '_')}.pdf`}
+                  className="hover:text-white transition-colors"
+                >
+                  Vendor Agreement
+                </a>
+              </>
+            )}
           </div>
         </div>
 
