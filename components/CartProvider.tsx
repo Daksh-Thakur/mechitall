@@ -88,6 +88,24 @@ function setCookie(name: string, val: string, days = 365) {
   document.cookie = `${name}=${val};path=/;expires=${date.toUTCString()}`;
 }
 
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') {
+      resolve(false);
+      return;
+    }
+    if ((window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -292,15 +310,122 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       });
       await fetchProfile();
 
-      // 3. Payment integration coming soon
-      setCheckoutStatus('idle');
-      showToast('Order received! Our team will contact you shortly to complete payment.', 'success');
-    } catch (err) {
+      // 3. Load Razorpay script dynamically
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        throw new Error('Failed to load Razorpay Checkout script. Check your internet connection.');
+      }
+
+      // 4. Create standard Razorpay order on backend
+      const createOrderRes = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: Math.round(cartSummary.total * 100), // paise
+          currency: 'INR',
+          receipt: `receipt_${Date.now()}`,
+          items: cart.map(item => ({
+            product_id: item.partId || '',
+            quantity: item.quantity,
+            unit_price: item.pricePerUnit
+          }))
+        })
+      });
+
+      if (!createOrderRes.ok) {
+        const errData = await createOrderRes.json();
+        throw new Error(errData.error || 'Failed to initialize payment.');
+      }
+
+      const checkoutOrder = await createOrderRes.json();
+
+      // 5. Open Razorpay Checkout Modal
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'rzp_test_TGPPA7qdFbGUv7',
+        amount: checkoutOrder.amount,
+        currency: checkoutOrder.currency,
+        name: 'MechItAll Sourcing',
+        description: 'Payment for Custom Mechatronic Parts',
+        order_id: checkoutOrder.order_id,
+        handler: async function (response: any) {
+          setCheckoutStatus('submitting');
+          try {
+            // Verify Payment signature
+            const verifyRes = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+
+            if (!verifyRes.ok) {
+              const errData = await verifyRes.json();
+              throw new Error(errData.error || 'Payment signature verification failed.');
+            }
+
+            // Sync to database
+            const cartItems = cart.map(item => ({
+              product_id: item.partId || '',
+              quantity: item.quantity,
+              unit_price: item.pricePerUnit
+            }));
+
+            await createDbOrder(
+              activeProfile.id,
+              cartSummary.total,
+              cartSummary.itemCount,
+              cartSummary.boltsToDeduct,
+              cartItems
+            );
+
+            showToast('Payment verified & order placed successfully!', 'success');
+            setCart([]); // Clear Cart
+            fetchProfile();
+            setCheckoutStatus('success');
+            setTimeout(() => setCheckoutStatus('idle'), 3000);
+
+          } catch (verificationErr: any) {
+            console.error('Payment verification failed:', verificationErr);
+            showToast(verificationErr.message || 'Payment verification failed.', 'error');
+            setCheckoutStatus('idle');
+          }
+        },
+        prefill: {
+          name: details.name,
+          email: details.email,
+          contact: details.phone
+        },
+        notes: {
+          address: details.address
+        },
+        theme: {
+          color: '#00D0F5'
+        },
+        modal: {
+          ondismiss: function () {
+            showToast('Payment cancelled by user.', 'error');
+            setCheckoutStatus('idle');
+          }
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', function (paymentFailedResponse: any) {
+        console.error('Payment transaction failed:', paymentFailedResponse.error);
+        showToast(paymentFailedResponse.error?.description || 'Payment transaction failed.', 'error');
+        setCheckoutStatus('idle');
+      });
+      rzp.open();
+
+    } catch (err: any) {
       console.error('Checkout process failed:', err);
       setCheckoutStatus('idle');
-      showToast('Checkout failed. Please try again.', 'error');
+      showToast(err.message || 'Checkout failed. Please try again.', 'error');
     }
-  }, [cart, cartSummary.total, cartSummary.boltsToDeduct, profile, fetchProfile, isBoltsDiscountApplied, showToast]);
+  }, [cart, cartSummary.total, cartSummary.boltsToDeduct, cartSummary.itemCount, profile, fetchProfile, isBoltsDiscountApplied, showToast]);
 
 
   return (
