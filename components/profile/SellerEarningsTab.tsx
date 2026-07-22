@@ -948,15 +948,6 @@ function RazorpaySettlementsCard({ profile, fetchProfile, showToast }: { profile
             </div>
           )}
 
-
-          <div className="flex gap-2">
-            <Link
-              href="/razorpay-playground"
-              className="flex-1 bg-zinc-900 border border-zinc-750 hover:bg-zinc-850 text-white text-center py-2 rounded text-[10px] font-mono font-bold uppercase tracking-wider transition-all"
-            >
-              API Playground
-            </Link>
-          </div>
         </div>
       ) : (
         <div className="space-y-4">
